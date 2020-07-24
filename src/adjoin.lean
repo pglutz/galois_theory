@@ -10,5 +10,5 @@ import linear_algebra.finite_dimensional
 definition adjoin (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : set E :=
 field.closure (set.range (algebra_map F E) ∪ {α})
 
-lemma adjoin_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :=
-(finite_dimensional.findim F E) = (polynomial.degree (minimal_polynomial h))
+lemma adjoin_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
+(finite_dimensional.findim F E) = (polynomial.nat_degree (minimal_polynomial h)) := sorry

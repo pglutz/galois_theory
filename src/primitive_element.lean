@@ -1,6 +1,6 @@
 import adjoin
 import separable
-import linear_algebra
+import linear_algebra.finite_dimensional
 
 /- Prove the primitive element theorem. -/
 
