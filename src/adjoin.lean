@@ -27,6 +27,8 @@ end
 
 #check is_basis
 
+
+--somehow need to get α inside of (adjoin F E α) so that the basis lives in the correct Type
 lemma adjoin_basis (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
 is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, (α : (adjoin F E α))^(zmod.val n)) :=
 begin
