@@ -10,6 +10,10 @@ import data.zmod.basic
 definition adjoin (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : set E :=
 field.closure (set.range (algebra_map F E) ∪ {α})
 
+instance adjoin.is_subfield (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : is_subfield (adjoin F E α) := field.closure.is_subfield
+
+instance adjoin.is_algebra (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : algebra F (adjoin F E α) := sorry
+
 lemma zero_less_than_minimal_polynomial_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
 0 < (minimal_polynomial h).nat_degree :=
 begin
@@ -21,20 +25,22 @@ begin
     exact a,
 end
 
+#check is_basis
+
 lemma adjoin_basis (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
-is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, α^(zmod.val n)) :=
+is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, (α : (adjoin F E α))^(zmod.val n)) :=
 begin
     sorry,
 end
 
 lemma adjoin_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
-(finite_dimensional.findim F E) = (polynomial.nat_degree (minimal_polynomial h)) :=
+(finite_dimensional.findim F (adjoin F E α)) = (polynomial.nat_degree (minimal_polynomial h)) :=
 begin
     have fact := zero_less_than_minimal_polynomial_degree F E α h,
     have h₀ := @zmod.fintype (minimal_polynomial h).nat_degree fact,
-    have h₁ := @finite_dimensional.findim_eq_card_basis F E _ _ _ _ h₀ _ (adjoin_basis F E α h),
-    rw h₁,
+    have h₁ := @finite_dimensional.findim_eq_card_basis F (adjoin F E α) _ _ _ _ h₀ _ (adjoin_basis F E α h),
     have h₂ := @zmod.card ((minimal_polynomial h).nat_degree) fact,
+    rw h₁,
     --uhhh, so why doesn't "exact h₂" work???
     sorry
 end
