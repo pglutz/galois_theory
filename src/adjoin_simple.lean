@@ -1,8 +1,8 @@
+import adjoin_set
 import field_theory.minimal_polynomial
 import linear_algebra.dimension
 import linear_algebra.finite_dimensional
 import data.zmod.basic
-import adjoin_set
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E)
 
