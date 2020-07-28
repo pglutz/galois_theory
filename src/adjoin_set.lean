@@ -54,11 +54,13 @@ instance adjoin.is_algebra : algebra F (adjoin F E S) := {
     end,
     commutes' :=
     begin
-        sorry,
+        intros x y,
+        rw mul_comm,
     end,
     smul_def' :=
     begin
-        sorry,
+        intros x y,
+        refl,
     end
 }
 
