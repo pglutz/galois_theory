@@ -7,21 +7,23 @@ import data.zmod.basic
 
 /- adjoining an element -/
 
-definition adjoin (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : set E :=
+variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E)
+
+definition adjoin : set E :=
 field.closure (set.range (algebra_map F E) ∪ {α})
 
-lemma adjoin_contains_alpha (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : α ∈ (adjoin F E α) :=
+lemma adjoin_contains_alpha : α ∈ (adjoin F E α) :=
 begin
     apply field.mem_closure,
     right,
     exact set.mem_singleton α,
 end
 
-instance adjoin.is_subfield (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : is_subfield (adjoin F E α) := field.closure.is_subfield
+instance adjoin.is_subfield : is_subfield (adjoin F E α) := field.closure.is_subfield
 
-instance adjoin.is_algebra (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : algebra F (adjoin F E α) := sorry
+instance adjoin.is_algebra : algebra F (adjoin F E α) :=  sorry
 
-lemma zero_less_than_minimal_polynomial_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
+lemma zero_less_than_minimal_polynomial_degree (h : is_integral F α) :
 0 < (minimal_polynomial h).nat_degree :=
 begin
     by_contradiction,
@@ -33,17 +35,17 @@ begin
 end
 
 --generator of F(α)
-definition gen (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : (adjoin F E α) := λ (α : E), ⟨α, adjoin_contains_alpha F E α⟩
+definition gen : (adjoin F E α) := ⟨α, adjoin_contains_alpha F E α⟩
 
 --The expression "⟨α,adjoin_contains_alpha F E α⟩ : (adjoin F E α)" is a hacky way to get α inside of (adjoin F E α).
 --There probably a better way to do this
-lemma adjoin_basis (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
+lemma adjoin_basis (h : is_integral F α) :
 is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, (gen F E α)^(zmod.val n)) :=
 begin
     sorry,
 end
 
-lemma adjoin_degree (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
+lemma adjoin_degree (h : is_integral F α) :
 (finite_dimensional.findim F (adjoin F E α)) = (polynomial.nat_degree (minimal_polynomial h)) :=
 begin
     have fact := zero_less_than_minimal_polynomial_degree F E α h,
