@@ -40,9 +40,9 @@ definition gen : (adjoin_element F E α) := ⟨α, adjoin_element_contains_eleme
 
 instance adjoin_set.is_subfield (S : set E) : is_subfield (adjoin_set F E S) := field.closure.is_subfield
 
-instance adjoin_element.is_subfield (S : set E) : is_subfield (adjoin_set F E S) := field.closure.is_subfield
+instance adjoin_element.is_subfield : is_subfield (adjoin_element F E α) := field.closure.is_subfield
 
-instance adjoin.is_algebra : algebra F (adjoin_element F E α) := sorry
+instance adjoin_element.is_algebra : algebra F (adjoin_element F E α) := sorry
 
 lemma zero_less_than_minimal_polynomial_degree (h : is_integral F α) :
 0 < (minimal_polynomial h).nat_degree :=
