@@ -32,10 +32,13 @@ begin
     exact a,
 end
 
+--generator of F(α)
+definition gen (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) : (adjoin F E α) := λ (α : E), ⟨α, adjoin_contains_alpha F E α⟩
+
 --The expression "⟨α,adjoin_contains_alpha F E α⟩ : (adjoin F E α)" is a hacky way to get α inside of (adjoin F E α).
 --There probably a better way to do this
 lemma adjoin_basis (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α) :
-is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, (⟨α,adjoin_contains_alpha F E α⟩ : (adjoin F E α))^(zmod.val n)) :=
+is_basis F (λ n : zmod (minimal_polynomial h).nat_degree, (gen F E α)^(zmod.val n)) :=
 begin
     sorry,
 end
