@@ -9,17 +9,20 @@ import data.zmod.basic
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E)
 
-definition adjoin : set E :=
-field.closure (set.range (algebra_map F E) ∪ {α})
+definition adjoin_set (S : set E) : set E :=
+field.closure (set.range (algebra_map F E) ∪ S)
 
-lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F E α) :=
+definition adjoin_element : set E :=
+adjoin_set F E {α}
+
+lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin_element F E α) :=
 begin
     apply field.mem_closure,
     left,
     exact set.mem_range_self x,
 end
 
-lemma adjoin_contains_alpha : α ∈ (adjoin F E α) :=
+lemma adjoin_contains_alpha : α ∈ (adjoin_element F E α) :=
 begin
     apply field.mem_closure,
     right,
@@ -27,11 +30,11 @@ begin
 end
 
 --generator of F(α)
-definition gen : (adjoin F E α) := ⟨α, adjoin_contains_alpha F E α⟩
+definition gen : (adjoin_element F E α) := ⟨α, adjoin_contains_alpha F E α⟩
 
-instance adjoin.is_subfield : is_subfield (adjoin F E α) := field.closure.is_subfield
+instance adjoin.is_subfield : is_subfield (adjoin_element F E α) := field.closure.is_subfield
 
-instance adjoin.is_algebra : algebra F (adjoin F E α) := sorry
+instance adjoin.is_algebra : algebra F (adjoin_element F E α) := sorry
 
 lemma zero_less_than_minimal_polynomial_degree (h : is_integral F α) :
 0 < (minimal_polynomial h).nat_degree :=
@@ -51,9 +54,9 @@ begin
 end
 
 lemma adjoin_degree (h : is_integral F α) :
-(finite_dimensional.findim F (adjoin F E α)) = (polynomial.nat_degree (minimal_polynomial h)) :=
+(finite_dimensional.findim F (adjoin_element F E α)) = (polynomial.nat_degree (minimal_polynomial h)) :=
 begin
     have fact := zero_less_than_minimal_polynomial_degree F E α h,
-    rw @finite_dimensional.findim_eq_card_basis F (adjoin F E α) _ _ _ _ (@zmod.fintype (minimal_polynomial h).nat_degree fact) _ (adjoin_basis F E α h),
+    rw @finite_dimensional.findim_eq_card_basis F (adjoin_element F E α) _ _ _ _ (@zmod.fintype (minimal_polynomial h).nat_degree fact) _ (adjoin_basis F E α h),
     exact @zmod.card ((minimal_polynomial h).nat_degree) fact,
 end
