@@ -32,17 +32,15 @@ begin
     exact subtype.mem x,
 end
 
-lemma adjoin_element_contains_alpha : α ∈ (adjoin_element F E α) :=
-begin
-    apply field.mem_closure,
-    right,
-    exact set.mem_singleton α,
-end
+lemma adjoin_element_contains_element : α ∈ (adjoin_element F E α) :=
+adjoin_set_contains_element F E {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
 
 --generator of F(α)
-definition gen : (adjoin_element F E α) := ⟨α, adjoin_element_contains_alpha F E α⟩
+definition gen : (adjoin_element F E α) := ⟨α, adjoin_element_contains_element F E α⟩
 
-instance adjoin.is_subfield : is_subfield (adjoin_element F E α) := field.closure.is_subfield
+instance adjoin_set.is_subfield (S : set E) : is_subfield (adjoin_set F E S) := field.closure.is_subfield
+
+instance adjoin_element.is_subfield (S : set E) : is_subfield (adjoin_set F E S) := field.closure.is_subfield
 
 instance adjoin.is_algebra : algebra F (adjoin_element F E α) := sorry
 
