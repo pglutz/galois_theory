@@ -15,14 +15,24 @@ field.closure (set.range (algebra_map F E) ∪ S)
 definition adjoin_element : set E :=
 adjoin_set F E {α}
 
-lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin_element F E α) :=
+lemma adjoin_set_contains_field (S : set E) (x : F) : algebra_map F E x ∈ (adjoin_set F E S) :=
 begin
     apply field.mem_closure,
     left,
     exact set.mem_range_self x,
 end
 
-lemma adjoin_contains_alpha : α ∈ (adjoin_element F E α) :=
+lemma adjoin_element_contains_field (x : F) : algebra_map F E x ∈ (adjoin_element F E α) :=
+adjoin_set_contains_field F E {α} x
+
+lemma adjoin_set_contains_element (S : set E) (x : S) : ↑x ∈ (adjoin_set F E S) :=
+begin
+    apply field.mem_closure,
+    right,
+    exact subtype.mem x,
+end
+
+lemma adjoin_element_contains_alpha : α ∈ (adjoin_element F E α) :=
 begin
     apply field.mem_closure,
     right,
@@ -30,7 +40,7 @@ begin
 end
 
 --generator of F(α)
-definition gen : (adjoin_element F E α) := ⟨α, adjoin_contains_alpha F E α⟩
+definition gen : (adjoin_element F E α) := ⟨α, adjoin_element_contains_alpha F E α⟩
 
 instance adjoin.is_subfield : is_subfield (adjoin_element F E α) := field.closure.is_subfield
 
