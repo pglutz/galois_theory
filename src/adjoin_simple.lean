@@ -40,21 +40,22 @@ begin
     exact is_submonoid.pow_mem (adjoin_simple_contains_element F E α),
 end
 
-lemma composition : (algebra_map F E) = (algebra_map (adjoin_simple F E α) E).comp (algebra_map F (adjoin_simple F E α)) :=
+lemma algebra_map_composition : (algebra_map F E) = (algebra_map (adjoin_simple F E α) E).comp (algebra_map F (adjoin_simple F E α)) :=
 begin
     ext,
     refl,
 end
+
+lemma algebra_map_gen_equals_alpha : algebra_map (adjoin_simple F E α) E (gen F E α) = α := rfl
 
 noncomputable definition the_map (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
 begin
     have eval := minimal_polynomial.aeval h,
     dsimp[polynomial.aeval] at eval,
-    rw composition F E α at eval,
-    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F E α)) (algebra_map (adjoin_simple F E α) E) (gen F E α),
-    have h' : algebra_map (adjoin_simple F E α) E (gen F E α) = α := rfl,
-    rw h' at h,
+    rw algebra_map_composition F E α at eval,
+    have h := polynomial.hom_eval₂ (minimal_polynomial h) _ (algebra_map (adjoin_simple F E α) E) (gen F E α),
+    rw algebra_map_gen_equals_alpha at h,
     rw ←h at eval,
     ext,
     exact eval,
