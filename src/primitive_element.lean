@@ -6,7 +6,7 @@ open finite_dimensional
 
 /- Prove the primitive element theorem. -/
 
-variables (F : Type*) [field F] (E : Type*)[field E] [algebra F E]
+variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
 
 -- This should go into field_theory/subfield eventually probably
