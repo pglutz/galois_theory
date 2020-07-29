@@ -2,6 +2,7 @@ import adjoin_set
 import field_theory.minimal_polynomial
 import linear_algebra.dimension
 import linear_algebra.finite_dimensional
+import ring_theory.adjoin_root
 import data.zmod.basic
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E)
@@ -32,4 +33,18 @@ begin
     have fact := zero_less_than_minimal_polynomial_degree F E α h,
     rw @finite_dimensional.findim_eq_card_basis F (adjoin_simple F E α) _ _ _ _ (@zmod.fintype (minimal_polynomial h).nat_degree fact) _ (adjoin_basis F E α h),
     exact @zmod.card ((minimal_polynomial h).nat_degree) fact,
+end
+
+example (n : ℕ) : α^n ∈ adjoin_simple F E α :=
+begin
+    exact is_submonoid.pow_mem (adjoin_simple_contains_element F E α),
+end
+
+noncomputable definition the_map (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
+adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
+begin
+    have eval := minimal_polynomial.aeval h,
+    dsimp[polynomial.aeval] at eval,
+    dsimp[polynomial.eval₂] at *,
+    sorry
 end

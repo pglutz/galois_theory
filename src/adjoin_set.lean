@@ -1,5 +1,6 @@
 import field_theory.subfield
 import ring_theory.algebra
+import group_theory.subgroup
 
 /- adjoining a set -/
 
@@ -71,7 +72,7 @@ definition adjoin_simple : set E := adjoin F E {α}
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F E α) :=
 adjoin_contains_field F E {α} x
 
-lemma adjoin_simple_contains_element : α ∈ (adjoin_simple F E α) :=
+lemma adjoin_simple_contains_element : α ∈ adjoin_simple F E α :=
 adjoin_contains_element F E {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
 
 instance adjoin_simple.is_subfield : is_subfield (adjoin_simple F E α) :=
