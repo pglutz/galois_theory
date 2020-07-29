@@ -22,10 +22,15 @@ begin
         exact is_submonoid.pow_mem (is_subfield.inv_mem h), },
 end
 
--- Is this in mathlib?
-lemma finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
+-- This proof is terrible. It feels like it should be like one line using module.fintype_of_fintype
+noncomputable lemma finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
 begin
-    sorry,
+    set s := classical.some (exists_is_basis_finite F E) with hs,
+    have hs' := classical.some_spec (exists_is_basis_finite F E),
+    rw ← hs at hs',
+    cases hs' with s_basis s_finite,
+    have s_fintype : fintype ↥s := set.finite.fintype s_finite,
+    convert @module.fintype_of_fintype s F E (coe : s → E) _ _ _ s_fintype s_basis _,
 end
 
 /-- Primitive element theorem for F ⊂ E assuming E is finite. -/
@@ -45,11 +50,8 @@ begin
 end
 
 /-- Primitive element theorem for finite dimensional extension of a finite field. -/
-theorem primitive_element_fin [fintype F] (hE : finite_dimensional F E) :
-    ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
-begin
-    sorry,
-end
+theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
+    ∃ α : E, adjoin_simple F E α = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F E hfd)
 
 /- Primitive element theorem for infinite fields. -/
 
