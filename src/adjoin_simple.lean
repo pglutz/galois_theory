@@ -54,7 +54,7 @@ begin
     have eval := minimal_polynomial.aeval h,
     dsimp[polynomial.aeval] at eval,
     rw algebra_map_composition F E α at eval,
-    have h := polynomial.hom_eval₂ (minimal_polynomial h) _ (algebra_map (adjoin_simple F E α) E) (gen F E α),
+    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F E α)) (algebra_map (adjoin_simple F E α) E) (gen F E α),
     rw algebra_map_gen_equals_alpha at h,
     rw ←h at eval,
     ext,
