@@ -8,6 +8,7 @@ open finite_dimensional
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
+/- Primitive element theorem for finite fields. -/
 
 -- This should go into field_theory/subfield eventually probably
 lemma is_subfield.pow_mem {K : Type*} [field K] {a : K} {n : ℤ} {s : set K} [is_subfield s] (h : a ∈ s) : a ^ n ∈ s :=
@@ -27,17 +28,7 @@ begin
     sorry,
 end
 
-lemma primitive_element_two_inf (h_sep : is_separable F E) (α β : E) (hE : adjoin F E {α, β} = (⊤ : set E))
-    (hF : infinite F) : ∃ γ, adjoin_simple F E γ = (⊤ : set E) :=
-begin
-    -- set f := minimal_polynomial (Exists.some $ h_sep α) with hf,
-    rcases h_sep α with ⟨hα, hf⟩,
-    rcases h_sep β with ⟨hβ, hg⟩,
-    set f := minimal_polynomial hα,
-    set g := minimal_polynomial hβ,
-    
-end
-
+/-- Primitive element theorem for F ⊂ E assuming E is finite. -/
 lemma primitive_element_fin_aux [fintype E] : ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
 begin
     obtain ⟨α, hα⟩ := is_cyclic.exists_generator (units E),
@@ -53,17 +44,29 @@ begin
     },
 end
 
+/-- Primitive element theorem for finite dimensional extension of a finite field. -/
 theorem primitive_element_fin [fintype F] (hE : finite_dimensional F E) :
     ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
 begin
     sorry,
 end
 
---This might end up being changed slightly. At some point we will need to finalize this
-theorem primitive_element_two (α β : E) : separable_extension F E → finite_dimensional F E → 
-    (∃ γ : E, adjoin F E {α, β} = adjoin F E {γ} ) := sorry
+/- Primitive element theorem for infinite fields. -/
 
-private theorem primitive_element_aux (hs : is_separable F E) (hfd: finite_dimensional F E) :
+/-- Primitive element theorem for adjoining two elements to an infinite field. -/
+lemma primitive_element_two_inf  (α β : E) (h_sep : is_separable F E) (hF : infinite F) :
+    ∃ γ, adjoin F E {α, β} = adjoin_simple F E γ :=
+begin
+    -- set f := minimal_polynomial (Exists.some $ h_sep α) with hf,
+    rcases h_sep α with ⟨hα, hf⟩,
+    rcases h_sep β with ⟨hβ, hg⟩,
+    set f := minimal_polynomial hα,
+    set g := minimal_polynomial hβ,
+    sorry,
+end
+
+/-- Primitive element theorem for infinite fields. -/
+theorem primitive_element_inf_aux (hs : is_separable F E) (hfd: finite_dimensional F E) (hF : infinite F) :
      ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F E {α} = (⊤ : set E)) 
 | 0 := sorry
 | 1 := 
@@ -75,4 +78,15 @@ begin
 sorry
 end
 
-theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) : (∃ α : E, adjoin F E {α} = (⊤ : set E)) := primitive_element_aux F E hs hfd (findim F E) rfl
+/-- Primitive element theorem for infinite fields. -/
+theorem primitive_element_inf (hs : is_separable F E) (hfd : finite_dimensional F E) (hF : infinite F) :
+    ∃ α, adjoin_simple F E α = (⊤ : set E) := primitive_element_inf_aux F E hs hfd hF (findim F E) rfl
+
+/-- Primitive element theorem. -/
+theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
+    (∃ α : E, adjoin_simple F E α = (⊤ : set E)) :=
+begin
+    by_cases F_finite : nonempty (fintype F),
+    exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
+    exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
+end
