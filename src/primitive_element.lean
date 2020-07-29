@@ -21,7 +21,13 @@ begin
         exact is_submonoid.pow_mem (is_subfield.inv_mem h), },
 end
 
-lemma primite_element_two_inf (h_sep : is_separable F E) (α β : E) (hE : adjoin F E {α, β} = (⊤ : set E))
+-- Is this in mathlib?
+lemma finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
+begin
+    sorry,
+end
+
+lemma primitive_element_two_inf (h_sep : is_separable F E) (α β : E) (hE : adjoin F E {α, β} = (⊤ : set E))
     (hF : infinite F) : ∃ γ, adjoin_simple F E γ = (⊤ : set E) :=
 begin
     -- set f := minimal_polynomial (Exists.some $ h_sep α) with hf,
@@ -29,7 +35,7 @@ begin
     rcases h_sep β with ⟨hβ, hg⟩,
     set f := minimal_polynomial hα,
     set g := minimal_polynomial hβ,
-    sorry,
+    
 end
 
 lemma primitive_element_fin_aux [fintype E] : ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
