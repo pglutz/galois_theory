@@ -48,7 +48,10 @@ end
 
 lemma algebra_map_gen_equals_alpha : algebra_map (adjoin_simple F E α) E (gen F E α) = α := rfl
 
-noncomputable definition the_map (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
+noncomputable definition adjoin_root_hom_to_E (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* E :=
+adjoin_root.lift (algebra_map F E) α (minimal_polynomial.aeval h)
+
+noncomputable definition adjoin_root_hom_to_adjoin_simple (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
 begin
     have eval := minimal_polynomial.aeval h,
@@ -60,3 +63,19 @@ begin
     ext,
     exact eval,
 end
+
+lemma the_map_image (h : is_integral F α) : set.range (adjoin_root_hom_to_E F E α h) = (adjoin_simple F E α) :=
+begin
+    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ subtype.val '' (set.range (adjoin_root_hom_to_adjoin_simple F E α h)),
+
+end
+
+
+
+lemma the_map_surjective (h : is_integral F α) :
+∀ x : adjoin_simple F E α, ∃ y : (adjoin_root (minimal_polynomial h)), the_map F E α h y = x :=
+begin
+
+end
+
+lemma 
