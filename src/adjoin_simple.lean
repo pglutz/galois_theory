@@ -76,9 +76,19 @@ begin
     rw set.mem_range at hx,
     cases hx with y hy,
     rw ←hy,
-    clear hy,
-    clear x,
-    dsimp[set.image],
-    --use y
-    sorry,
-end 
+    use ⟨algebra_map F E y,adjoin_simple_contains_field F E α y⟩,
+    split,
+    use y,
+    apply adjoin_root.lift_of,
+    refl,
+    intros x hx,
+    rw set.mem_singleton_iff at hx,
+    rw hx,
+    use ⟨α,adjoin_simple_contains_element F E α⟩,
+    split,
+    use adjoin_root.root (minimal_polynomial h),
+    apply adjoin_root.lift_root,
+    refl,
+    --now apply things like field.closure_subset
+    sorry
+end
