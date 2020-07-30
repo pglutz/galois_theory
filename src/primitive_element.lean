@@ -2,6 +2,17 @@ import adjoin_simple
 import separable
 import linear_algebra.finite_dimensional
 
+-- This should go into field_theory/subfield eventually probably
+lemma is_subfield.pow_mem {K : Type*} [field K] {a : K} {n : ℤ} {s : set K} [is_subfield s] (h : a ∈ s) : a ^ n ∈ s :=
+begin
+    by_cases hn : n ≥ 0,
+    {   lift n to ℕ using hn,
+        exact is_submonoid.pow_mem h, },
+    {   rw [(show n = (-1)*(-n), by ring), fpow_mul, fpow_neg a, fpow_one],
+        lift -n to ℕ using (show -n ≥ 0, by linarith),
+        exact is_submonoid.pow_mem (is_subfield.inv_mem h), },
+end
+
 open finite_dimensional
 
 /- Prove the primitive element theorem. -/
@@ -10,28 +21,9 @@ variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
 /- Primitive element theorem for finite fields. -/
 
--- This should go into field_theory/subfield eventually probably
-lemma is_subfield.pow_mem {K : Type*} [field K] {a : K} {n : ℤ} {s : set K} [is_subfield s] (h : a ∈ s) : a ^ n ∈ s :=
-begin
-    by_cases hn : n ≥ 0,
-    {   lift n to ℕ using hn,
-        exact is_submonoid.pow_mem h, },
-    {   rw [(show n = (-1)*(-n), by ring), fpow_mul],
-        lift -n to ℕ using (show -n ≥ 0, by linarith),
-        rw [fpow_neg, fpow_one],
-        exact is_submonoid.pow_mem (is_subfield.inv_mem h), },
-end
-
--- This proof is terrible. It feels like it should be like one line using module.fintype_of_fintype
-noncomputable lemma finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
-begin
-    set s := classical.some (exists_is_basis_finite F E) with hs,
-    have hs' := classical.some_spec (exists_is_basis_finite F E),
-    rw ← hs at hs',
-    cases hs' with s_basis s_finite,
-    have s_fintype : fintype ↥s := set.finite.fintype s_finite,
-    convert @module.fintype_of_fintype s F E (coe : s → E) _ _ _ s_fintype s_basis _,
-end
+-- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
+noncomputable def finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
+    module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
 /-- Primitive element theorem for F ⊂ E assuming E is finite. -/
 lemma primitive_element_fin_aux [fintype E] : ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
