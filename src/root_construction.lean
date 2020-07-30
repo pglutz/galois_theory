@@ -1,5 +1,7 @@
 import adjoin_simple
 import ring_theory.adjoin_root
+import algebra.category.CommRing.basic
+#check ring_equiv.to_Ring_iso
 
 /-   lemma bijective_ring_homorphism_is_an_isomorphism (R:Type*) [ring R] (S:Type*) [ring S] (φ:R→ S)-/
 
@@ -17,3 +19,27 @@ begin
 
 
 end
+
+
+
+
+lemma ring_closure_equals_field_closure (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α): 
+ring.closure (set.range (algebra_map F E) ∪ {α })=adjoin_simple F E α :=
+
+begin
+    have eq_ring_closure:(adjoin_root_hom_to_adjoin_simple F E α h).range=ring.closure (set.range (algebra_map F E) ∪ {α }),
+    /-
+    apply set.eq_of_subset_of_subset,
+    dsimp[adjoin_simple,adjoin],
+    apply field.ring_closure_subset,
+    dsimp[adjoin_simple,adjoin],
+    
+    have is_field: field(ring.closure (set.range ⇑(algebra_map F E) ∪ {α})),
+    -/
+
+
+end
+
+
+
+
