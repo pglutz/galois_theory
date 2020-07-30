@@ -63,31 +63,22 @@ begin
     exact eval,
 end
 
---try not to use this
+--try not to use this (stick with adjoin_root_hom_to_adjoin_simple since that's the important one)
 noncomputable definition adjoin_root_hom_to_E : (adjoin_root (minimal_polynomial h)) →+* E :=
 (algebra_map (adjoin_simple F E α) E).comp(adjoin_root_hom_to_adjoin_simple F E α h)
 
-#check ring_hom.injective (adjoin_root_hom_to_adjoin_simple F E α h)
-
-lemma the_map_image (h : is_integral F α) : function.bijective (adjoin_root_hom_to_adjoin_simple F E α h) :=
+lemma adjoin_root_hom_to_adjoin_simple_surjective (h : is_integral F α) : function.surjective (adjoin_root_hom_to_adjoin_simple F E α h) :=
 begin
-    split,
-    exact ring_hom.injective,
-    have inclusion : ((algebra_map F E).range ∪ {α}) ⊆ subtype.val '' (adjoin_root_hom_to_adjoin_simple F E α h).range,
+    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ subtype.val '' set.range(adjoin_root_hom_to_adjoin_simple F E α h),
     rw set.union_subset_iff,
     split,
     intros x hx,
     rw set.mem_range at hx,
     cases hx with y hy,
     rw ←hy,
-end
-
-
-
-lemma the_map_surjective (h : is_integral F α) :
-∀ x : adjoin_simple F E α, ∃ y : (adjoin_root (minimal_polynomial h)), the_map F E α h y = x :=
-begin
-
-end
-
-lemma 
+    clear hy,
+    clear x,
+    dsimp[set.image],
+    --use y
+    sorry,
+end 
