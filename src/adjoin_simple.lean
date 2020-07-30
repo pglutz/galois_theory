@@ -48,10 +48,9 @@ end
 
 lemma algebra_map_gen_equals_alpha : algebra_map (adjoin_simple F E α) E (gen F E α) = α := rfl
 
-noncomputable definition adjoin_root_hom_to_E (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* E :=
-adjoin_root.lift (algebra_map F E) α (minimal_polynomial.aeval h)
+variables (h : is_integral F α)
 
-noncomputable definition adjoin_root_hom_to_adjoin_simple (h : is_integral F α) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
+noncomputable definition adjoin_root_hom_to_adjoin_simple : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
 begin
     have eval := minimal_polynomial.aeval h,
@@ -64,10 +63,23 @@ begin
     exact eval,
 end
 
-lemma the_map_image (h : is_integral F α) : set.range (adjoin_root_hom_to_E F E α h) = (adjoin_simple F E α) :=
-begin
-    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ subtype.val '' (set.range (adjoin_root_hom_to_adjoin_simple F E α h)),
+--try not to use this
+noncomputable definition adjoin_root_hom_to_E : (adjoin_root (minimal_polynomial h)) →+* E :=
+(algebra_map (adjoin_simple F E α) E).comp(adjoin_root_hom_to_adjoin_simple F E α h)
 
+#check ring_hom.injective (adjoin_root_hom_to_adjoin_simple F E α h)
+
+lemma the_map_image (h : is_integral F α) : function.bijective (adjoin_root_hom_to_adjoin_simple F E α h) :=
+begin
+    split,
+    exact ring_hom.injective,
+    have inclusion : ((algebra_map F E).range ∪ {α}) ⊆ subtype.val '' (adjoin_root_hom_to_adjoin_simple F E α h).range,
+    rw set.union_subset_iff,
+    split,
+    intros x hx,
+    rw set.mem_range at hx,
+    cases hx with y hy,
+    rw ←hy,
 end
 
 
