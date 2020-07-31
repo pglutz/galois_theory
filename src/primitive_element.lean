@@ -26,7 +26,7 @@ noncomputable def finite_of_findim_over_finite [fintype F] (hE : finite_dimensio
     module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
 /-- Primitive element theorem for F ⊂ E assuming E is finite. -/
-lemma primitive_element_fin_aux [fintype E] : ∃ α : E, adjoin_simple F E α = (⊤ : set E) :=
+lemma primitive_element_fin_aux [fintype E] : ∃ α : E, adjoin_simple F α = (⊤ : set E) :=
 begin
     obtain ⟨α, hα⟩ := is_cyclic.exists_generator (units E),
     use α,
@@ -37,19 +37,19 @@ begin
         exact is_add_submonoid.zero_mem, },
     {   obtain ⟨n, hn⟩ := set.mem_range.mp (hα (units.mk0 x hx)),
         rw (show x = (α : E)^n, by norm_cast at *; simp *),
-        exact is_subfield.pow_mem (adjoin_simple_contains_element F E ↑α),
+        exact is_subfield.pow_mem (adjoin_simple_contains_element F ↑α),
     },
 end
 
 /-- Primitive element theorem for finite dimensional extension of a finite field. -/
 theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
-    ∃ α : E, adjoin_simple F E α = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F E hfd)
+    ∃ α : E, adjoin_simple F α = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F E hfd)
 
 /- Primitive element theorem for infinite fields. -/
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
 lemma primitive_element_two_inf  (α β : E) (h_sep : is_separable F E) (hF : infinite F) :
-    ∃ γ, adjoin F E {α, β} = adjoin_simple F E γ :=
+    ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ :=
 begin
     -- set f := minimal_polynomial (Exists.some $ h_sep α) with hf,
     rcases h_sep α with ⟨hα, hf⟩,
@@ -61,7 +61,7 @@ end
 
 /-- Primitive element theorem for infinite fields. -/
 theorem primitive_element_inf_aux (hs : is_separable F E) (hfd: finite_dimensional F E) (hF : infinite F) :
-     ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F E {α} = (⊤ : set E)) 
+     ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F {α} = (⊤ : set E)) 
 | 0 := sorry
 | 1 := 
 begin
@@ -74,11 +74,11 @@ end
 
 /-- Primitive element theorem for infinite fields. -/
 theorem primitive_element_inf (hs : is_separable F E) (hfd : finite_dimensional F E) (hF : infinite F) :
-    ∃ α, adjoin_simple F E α = (⊤ : set E) := primitive_element_inf_aux F E hs hfd hF (findim F E) rfl
+    ∃ α, adjoin_simple F α = (⊤ : set E) := primitive_element_inf_aux F E hs hfd hF (findim F E) rfl
 
 /-- Primitive element theorem. -/
 theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
-    (∃ α : E, adjoin_simple F E α = (⊤ : set E)) :=
+    (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
 begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),

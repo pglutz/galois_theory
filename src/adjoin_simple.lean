@@ -5,12 +5,9 @@ import linear_algebra.finite_dimensional
 import ring_theory.adjoin_root
 import data.zmod.basic
 
-variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E)
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (α : E)
 
---generator of F(α)
-definition gen : (adjoin_simple F E α) := ⟨α, adjoin_simple_contains_element F E α⟩
-
-lemma zero_less_than_minimal_polynomial_degree (h : is_integral F α) :
+/-lemma zero_less_than_minimal_polynomial_degree (h : is_integral F α) :
 0 < (minimal_polynomial h).nat_degree :=
 begin
     by_contradiction,
@@ -38,40 +35,34 @@ end
 example (n : ℕ) : α^n ∈ adjoin_simple F E α :=
 begin
     exact is_submonoid.pow_mem (adjoin_simple_contains_element F E α),
-end
-
-lemma algebra_map_composition : (algebra_map F E) = (algebra_map (adjoin_simple F E α) E).comp (algebra_map F (adjoin_simple F E α)) :=
-begin
-    ext,
-    refl,
-end
-
-lemma algebra_map_gen_equals_alpha : algebra_map (adjoin_simple F E α) E (gen F E α) = α := rfl
+end-/
 
 variables (h : is_integral F α)
 
 noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
 @adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
 
-noncomputable definition adjoin_root_hom_to_adjoin_simple : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
-adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
+noncomputable definition adjoin_root_hom_to_adjoin_simple : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α) :=
+adjoin_root.lift (algebra_map F (adjoin_simple F α)) (adjoin_simple.gen F α)
 begin
     have eval := minimal_polynomial.aeval h,
     dsimp[polynomial.aeval] at eval,
-    rw algebra_map_composition F E α at eval,
-    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F E α)) (algebra_map (adjoin_simple F E α) E) (gen F E α),
-    rw algebra_map_gen_equals_alpha at h,
+    rw adjoin_simple.composition F α at eval,
+    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F α)) (algebra_map (adjoin_simple F α) E) (adjoin_simple.gen F α),
+    rw adjoin_simple.gen_eq_alpha at h,
     rw ←h at eval,
     ext,
     exact eval,
 end
 
 noncomputable definition adjoin_root_hom_to_E : (adjoin_root (minimal_polynomial h)) →+* E :=
-(algebra_map (adjoin_simple F E α) E).comp(adjoin_root_hom_to_adjoin_simple F E α h)
+(algebra_map (adjoin_simple F α) E).comp(adjoin_root_hom_to_adjoin_simple F α h)
 
-lemma adjoin_root_hom_to_adjoin_simple_surjective (h : is_integral F α) : function.surjective (adjoin_root_hom_to_adjoin_simple F E α h) :=
+lemma adjoin_root_hom_to_adjoin_simple_bijective (h : is_integral F α) : function.bijective (adjoin_root_hom_to_adjoin_simple F α h) :=
 begin
-    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(adjoin_root_hom_to_E F E α h),
+    split,
+    apply ring_hom.injective,
+    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(adjoin_root_hom_to_E F α h),
     rw set.union_subset_iff,
     split,
     intros x hx,
@@ -89,7 +80,7 @@ begin
     dsimp[adjoin_root_hom_to_E,adjoin_root_hom_to_adjoin_simple],
     rw adjoin_root.lift_root,
     refl,
-    have key : (adjoin_simple F E α) ⊆ set.range(adjoin_root_hom_to_E F E α h) := field.closure_subset inclusion,
+    have key : (adjoin_simple F α) ⊆ set.range(adjoin_root_hom_to_E F α h) := field.closure_subset inclusion,
     intro x,
     specialize key (subtype.mem x),
     cases key with a ah,
@@ -97,3 +88,9 @@ begin
     ext1,
     assumption,
 end
+
+noncomputable def ring_equiv_of_bij_hom {A : Type*} [ring A] {B : Type*} [ring B] (f : A →+* B) (h : function.bijective f) : A ≃+* B :=
+{ .. f, .. equiv.of_bijective _ h }
+
+noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃+* adjoin_simple F α :=
+ring_equiv_of_bij_hom (adjoin_root_hom_to_adjoin_simple F α h) (adjoin_root_hom_to_adjoin_simple_bijective F α h)
