@@ -1,4 +1,4 @@
-import adjoin_simple
+import adjoin
 import ring_theory.adjoin_root
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (hα : is_integral F α)

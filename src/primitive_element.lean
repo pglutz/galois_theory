@@ -1,4 +1,4 @@
-import adjoin_simple
+import adjoin
 import separable
 import linear_algebra.finite_dimensional
 
@@ -46,6 +46,10 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
     ∃ α : E, adjoin_simple F α = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F E hfd)
 
 /- Primitive element theorem for infinite fields. -/
+
+--Milne's version
+lemma primitive_element_two_inf_milne (α β : E) (hα : element_is_separable F α) (hF : infinite F) :
+    ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ := sorry
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
 lemma primitive_element_two_inf  (α β : E) (h_sep : is_separable F E) (hF : infinite F) :
