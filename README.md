@@ -8,3 +8,5 @@ Work in progress:
 Things to do:
 
 - classifying maps L[\alpha] \to F/E
+
+- statement of parts of the Galois correspondence
