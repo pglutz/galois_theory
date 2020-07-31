@@ -42,7 +42,7 @@ variables (h : is_integral F α)
 noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
 @adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
 
-noncomputable definition adjoin_root_hom_to_adjoin_simple : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α) :=
+noncomputable definition quotient_to_adjunction_hom : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F α)) (adjoin_simple.gen F α)
 begin
     have eval := minimal_polynomial.aeval h,
@@ -55,14 +55,14 @@ begin
     exact eval,
 end
 
-noncomputable definition adjoin_root_hom_to_E : (adjoin_root (minimal_polynomial h)) →+* E :=
-(algebra_map (adjoin_simple F α) E).comp(adjoin_root_hom_to_adjoin_simple F α h)
+noncomputable definition quotient_to_field_hom : (adjoin_root (minimal_polynomial h)) →+* E :=
+(algebra_map (adjoin_simple F α) E).comp(quotient_to_adjunction_hom F α h)
 
-lemma adjoin_root_hom_to_adjoin_simple_bijective (h : is_integral F α) : function.bijective (adjoin_root_hom_to_adjoin_simple F α h) :=
+lemma quotient_to_adjunction_hom_bijective (h : is_integral F α) : function.bijective (quotient_to_adjunction_hom F α h) :=
 begin
     split,
     apply ring_hom.injective,
-    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(adjoin_root_hom_to_E F α h),
+    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(quotient_to_field_hom F α h),
     rw set.union_subset_iff,
     split,
     intros x hx,
@@ -70,17 +70,17 @@ begin
     cases hx with y hy,
     rw ←hy,
     use y,
-    dsimp[adjoin_root_hom_to_E,adjoin_root_hom_to_adjoin_simple],
+    dsimp[quotient_to_field_hom,quotient_to_adjunction_hom],
     rw adjoin_root.lift_of,
     refl,
     intros x hx,
     rw set.mem_singleton_iff at hx,
     rw hx,
     use adjoin_root.root (minimal_polynomial h),
-    dsimp[adjoin_root_hom_to_E,adjoin_root_hom_to_adjoin_simple],
+    dsimp[quotient_to_field_hom,quotient_to_adjunction_hom],
     rw adjoin_root.lift_root,
     refl,
-    have key : (adjoin_simple F α) ⊆ set.range(adjoin_root_hom_to_E F α h) := field.closure_subset inclusion,
+    have key : (adjoin_simple F α) ⊆ set.range(quotient_to_field_hom F α h) := field.closure_subset inclusion,
     intro x,
     specialize key (subtype.mem x),
     cases key with a ah,
@@ -93,4 +93,4 @@ noncomputable def ring_equiv_of_bij_hom {A : Type*} [ring A] {B : Type*} [ring B
 { .. f, .. equiv.of_bijective _ h }
 
 noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃+* adjoin_simple F α :=
-ring_equiv_of_bij_hom (adjoin_root_hom_to_adjoin_simple F α h) (adjoin_root_hom_to_adjoin_simple_bijective F α h)
+ring_equiv_of_bij_hom (quotient_to_adjunction_hom F α h) (quotient_to_adjunction_hom_bijective F α h)
