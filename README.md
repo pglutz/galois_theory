@@ -7,6 +7,6 @@ Work in progress:
 
 Things to do:
 
-- classifying maps L[\alpha] \to F/E
+- classifying maps F(a) -> E in terms of roots of the minimal polynomial of a in E
 
 - statement of parts of the Galois correspondence
