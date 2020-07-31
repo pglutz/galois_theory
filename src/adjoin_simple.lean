@@ -50,6 +50,9 @@ lemma algebra_map_gen_equals_alpha : algebra_map (adjoin_simple F E α) E (gen F
 
 variables (h : is_integral F α)
 
+noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
+@adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
+
 noncomputable definition adjoin_root_hom_to_adjoin_simple : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F E α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F E α)) (gen F E α)
 begin
@@ -63,32 +66,33 @@ begin
     exact eval,
 end
 
---try not to use this (stick with adjoin_root_hom_to_adjoin_simple since that's the important one)
 noncomputable definition adjoin_root_hom_to_E : (adjoin_root (minimal_polynomial h)) →+* E :=
 (algebra_map (adjoin_simple F E α) E).comp(adjoin_root_hom_to_adjoin_simple F E α h)
 
 lemma adjoin_root_hom_to_adjoin_simple_surjective (h : is_integral F α) : function.surjective (adjoin_root_hom_to_adjoin_simple F E α h) :=
 begin
-    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ subtype.val '' set.range(adjoin_root_hom_to_adjoin_simple F E α h),
+    have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(adjoin_root_hom_to_E F E α h),
     rw set.union_subset_iff,
     split,
     intros x hx,
     rw set.mem_range at hx,
     cases hx with y hy,
     rw ←hy,
-    use ⟨algebra_map F E y,adjoin_simple_contains_field F E α y⟩,
-    split,
     use y,
-    apply adjoin_root.lift_of,
+    dsimp[adjoin_root_hom_to_E,adjoin_root_hom_to_adjoin_simple],
+    rw adjoin_root.lift_of,
     refl,
     intros x hx,
     rw set.mem_singleton_iff at hx,
     rw hx,
-    use ⟨α,adjoin_simple_contains_element F E α⟩,
-    split,
     use adjoin_root.root (minimal_polynomial h),
-    apply adjoin_root.lift_root,
+    dsimp[adjoin_root_hom_to_E,adjoin_root_hom_to_adjoin_simple],
+    rw adjoin_root.lift_root,
     refl,
-    --now apply things like field.closure_subset
-    sorry
+    have key : (adjoin_simple F E α) ⊆ set.range(adjoin_root_hom_to_E F E α h) := field.closure_subset inclusion,
+    intro x,
+    specialize key (subtype.mem x),
+    cases key with a ah,
+    use a,
+    sorry,
 end
