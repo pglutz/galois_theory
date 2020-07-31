@@ -9,7 +9,7 @@ import data.zmod.basic
 
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E)
 
-definition adjoin : set E :=
+def adjoin : set E :=
 field.closure (set.range (algebra_map F E) ∪ S)
 
 lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F S) :=
@@ -73,7 +73,7 @@ instance adjoin.is_algebra : algebra F (adjoin F S) := {
 
 variables (α : E) (h : is_integral F α)
 
-definition adjoin_simple : set E := adjoin F {α}
+def adjoin_simple : set E := adjoin F {α}
 
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
 adjoin_contains_field F {α} x
@@ -91,7 +91,7 @@ instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
 adjoin.is_algebra F {α}
 
 --generator of F(α)
-definition adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩
+def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩
 
 lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_simple.gen F α) = α := rfl
 
@@ -107,8 +107,7 @@ noncomputable def quotient_embedding_ring_hom :
 (adjoin_root (minimal_polynomial h)) →+* E' :=
 adjoin_root.lift (algebra_map F E') α' hα'
 
-noncomputable def quotient_embedding :
-(adjoin_root (minimal_polynomial h)) →ₐ[F] E' := {
+noncomputable def quotient_embedding : (adjoin_root (minimal_polynomial h)) →ₐ[F] E' := {
     to_fun := (quotient_embedding_ring_hom F α h α' hα').to_fun,
     map_one' := (quotient_embedding_ring_hom F α h α' hα').map_one',
     map_mul' := (quotient_embedding_ring_hom F α h α' hα').map_mul',
@@ -137,7 +136,7 @@ end
 noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
 @adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
 
-lemma eval_gen : polynomial.eval₂ (algebra_map F ↥(adjoin_simple F α)) (adjoin_simple.gen F α) (minimal_polynomial h) = 0 :=
+lemma adjoin_simple.eval_gen : polynomial.eval₂ (algebra_map F ↥(adjoin_simple F α)) (adjoin_simple.gen F α) (minimal_polynomial h) = 0 :=
 begin
     ext,
     have eval := minimal_polynomial.aeval h,
@@ -149,8 +148,8 @@ begin
     exact eval,
 end
 
-noncomputable definition quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) :=
-quotient_embedding F α h (adjoin_simple.gen F α) (eval_gen F α h)
+noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) :=
+quotient_embedding F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
 
 
 noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
@@ -171,14 +170,14 @@ begin
     rw ←hy,
     use y,
     dsimp[f,quotient_to_adjunction_algebra_hom],
-    rw quotient_embedding_of_field F α h (adjoin_simple.gen F α) (eval_gen F α h) y,
+    rw quotient_embedding_of_field F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h) y,
     refl,
     intros x hx,
     rw set.mem_singleton_iff at hx,
     rw hx,
     use adjoin_root.root (minimal_polynomial h),
     dsimp[f,quotient_to_adjunction_algebra_hom],
-    rw quotient_embedding_of_root F α h (adjoin_simple.gen F α) (eval_gen F α h),
+    rw quotient_embedding_of_root F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h),
     refl,
     have key : (adjoin_simple F α) ⊆ set.range(f) := field.closure_subset inclusion,
     intro x,
@@ -190,7 +189,26 @@ begin
 end
 
 @[simp] lemma quotient_to_adjunction_of_field (f : F) : quotient_to_adjunction F α h f = f :=
-quotient_embedding_of_field F α h (adjoin_simple.gen F α) (eval_gen F α h) f
+quotient_embedding_of_field F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h) f
 
 @[simp] lemma quotient_to_adjunction_of_root : quotient_to_adjunction F α h (adjoin_root.root (minimal_polynomial h)) = adjoin_simple.gen F α :=
-quotient_embedding_of_root F α h (adjoin_simple.gen F α) (eval_gen F α h)
+quotient_embedding_of_root F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
+
+noncomputable def adjunction_embedding : (adjoin_simple F α) →ₐ[F] E' :=
+(quotient_embedding F α h α' hα').comp((quotient_to_adjunction F α h).symm)
+
+@[simp] lemma adjunction_embedding_of_field (f : F) : adjunction_embedding F α h α' hα' f = algebra_map F E' f :=
+begin
+    dsimp[adjunction_embedding],
+    rw ←quotient_to_adjunction_of_field,
+    rw alg_equiv.symm_apply_apply,
+    rw quotient_embedding_of_field,
+end
+
+@[simp] lemma adjunction_embedding_of_root : adjunction_embedding F α h α' hα' (adjoin_simple.gen F α) = α' :=
+begin
+    dsimp[adjunction_embedding],
+    rw ←quotient_to_adjunction_of_root,
+    rw alg_equiv.symm_apply_apply,
+    rw quotient_embedding_of_root,
+end
