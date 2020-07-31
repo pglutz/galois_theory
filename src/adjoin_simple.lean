@@ -94,5 +94,6 @@ begin
     specialize key (subtype.mem x),
     cases key with a ah,
     use a,
-    sorry,
+    ext1,
+    assumption,
 end
