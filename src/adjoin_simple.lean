@@ -67,7 +67,11 @@ noncomputable definition quotient_to_adjunction_hom : (adjoin_root (minimal_poly
     end
 }
 
-lemma quotient_to_adjunction_hom_bijective (h : is_integral F α) : function.bijective (quotient_to_adjunction_hom F α h) :=
+noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
+{ .. f, .. equiv.of_bijective _ h }
+
+noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α :=
+algebra_equiv_of_bij_hom F (quotient_to_adjunction_hom F α h)
 begin
     set f := (algebra_map (adjoin_simple F α) E).comp (quotient_to_adjunction_hom_aux F α h),
     split,
@@ -99,18 +103,36 @@ begin
     assumption,
 end
 
-noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
-{ .. f, .. equiv.of_bijective _ h }
-
-noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α :=
-algebra_equiv_of_bij_hom F (quotient_to_adjunction_hom F α h) (quotient_to_adjunction_hom_bijective F α h)
+lemma quotient_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
+begin
+    sorry
+end
 
 lemma quotient_degree : (finite_dimensional.findim F (adjoin_root (minimal_polynomial h))) = (minimal_polynomial h).nat_degree :=
 begin
     sorry
 end
 
+lemma adjunction_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
+begin
+    sorry
+end
+
 lemma adjunction_degree : (finite_dimensional.findim F (adjoin_simple F α)) = (minimal_polynomial h).nat_degree :=
 begin
-    sorry,
+    have algequiv : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α := quotient_to_adjunction F α h,
+    have linequiv : adjoin_root (minimal_polynomial h) ≃ₗ[F] adjoin_simple F α,
+    fconstructor,
+    exact algequiv.to_fun,
+    exact algequiv.map_add,
+    intro c,
+    intro x,
+    change algequiv (c * x) = ((algebra_map F (adjoin_simple F α) c) * (algequiv x)),
+    rw[algequiv.map_mul,←algequiv.commutes],
+    refl,
+    exact algequiv.inv_fun,
+    exact algequiv.left_inv,
+    exact algequiv.right_inv,
+    rw ← @linear_equiv.findim_eq F (adjoin_root (minimal_polynomial h)) _ _ _ (adjoin_simple F α) _ _ linequiv (quotient_degree_finite F α h),
+    exact quotient_degree F α h,
 end
