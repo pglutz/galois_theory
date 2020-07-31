@@ -16,6 +16,9 @@ begin
     exact set.mem_range_self x,
 end
 
+instance : has_coe_t F (adjoin F S) :=
+{coe := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩}
+
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
 begin
     apply field.mem_closure,
@@ -71,6 +74,9 @@ definition adjoin_simple : set E := adjoin F {α}
 
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
 adjoin_contains_field F {α} x
+
+instance : has_coe_t F (adjoin_simple F α) :=
+{coe := λ x, ⟨algebra_map F E x, adjoin_simple_contains_field F α x⟩}
 
 lemma adjoin_simple_contains_element : α ∈ adjoin_simple F α :=
 adjoin_contains_element F {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))

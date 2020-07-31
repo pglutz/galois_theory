@@ -15,7 +15,7 @@ theorem adjunction_equiv_to_quotient  (F : Type*) [field F] (E : Type*) [field E
 begin
     let f:=minimal_polynomial h,
     use f,
-    use quotient_to_adjunction_hom F α h,
+    use quotient_to_adjunction F α h,
     split,
     exact minimal_polynomial.irreducible h,
     sorry

@@ -40,7 +40,7 @@ end-/
 noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
 @adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
 
-noncomputable definition quotient_to_adjunction_hom_aux : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α) :=
+noncomputable definition quotient_to_adjunction_ring_hom : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α) :=
 adjoin_root.lift (algebra_map F (adjoin_simple F α)) (adjoin_simple.gen F α)
 begin
     have eval := minimal_polynomial.aeval h,
@@ -53,16 +53,16 @@ begin
     exact eval,
 end
 
-noncomputable definition quotient_to_adjunction_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) := {
-    to_fun := (quotient_to_adjunction_hom_aux F α h).to_fun,
-    map_one' := (quotient_to_adjunction_hom_aux F α h).map_one',
-    map_mul' := (quotient_to_adjunction_hom_aux F α h).map_mul',
-    map_zero' := (quotient_to_adjunction_hom_aux F α h).map_zero',
-    map_add' := (quotient_to_adjunction_hom_aux F α h).map_add',
+noncomputable definition quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) := {
+    to_fun := (quotient_to_adjunction_ring_hom F α h).to_fun,
+    map_one' := (quotient_to_adjunction_ring_hom F α h).map_one',
+    map_mul' := (quotient_to_adjunction_ring_hom F α h).map_mul',
+    map_zero' := (quotient_to_adjunction_ring_hom F α h).map_zero',
+    map_add' := (quotient_to_adjunction_ring_hom F α h).map_add',
     commutes' :=
     begin
         intro r,
-        change (quotient_to_adjunction_hom_aux F α h) r = _,
+        change (quotient_to_adjunction_ring_hom F α h) r = _,
         exact adjoin_root.lift_of,
     end
 }
@@ -71,9 +71,9 @@ noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B
 { .. f, .. equiv.of_bijective _ h }
 
 noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α :=
-algebra_equiv_of_bij_hom F (quotient_to_adjunction_hom F α h)
+algebra_equiv_of_bij_hom F (quotient_to_adjunction_algebra_hom F α h)
 begin
-    set f := (algebra_map (adjoin_simple F α) E).comp (quotient_to_adjunction_hom_aux F α h),
+    set f := (algebra_map (adjoin_simple F α) E).comp (quotient_to_adjunction_ring_hom F α h),
     split,
     apply ring_hom.injective,
     have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(f),
@@ -84,14 +84,14 @@ begin
     cases hx with y hy,
     rw ←hy,
     use y,
-    dsimp[quotient_to_adjunction_hom,quotient_to_adjunction_hom_aux],
+    dsimp[quotient_to_adjunction_algebra_hom,quotient_to_adjunction_ring_hom],
     rw adjoin_root.lift_of,
     refl,
     intros x hx,
     rw set.mem_singleton_iff at hx,
     rw hx,
     use adjoin_root.root (minimal_polynomial h),
-    dsimp[quotient_to_adjunction_hom,quotient_to_adjunction_hom_aux],
+    dsimp[quotient_to_adjunction_algebra_hom,quotient_to_adjunction_ring_hom],
     rw adjoin_root.lift_root,
     refl,
     have key : (adjoin_simple F α) ⊆ set.range(f) := field.closure_subset inclusion,
@@ -101,6 +101,18 @@ begin
     use a,
     ext1,
     assumption,
+end
+
+@[simp] lemma quotient_to_adjunction_of_field (f : F) : quotient_to_adjunction F α h f = f :=
+begin
+    change quotient_to_adjunction_ring_hom F α h f = f,
+    exact adjoin_root.lift_of,
+end
+
+@[simp] lemma quotient_to_adjunction_of_root : quotient_to_adjunction F α h (adjoin_root.root (minimal_polynomial h)) = adjoin_simple.gen F α :=
+begin
+    change quotient_to_adjunction_ring_hom F α h (adjoin_root.root (minimal_polynomial h)) = adjoin_simple.gen F α,
+    exact adjoin_root.lift_root,
 end
 
 lemma quotient_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
