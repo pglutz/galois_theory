@@ -19,7 +19,7 @@ begin
     exact set.mem_range_self x,
 end
 
-instance : has_coe_t F (adjoin F S) :=
+instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩}
 
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
@@ -28,6 +28,9 @@ begin
     right,
     exact subtype.mem x,
 end
+
+instance adjoin.set_coe : has_coe_t S (adjoin F S) :=
+{coe := λ x, ⟨↑x, adjoin_contains_element F S x⟩}
 
 instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
 
@@ -213,7 +216,121 @@ begin
     rw quotient_embedding_of_root,
 end
 
-variable (ι : (adjoin_simple F α) →ₐ[F] E')
+variables (ϕ ψ : (adjoin F S) →+* E')
+
+def adjoin_equalizer : set (adjoin F S) :=
+(λ f, ϕ f = ψ f)
+
+instance to_adjunction_embedding_equalizer_is_subfield : is_subfield (adjoin_equalizer F S ϕ ψ) := {
+    zero_mem :=
+    begin
+        change ϕ 0 = ψ 0,
+        rw ring_hom.map_zero,
+        rw ring_hom.map_zero,
+    end,
+    add_mem :=
+    begin
+        intros a b ha hb,
+        change ϕ a = ψ a at ha,
+        change ϕ b = ψ b at hb,
+        change ϕ (a + b) = ψ (a + b),
+        rw ring_hom.map_add,
+        rw ring_hom.map_add,
+        rw ha,
+        rw hb,
+    end,
+    neg_mem :=
+    begin
+        intros a ha,
+        change ϕ a = ψ a at ha,
+        change ϕ (-a) = ψ (-a),
+        rw ring_hom.map_neg,
+        rw ring_hom.map_neg,
+        rw ha,
+    end,
+    one_mem :=
+    begin
+        change ϕ 1 = ψ 1,
+        rw ring_hom.map_one,
+        rw ring_hom.map_one,
+    end,
+    mul_mem :=
+    begin
+        intros a b ha hb,
+        change ϕ a = ψ a at ha,
+        change ϕ b = ψ b at hb,
+        change ϕ (a * b) = ψ (a * b),
+        rw ring_hom.map_mul,
+        rw ring_hom.map_mul,
+        rw ha,
+        rw hb,
+    end,
+    inv_mem :=
+    begin
+        intros a ha,
+        change ϕ a = ψ a at ha,
+        change ϕ a⁻¹ = ψ a⁻¹,
+        rw ring_hom.map_inv,
+        rw ring_hom.map_inv,
+        rw ha,
+    end
+}
+
+instance to_adjunction_embedding_equalizer_is_subfield_again : is_subfield ((coe '' adjoin_equalizer F S ϕ ψ) : set E) := {
+    zero_mem := ⟨0,⟨is_add_submonoid.zero_mem,rfl⟩⟩,
+    add_mem :=
+    begin
+        intros a b ha hb,
+        cases ha with a' ha',
+        cases hb with b' hb',
+        rw[←ha'.2,←hb'.2],
+        exact ⟨a'+b',⟨is_add_submonoid.add_mem ha'.1 hb'.1,rfl⟩⟩,
+    end,
+    neg_mem :=
+    begin
+        intros a ha,
+        cases ha with a' ha',
+        rw ←ha'.2,
+        exact ⟨-a',⟨is_add_subgroup.neg_mem ha'.1,rfl⟩⟩,
+    end,
+    one_mem := ⟨1,⟨is_submonoid.one_mem,rfl⟩⟩,
+    mul_mem :=
+    begin
+        intros a b ha hb,
+        cases ha with a' ha',
+        cases hb with b' hb',
+        rw[←ha'.2,←hb'.2],
+        exact ⟨a'*b',⟨is_submonoid.mul_mem ha'.1 hb'.1,rfl⟩⟩,
+    end,
+    inv_mem :=
+    begin
+        intros a ha,
+        cases ha with a' ha',
+        rw ←ha'.2,
+        exact ⟨a'⁻¹,⟨is_subfield.inv_mem ha'.1,rfl⟩⟩,
+    end
+}
+
+lemma ring_hom_determined_by_generators (hF : ∀ f : F, ϕ f = ψ f) (hS : ∀ s : S, ϕ s = ψ s) : ϕ = ψ :=
+begin
+    suffices key : adjoin F S ⊆ coe '' adjoin_equalizer F S ϕ ψ,
+    ext,
+    specialize key (subtype.mem x),
+    cases key with y hy,
+    rw ←subtype.ext hy.2,
+    exact hy.1,
+    dsimp[adjoin],
+    rw field.closure_subset_iff,
+    rw set.union_subset_iff,
+    split,
+    intros x hx,
+    cases hx with y hy,
+    exact ⟨↑y,⟨hF y,hy⟩⟩,
+    intros x hx,
+    exact ⟨⟨x,adjoin_contains_element F S ⟨x,hx⟩⟩,⟨hS ⟨x,hx⟩,rfl⟩⟩,
+end
+
+variable (ι : (adjoin_simple F α) →ₐ[F] E') 
 
 lemma adjunction_embedding_classification_aux : polynomial.eval₂ (algebra_map F E') (ι (adjoin_simple.gen F α)) (minimal_polynomial h) = 0 :=
 begin
@@ -230,66 +347,25 @@ end
 noncomputable def to_adjunction_embedding : (adjoin_simple F α →ₐ[F] E') :=
 adjunction_embedding F α h (ι (adjoin_simple.gen F α)) (adjunction_embedding_classification_aux F α h ι)
 
-def to_adjunction_embedding_equalizer : set (adjoin_simple F α) :=
-(λ f, ι f = to_adjunction_embedding F α h ι f)
-
-instance to_adjunction_embedding_equalizer_is_subfield : is_subfield (to_adjunction_embedding_equalizer F α h ι) := {
-    zero_mem :=
-    begin
-        change ι 0 = to_adjunction_embedding F α h ι 0,
-        rw alg_hom.map_zero,
-        rw alg_hom.map_zero,
-    end,
-    add_mem :=
-    begin
-        intros a b ha hb,
-        change ι a = to_adjunction_embedding F α h ι a at ha,
-        change ι b = to_adjunction_embedding F α h ι b at hb,
-        change ι (a + b) = to_adjunction_embedding F α h ι (a + b),
-        rw alg_hom.map_add,
-        rw alg_hom.map_add,
-        rw ha,
-        rw hb,
-    end,
-    neg_mem :=
-    begin
-        intros a ha,
-        change ι a = to_adjunction_embedding F α h ι a at ha,
-        change ι (-a) = to_adjunction_embedding F α h ι (-a),
-        rw alg_hom.map_neg,
-        rw alg_hom.map_neg,
-        rw ha,
-    end,
-    one_mem :=
-    begin
-        change ι 1 = to_adjunction_embedding F α h ι 1,
-        rw alg_hom.map_one,
-        rw alg_hom.map_one,
-    end,
-    mul_mem :=
-    begin
-        intros a b ha hb,
-        change ι a = to_adjunction_embedding F α h ι a at ha,
-        change ι b = to_adjunction_embedding F α h ι b at hb,
-        change ι (a * b) = to_adjunction_embedding F α h ι (a * b),
-        rw alg_hom.map_mul,
-        rw alg_hom.map_mul,
-        rw ha,
-        rw hb,
-    end,
-    inv_mem :=
-    begin
-        intros a ha,
-        change (ι : (adjoin_simple F α) →+* E') a = (to_adjunction_embedding F α h ι : (adjoin_simple F α) →+* E') a at ha,
-        change (ι : (adjoin_simple F α) →+* E') a⁻¹ = (to_adjunction_embedding F α h ι : (adjoin_simple F α) →+* E') a⁻¹,
-        rw ring_hom.map_inv,
-        rw ring_hom.map_inv,
-        rw ha,
-    end
-}
-
 --proves that every map F(α) → E' is comes from adjunction_embedding
 lemma adjunction_embedding_classification : ι = to_adjunction_embedding F α h ι :=
 begin
-    
+    have key := ring_hom_determined_by_generators F {α} (ι : adjoin_simple F α →+* E') (to_adjunction_embedding F α h ι : adjoin_simple F α →+* E'),
+    have hF : ∀ f : F, ι f = to_adjunction_embedding F α h ι f,
+    intro f,
+    dsimp[to_adjunction_embedding],
+    rw adjunction_embedding_of_field,
+    exact alg_hom.commutes ι f,
+    specialize key hF,
+    rw ring_hom.ext_iff at key,
+    rw alg_hom.ext_iff,
+    apply key,
+    intro s,
+    have h' : (↑s : adjoin F {α}) = adjoin_simple.gen F α,
+    ext,
+    cases s with s hs,
+    exact set.mem_singleton_iff.2 hs,
+    rw h',
+    dsimp[to_adjunction_embedding],
+    rw adjunction_embedding_of_root,
 end
