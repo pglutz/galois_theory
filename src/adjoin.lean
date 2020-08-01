@@ -212,3 +212,84 @@ begin
     rw alg_equiv.symm_apply_apply,
     rw quotient_embedding_of_root,
 end
+
+variable (ι : (adjoin_simple F α) →ₐ[F] E')
+
+lemma adjunction_embedding_classification_aux : polynomial.eval₂ (algebra_map F E') (ι (adjoin_simple.gen F α)) (minimal_polynomial h) = 0 :=
+begin
+    have key2 : ((ι : adjoin_simple F α →+* E').comp(algebra_map F (adjoin_simple F α)) = algebra_map F E'),
+    ext,
+    simp only [alg_hom.coe_to_ring_hom, function.comp_app, ring_hom.coe_comp, alg_hom.commutes],
+    rw ←key2,
+    change polynomial.eval₂ ((ι : adjoin_simple F α →+* E').comp(algebra_map F (adjoin_simple F α))) ((ι : adjoin_simple F α →+* E') (adjoin_simple.gen F α)) (minimal_polynomial h) = 0,
+    rw ←polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F α)) (ι : adjoin_simple F α →+* E') (adjoin_simple.gen F α),
+    rw adjoin_simple.eval_gen,
+    simp only [alg_hom.coe_to_ring_hom, alg_hom.map_zero],
+end
+
+noncomputable def to_adjunction_embedding : (adjoin_simple F α →ₐ[F] E') :=
+adjunction_embedding F α h (ι (adjoin_simple.gen F α)) (adjunction_embedding_classification_aux F α h ι)
+
+def to_adjunction_embedding_equalizer : set (adjoin_simple F α) :=
+(λ f, ι f = to_adjunction_embedding F α h ι f)
+
+instance to_adjunction_embedding_equalizer_is_subfield : is_subfield (to_adjunction_embedding_equalizer F α h ι) := {
+    zero_mem :=
+    begin
+        change ι 0 = to_adjunction_embedding F α h ι 0,
+        rw alg_hom.map_zero,
+        rw alg_hom.map_zero,
+    end,
+    add_mem :=
+    begin
+        intros a b ha hb,
+        change ι a = to_adjunction_embedding F α h ι a at ha,
+        change ι b = to_adjunction_embedding F α h ι b at hb,
+        change ι (a + b) = to_adjunction_embedding F α h ι (a + b),
+        rw alg_hom.map_add,
+        rw alg_hom.map_add,
+        rw ha,
+        rw hb,
+    end,
+    neg_mem :=
+    begin
+        intros a ha,
+        change ι a = to_adjunction_embedding F α h ι a at ha,
+        change ι (-a) = to_adjunction_embedding F α h ι (-a),
+        rw alg_hom.map_neg,
+        rw alg_hom.map_neg,
+        rw ha,
+    end,
+    one_mem :=
+    begin
+        change ι 1 = to_adjunction_embedding F α h ι 1,
+        rw alg_hom.map_one,
+        rw alg_hom.map_one,
+    end,
+    mul_mem :=
+    begin
+        intros a b ha hb,
+        change ι a = to_adjunction_embedding F α h ι a at ha,
+        change ι b = to_adjunction_embedding F α h ι b at hb,
+        change ι (a * b) = to_adjunction_embedding F α h ι (a * b),
+        rw alg_hom.map_mul,
+        rw alg_hom.map_mul,
+        rw ha,
+        rw hb,
+    end,
+    inv_mem :=
+    begin
+        intros a ha,
+        change (ι : (adjoin_simple F α) →+* E') a = (to_adjunction_embedding F α h ι : (adjoin_simple F α) →+* E') a at ha,
+        change (ι : (adjoin_simple F α) →+* E') a⁻¹ = (to_adjunction_embedding F α h ι : (adjoin_simple F α) →+* E') a⁻¹,
+        rw ring_hom.map_inv,
+        rw ring_hom.map_inv,
+        rw ha,
+    end
+}
+
+--proves that every map F(α) → E' is comes from adjunction_embedding
+lemma adjunction_embedding_classification : ι = to_adjunction_embedding F α h ι :=
+begin
+    
+end
