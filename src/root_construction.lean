@@ -1,9 +1,18 @@
 import adjoin_simple
 import ring_theory.adjoin_root
 import algebra.category.CommRing.basic
-#check ring_equiv.to_Ring_iso
-
+import data.equiv.basic
 /-   lemma bijective_ring_homorphism_is_an_isomorphism (R:Type*) [ring R] (S:Type*) [ring S] (φ:R→ S)-/
+
+
+
+variables {A : Type*} [ring A]
+variables {B : Type*} [ring B]
+
+noncomputable def ring_equiv_of_bij_hom (f : A →+* B) (h : function.bijective f) : A ≃+* B :=
+{ map_mul' := by apply ring_hom.map_mul,
+  map_add' := by apply ring_hom.map_add,
+  ..show A ≃ B, by exact equiv.of_bijective _ h }
 
 theorem adjunction_equiv_to_quotient  (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α): 
 ∃ (f:polynomial F) (hom: (adjoin_root f) →+* (adjoin_simple F E α )), 
@@ -11,10 +20,11 @@ theorem adjunction_equiv_to_quotient  (F : Type*) [field F] (E : Type*) [field E
 begin
     let f:=minimal_polynomial h,
     use f,
-    use the_map F E α h,
+    use adjoin_root_hom_to_adjoin_simple F E α h,
     split,
     exact minimal_polynomial.irreducible h,
     sorry
+    
     
 
 
@@ -27,7 +37,8 @@ lemma ring_closure_equals_field_closure (F : Type*) [field F] (E : Type*) [field
 ring.closure (set.range (algebra_map F E) ∪ {α })=adjoin_simple F E α :=
 
 begin
-    have eq_ring_closure:(adjoin_root_hom_to_adjoin_simple F E α h).range=ring.closure (set.range (algebra_map F E) ∪ {α }),
+    have eq_ring_closure: set.range((adjoin_root_hom_to_E F E α h))=ring.closure (set.range ⇑(algebra_map F E) ∪ {α }),
+    
     /-
     apply set.eq_of_subset_of_subset,
     dsimp[adjoin_simple,adjoin],
