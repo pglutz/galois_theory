@@ -1,4 +1,4 @@
-import adjoin_simple
+import adjoin
 import ring_theory.adjoin_root
 import algebra.category.CommRing.basic
 import data.equiv.basic
@@ -15,8 +15,8 @@ noncomputable def ring_equiv_of_bij_hom (f : A →+* B) (h : function.bijective 
   ..show A ≃ B, by exact equiv.of_bijective _ h }
 
 theorem adjunction_equiv_to_quotient  (F : Type*) [field F] (E : Type*) [field E] [algebra F E] (α : E) (h : is_integral F α): 
-∃ (f:polynomial F) (hom: (adjoin_root f) →+* (adjoin_simple F E α )), 
-(irreducible f ∧ ∃ (isom: (adjoin_root f) ≃+* (adjoin_simple F E α )),(isom.to_fun=hom ∧ ↑ (isom.to_fun (adjoin_root.root f)) = α )) := 
+∃ (f:polynomial F) (hom: (adjoin_root f) →+* (adjoin_simple F α)), 
+(irreducible f ∧ ∃ (isom: (adjoin_root f) ≃+* (adjoin_simple F α )),(isom.to_fun=hom ∧ ↑ (isom.to_fun (adjoin_root.root f)) = α )) := 
 begin
     let f:=minimal_polynomial h,
     use f,
