@@ -17,7 +17,7 @@ open finite_dimensional
 
 /- Prove the primitive element theorem. -/
 
-variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
+variables (F : Type) [field F] (E : Type) [field E] [algebra F E]
 
 /- Primitive element theorem for finite fields. -/
 
@@ -64,19 +64,26 @@ begin
 end
 
 /-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf_aux (hs : is_separable F E) (hfd: finite_dimensional F E) (hF : infinite F) :
-     ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F {α} = (⊤ : set E))
-| 0 := sorry
-| 1 := 
+theorem primitive_element_inf_aux (h_sep : is_separable F E) (h_dim: finite_dimensional F E) (h_inf : infinite F)
+     (n : ℕ) (hn : findim F E = n) : (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
 begin
     tactic.unfreeze_local_instances,
     revert F E,
     apply n.strong_induction_on,
     clear n,
-    intros n hi F E hF hE hFE h_sep h_finddim h_inf hn,
+    intros n ih F E hF hE hFE h_sep h_finddim h_inf hn,
     cases n,
-    { sorry, },
-    { have : ∃ α : E, α ∉ F := sorry,},
+    {   sorry, },
+    {   have : ∃ α : E, α ∉ set.range (algebra_map F E) := sorry,
+        rcases this with ⟨α, hα⟩,
+        by_cases h : adjoin_simple F α = (⊤ : set E),
+        exact ⟨α, h⟩,
+        have h_findim_Fα : finite_dimensional (adjoin_simple F α) E := sorry,
+        have h_Fαn : findim (adjoin_simple F α) E < n.succ := sorry,
+        obtain ⟨β, hβ⟩ := ih (findim (adjoin_simple F α) E) h_Fαn (adjoin_simple F α) E sorry sorry sorry rfl,
+        obtain ⟨γ, hγ⟩ := primitive_element_two_inf F E α β h_sep h_inf,
+        sorry,
+    },
 end
 
 /-- Primitive element theorem for infinite fields. -/
