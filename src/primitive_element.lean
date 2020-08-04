@@ -69,11 +69,14 @@ theorem primitive_element_inf_aux (hs : is_separable F E) (hfd: finite_dimension
 | 0 := sorry
 | 1 := 
 begin
-sorry
-end
-| (n + 2) :=
-begin
-sorry
+    tactic.unfreeze_local_instances,
+    revert F E,
+    apply n.strong_induction_on,
+    clear n,
+    intros n hi F E hF hE hFE h_sep h_finddim h_inf hn,
+    cases n,
+    { sorry, },
+    { have : ∃ α : E, α ∉ F := sorry,},
 end
 
 /-- Primitive element theorem for infinite fields. -/
