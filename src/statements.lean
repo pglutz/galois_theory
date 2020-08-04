@@ -25,7 +25,12 @@ instance wahooo_lean_wants_a_name_for_this : mul_action (E ≃ₐ[F] E) E := {
     mul_smul := λ ϕ ψ x, rfl,
 }
 
-lemma base_field_is_fixed : (set.range (algebra_map F E) : set E) ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
+instance wahooo_lean_wants_a_name_for_this (H : subgroup (E ≃ₐ[F] E)) : mul_action H E :=
+mul_action.comp_hom E (subgroup.subtype H)
+
+definition base_field_image := set.range (algebra_map F E)
+
+lemma base_field_is_fixed : base_field_image F E ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
 begin
     intros x hx ϕ,
     cases hx with f hf,
@@ -37,7 +42,7 @@ end
 definition is_galois' : Prop := sorry
 
 --fixed field of aut
-definition is_galois'' : Prop := sorry
+definition is_galois'' : Prop := base_field_image F E = mul_action.fixed_points (E ≃ₐ[F] E) E
 
 --fixed field of some subgroup of aut
-definition is_galois''' : Prop := sorry
+definition is_galois''' : Prop := ∃ H : subgroup (E ≃ₐ[F] E), base_field_image F E = mul_action.fixed_points H E

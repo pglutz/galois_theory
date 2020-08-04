@@ -65,7 +65,7 @@ end
 
 /-- Primitive element theorem for infinite fields. -/
 theorem primitive_element_inf_aux (hs : is_separable F E) (hfd: finite_dimensional F E) (hF : infinite F) :
-     ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F {α} = (⊤ : set E)) 
+     ∀ n : ℕ, findim F E = n → (∃ α : E, adjoin F {α} = (⊤ : set E))
 | 0 := sorry
 | 1 := 
 begin

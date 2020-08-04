@@ -101,6 +101,11 @@ begin
     refl,
 end
 
+lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
+begin
+    
+end
+
 variables {E' : Type*} [field E'] [algebra F E'] (α' : E') (hα' : (minimal_polynomial h).eval₂ (algebra_map F E') α' = 0)
 
 noncomputable def quotient_embedding_ring_hom :
