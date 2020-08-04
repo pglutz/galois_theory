@@ -365,3 +365,37 @@ begin
     dsimp[to_adjunction_embedding],
     rw adjunction_embedding_of_root,
 end
+
+lemma quotient_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
+begin
+    sorry
+end
+
+lemma quotient_degree : (finite_dimensional.findim F (adjoin_root (minimal_polynomial h))) = (minimal_polynomial h).nat_degree :=
+begin
+    sorry
+end
+
+lemma adjunction_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
+begin
+    sorry
+end
+
+lemma adjunction_degree : (finite_dimensional.findim F (adjoin_simple F α)) = (minimal_polynomial h).nat_degree :=
+begin
+    have algequiv : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α := quotient_to_adjunction F α h,
+    have linequiv : adjoin_root (minimal_polynomial h) ≃ₗ[F] adjoin_simple F α,
+    fconstructor,
+    exact algequiv.to_fun,
+    exact algequiv.map_add,
+    intro c,
+    intro x,
+    change algequiv (c * x) = ((algebra_map F (adjoin_simple F α) c) * (algequiv x)),
+    rw[algequiv.map_mul,←algequiv.commutes],
+    refl,
+    exact algequiv.inv_fun,
+    exact algequiv.left_inv,
+    exact algequiv.right_inv,
+    rw ← @linear_equiv.findim_eq F (adjoin_root (minimal_polynomial h)) _ _ _ (adjoin_simple F α) _ _ linequiv (quotient_degree_finite F α h),
+    exact quotient_degree F α h,
+end

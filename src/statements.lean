@@ -1,5 +1,6 @@
 import field_theory.separable
 import field_theory.normal
+import group_theory.group_action
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
@@ -14,3 +15,14 @@ instance aut : group (E ≃ₐ[F] E) := {
     inv := alg_equiv.symm,
     mul_left_inv := λ ϕ, by {ext,exact alg_equiv.apply_symm_apply ϕ a},
 }
+
+instance tada : mul_action (aut F E) E := sorry
+
+--splitting field of separable polynomial
+definition is_galois' : Prop := sorry
+
+--fixed field of aut
+definition is_galois'' : Prop := sorry
+
+--fixed field of some subgroup of aut
+definition is_galois''' : Prop := sorry
