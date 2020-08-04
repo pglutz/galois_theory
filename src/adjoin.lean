@@ -34,11 +34,8 @@ instance adjoin.set_coe : has_coe_t S (adjoin F S) :=
 
 instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
 
-instance adjoin.has_scalar : has_scalar F (adjoin F S) := {
-    smul := λ x y, ⟨algebra_map F E x, adjoin_contains_field F S x⟩ * y,
-}
-
 instance adjoin.is_algebra : algebra F (adjoin F S) := {
+    smul := λ x y, ⟨algebra_map F E x, adjoin_contains_field F S x⟩ * y,
     to_fun := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩,
     map_one' :=
     begin
@@ -153,7 +150,6 @@ end
 
 noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) :=
 quotient_embedding F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
-
 
 noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
 { .. f, .. equiv.of_bijective _ h }
@@ -276,7 +272,7 @@ instance to_adjunction_embedding_equalizer_is_subfield : is_subfield (adjoin_equ
     end
 }
 
-instance to_adjunction_embedding_equalizer_is_subfield_again : is_subfield ((coe '' adjoin_equalizer F S ϕ ψ) : set E) := {
+instance to_adjunction_embedding_equalizer_coe_is_subfield : is_subfield ((coe '' adjoin_equalizer F S ϕ ψ) : set E) := {
     zero_mem := ⟨0,⟨is_add_submonoid.zero_mem,rfl⟩⟩,
     add_mem :=
     begin
