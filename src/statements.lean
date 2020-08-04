@@ -8,9 +8,7 @@ variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
 @[class] def fin_galois : Prop := finite_dimensional F E ∧ is_galois F E
 
-instance aut' : group (E ≃ₐ[F] E) := by library_search
-
-instance aut : group (E ≃ₐ[F] E) := {
+instance aut : group (E ≃ₐ[F] E ) := {
     mul := alg_equiv.trans,
     mul_assoc := λ ϕ ψ χ, rfl,
     one := 1,
