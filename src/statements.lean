@@ -8,24 +8,20 @@ variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
 @[class] def fin_galois : Prop := finite_dimensional F E ∧ is_galois F E
 
-instance aut' : group (E ≃ₐ[F] E) := by library_search
-
 instance aut : group (E ≃ₐ[F] E) := {
-    mul := alg_equiv.trans,
+    mul := λ ϕ ψ, ψ.trans ϕ,
     mul_assoc := λ ϕ ψ χ, rfl,
     one := 1,
     one_mul := λ ϕ, by {ext,refl},
     mul_one := λ ϕ, by {ext,refl},
     inv := alg_equiv.symm,
-    mul_left_inv := λ ϕ, by {ext,exact alg_equiv.apply_symm_apply ϕ a},
+    mul_left_inv := λ ϕ, by {ext,exact alg_equiv.symm_apply_apply ϕ a},
 }
 
-instance tada' : has_scalar (E ≃ₐ[F] E) E := {
-    smul := sorry
-}
-
-instance tada : mul_action (E ≃ₐ[F] E) E := {
-    
+instance wahooo_lean_wants_a_name_for_this : mul_action (E ≃ₐ[F] E) E := {
+    smul := alg_equiv.to_fun,
+    one_smul := λ x, rfl,
+    mul_smul := λ ϕ ψ x, rfl,
 }
 
 --splitting field of separable polynomial
