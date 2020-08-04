@@ -1,5 +1,6 @@
 import field_theory.separable
 import field_theory.normal
+import field_theory.fixed
 import group_theory.group_action
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
@@ -23,6 +24,14 @@ instance wahooo_lean_wants_a_name_for_this : mul_action (E ≃ₐ[F] E) E := {
     one_smul := λ x, rfl,
     mul_smul := λ ϕ ψ x, rfl,
 }
+
+lemma base_field_is_fixed : (set.range (algebra_map F E) : set E) ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
+begin
+    intros x hx ϕ,
+    cases hx with f hf,
+    rw ←hf,
+    exact alg_equiv.commutes ϕ f,
+end
 
 --splitting field of separable polynomial
 definition is_galois' : Prop := sorry
