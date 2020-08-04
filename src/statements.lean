@@ -25,7 +25,7 @@ instance wahooo_lean_wants_a_name_for_this : mul_action (E ≃ₐ[F] E) E := {
     mul_smul := λ ϕ ψ x, rfl,
 }
 
-instance wahooo_lean_wants_a_name_for_this (H : subgroup (E ≃ₐ[F] E)) : mul_action H E :=
+instance wahooo_lean_wants_a_name_for_this' (H : subgroup (E ≃ₐ[F] E)) : mul_action H E :=
 mul_action.comp_hom E (subgroup.subtype H)
 
 definition base_field_image := set.range (algebra_map F E)
