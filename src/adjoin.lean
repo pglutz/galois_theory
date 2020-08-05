@@ -166,6 +166,24 @@ adjoin.is_subfield F {α}
 instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
 adjoin.is_algebra F {α}
 
+lemma inclusion_of_subfield_is_identity (F : set E) [is_subfield F] (x : F) : algebra_map F E x = x := by tauto
+
+lemma algebra_map_twice : set.range (algebra_map (set.range (algebra_map F E)) E) = set.range (algebra_map F E) :=
+begin
+    have : is_subfield (set.range (algebra_map F E)) := range.is_subfield (algebra_map F E),
+    ext, split,
+    {   rintros ⟨⟨y, ⟨z, rfl⟩⟩, rfl⟩,
+        exact ⟨z, rfl⟩,
+    },
+    {   exact λ hx, ⟨⟨x, hx⟩, rfl⟩, },
+end
+
+lemma adjoin_equals_adjoin_range : adjoin F S = adjoin (set.range (algebra_map F E)) S :=
+by simp only [adjoin, algebra_map_twice]
+
+lemma adjoin_simple_equals_adjoin_simple_range (α : E) : adjoin_simple F α = adjoin_simple (set.range (algebra_map F E)) α :=
+adjoin_equals_adjoin_range F {α}
+
 --generator of F(α)
 def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩
 
