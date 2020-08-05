@@ -1,4 +1,5 @@
-import adjoin
+import ring_theory.algebra
+import field_theory.subfield
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
@@ -73,6 +74,9 @@ definition inclusion_algebra_hom : F →ₐ[F] set.range (algebra_map F E) := {
         intros r, refl,
     end,
 }
+
+noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
+{ .. f, .. equiv.of_bijective _ h }
 
 noncomputable def inclusion_isomorphism : F ≃ₐ[F] set.range (algebra_map F E) :=
 algebra_equiv_of_bij_hom F (inclusion_algebra_hom F E)

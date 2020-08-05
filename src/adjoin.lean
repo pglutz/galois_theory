@@ -1,5 +1,4 @@
-import field_theory.subfield
-import ring_theory.algebra
+import subfield_stuff
 import group_theory.subgroup
 import field_theory.minimal_polynomial
 import linear_algebra.dimension
@@ -228,9 +227,6 @@ end
 
 noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) :=
 quotient_embedding F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
-
-noncomputable def algebra_equiv_of_bij_hom {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
-{ .. f, .. equiv.of_bijective _ h }
 
 noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α :=
 algebra_equiv_of_bij_hom F (quotient_to_adjunction_algebra_hom F α h)
