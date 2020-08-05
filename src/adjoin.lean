@@ -171,7 +171,7 @@ lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_si
 
 lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
 begin
-    dsimp[adjoin_simple],
+    dsimp [adjoin_simple],
     rw adjoin_twice,
     refl,
 end
