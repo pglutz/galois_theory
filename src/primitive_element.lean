@@ -66,7 +66,10 @@ begin
     rcases h_sep β with ⟨hβ, hg⟩,
     set f := minimal_polynomial hα,
     set g := minimal_polynomial hβ,
-    sorry,
+    -- let g_roots := {β' : E | polynomial.eval₂ (algebra_map F E) β' g = 0},
+    -- let f_roots := {α' : E | polynomial.eval₂ (algebra_map F E) α' f = 0},
+    -- have : ∃ c : F, ∀ (β' : g_roots) (α' : f_roots), β ≠ β' → α + c*β ≠ α' + c*β' := sorry,
+    -- have : ∃ c : F, ∀ (β' : g.roots) (α' : f.roots), 
 end
 
 /- Primitive element theorem when F = E. -/
@@ -86,7 +89,7 @@ end
 
 -- Should these two lemmas go in adjoin.lean?
 /- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
-lemma adjoin_findim_of_findim (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) :
+lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
     finite_dimensional (adjoin_simple F α) E :=
 begin
     sorry,
@@ -120,7 +123,7 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : adjoin_simple F α = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional (adjoin_simple F α) E := adjoin_findim_of_findim E F F_findim α,
+        {   have Fα_findim : finite_dimensional (adjoin_simple F α) E := adjoin_findim_of_findim F E F_findim α,
             have Fα_le_n : findim (adjoin_simple F α) E < n :=
             begin
                 rw ← hn,
@@ -155,8 +158,7 @@ begin
         tauto,
     end,
     obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
-    use α,
-    simp only [*, adjoin_simple_equals_adjoin_simple_range],
+    exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end
 
 

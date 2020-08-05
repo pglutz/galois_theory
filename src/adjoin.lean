@@ -127,6 +127,22 @@ begin
     exact hyp ht,
 end
 
+/- The range of the embedding of F into E is equal to the range of the inclusion embedding of
+    range(F → E) into E. -/
+lemma algebra_map_twice : set.range (algebra_map (set.range (algebra_map F E)) E) = set.range (algebra_map F E) :=
+begin
+    have : is_subfield (set.range (algebra_map F E)) := range.is_subfield (algebra_map F E),
+    ext, split,
+    {   rintros ⟨⟨y, ⟨z, rfl⟩⟩, rfl⟩,
+        exact ⟨z, rfl⟩,
+    },
+    {   exact λ hx, ⟨⟨x, hx⟩, rfl⟩, },
+end
+
+/- Adjoining S to F is the same as adjoining S to the range of the embedding of F into E. -/
+lemma adjoin_equals_adjoin_range : adjoin F S = adjoin (set.range (algebra_map F E)) S :=
+by simp only [adjoin, algebra_map_twice]
+
 lemma adjoin_twice (T : set E) : adjoin (adjoin F S) T = adjoin F (S ∪ T) :=
 begin
     apply set.eq_of_subset_of_subset,
@@ -177,21 +193,7 @@ adjoin.is_subfield F {α}
 instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
 adjoin.is_algebra F {α}
 
-lemma inclusion_of_subfield_is_identity (F : set E) [is_subfield F] (x : F) : algebra_map F E x = x := by tauto
-
-lemma algebra_map_twice : set.range (algebra_map (set.range (algebra_map F E)) E) = set.range (algebra_map F E) :=
-begin
-    have : is_subfield (set.range (algebra_map F E)) := range.is_subfield (algebra_map F E),
-    ext, split,
-    {   rintros ⟨⟨y, ⟨z, rfl⟩⟩, rfl⟩,
-        exact ⟨z, rfl⟩,
-    },
-    {   exact λ hx, ⟨⟨x, hx⟩, rfl⟩, },
-end
-
-lemma adjoin_equals_adjoin_range : adjoin F S = adjoin (set.range (algebra_map F E)) S :=
-by simp only [adjoin, algebra_map_twice]
-
+/- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
 lemma adjoin_simple_equals_adjoin_simple_range (α : E) : adjoin_simple F α = adjoin_simple (set.range (algebra_map F E)) α :=
 adjoin_equals_adjoin_range F {α}
 
@@ -504,4 +506,4 @@ begin
     exact algequiv.right_inv,
     rw ← @linear_equiv.findim_eq F (adjoin_root (minimal_polynomial h)) _ _ _ (adjoin_simple F α) _ _ linequiv (quotient_degree_finite F α h),
     exact quotient_degree F α h,
-end
+endadjoin_simple
