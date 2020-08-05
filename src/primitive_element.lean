@@ -143,7 +143,7 @@ theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dime
     ∃ α, adjoin_simple F α = (⊤ : set E) :=
 begin
     set F' := set.range (algebra_map F E) with hF',
-    have F'_sep : is_separable F' E := sorry,
+    have F'_sep : is_separable F' E := inclusion.separable F_sep,
     have F'_findim : finite_dimensional F' E := sorry,
     have F'_inf : F'.infinite :=
     begin
