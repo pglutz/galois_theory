@@ -22,6 +22,20 @@ end
 instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩}
 
+lemma adjoin_contains_field_set : set.range (algebra_map F E) ⊆ adjoin F S :=
+begin
+    intros x hx,
+    cases hx with f hf,
+    rw ←hf,
+    exact adjoin_contains_field F S f,
+end
+
+lemma adjoin_contains_field_subset {F : set E} {HF : is_subfield F} {T : set E} {HT : T ⊆ F} : T ⊆ adjoin F S :=
+begin
+    intros x hx,
+    exact adjoin_contains_field F S ⟨x,HT hx⟩,
+end
+
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
 begin
     apply field.mem_closure,
@@ -29,11 +43,20 @@ begin
     exact subtype.mem x,
 end
 
-lemma adjoin_contains_element' (x : E) (hα : x ∈ S) : x ∈ (adjoin F S) :=
-adjoin_contains_element F S ⟨x,hα⟩
-
 instance adjoin.set_coe : has_coe_t S (adjoin F S) :=
 {coe := λ x, ⟨↑x, adjoin_contains_element F S x⟩}
+
+lemma adjoin_contains_set : S ⊆ adjoin F S :=
+begin
+    intros x hx,
+    exact adjoin_contains_element F S ⟨x,hx⟩,
+end
+
+lemma adjoin_contains_subset {T : set E} {H : T ⊆ S} : T ⊆ adjoin F S :=
+begin
+    intros x hx,
+    exact adjoin_contains_element F S ⟨x,H hx⟩,
+end
 
 instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
 
@@ -74,17 +97,52 @@ instance adjoin.is_algebra : algebra F (adjoin F S) := {
     end
 }
 
-lemma adjoin.composition : (algebra_map F E) = (algebra_map (adjoin F S) E).comp (algebra_map F (adjoin F S)) :=
-begin
-    ext,
-    refl,
-end
-
 lemma adjoin_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (HS : S ⊆ T) : adjoin F S ⊆ T :=
 begin
     apply field.closure_subset,
     rw set.union_subset_iff,
     exact ⟨HF,HS⟩,
+end
+
+lemma set_range_subset {T₁ T₂ : set E} [is_subfield T₁] [is_subfield T₂] {hyp : T₁ ⊆ T₂} :
+set.range (algebra_map T₁ E) ⊆ T₂ :=
+begin
+    intros x hx,
+    cases hx with f hf,
+    rw ←hf,
+    cases f with t ht,
+    exact hyp ht,
+end
+
+lemma adjoin_twice (T : set E) : adjoin (adjoin F S) T = adjoin F (S ∪ T) :=
+begin
+    apply set.eq_of_subset_of_subset,
+    apply adjoin_subset,
+    apply set_range_subset,
+    apply adjoin_subset,
+    apply adjoin_contains_field_set,
+    apply adjoin_contains_subset,
+    apply set.subset_union_left,
+    apply adjoin_contains_subset,
+    apply set.subset_union_right,
+    apply adjoin_subset,
+    transitivity adjoin F S,
+    apply adjoin_contains_field_set,
+    apply adjoin_subset,
+    apply adjoin_contains_field_subset,
+    apply adjoin_contains_field_set,
+    apply adjoin_contains_field_subset,
+    apply adjoin_contains_set,
+    apply set.union_subset,
+    apply adjoin_contains_field_subset,
+    apply adjoin_contains_set,
+    apply adjoin_contains_set,
+end
+
+lemma adjoin.composition : (algebra_map F E) = (algebra_map (adjoin F S) E).comp (algebra_map F (adjoin F S)) :=
+begin
+    ext,
+    refl,
 end
 
 variables (α : E) (h : is_integral F α)
@@ -111,61 +169,15 @@ def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_el
 
 lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_simple.gen F α) = α := rfl
 
-lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
-adjoin.composition F {α}
-
-lemma adjoin_simple_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (Hα : α ∈ T) : adjoin_simple F α ⊆ T :=
-adjoin_subset F {α} HF (set.singleton_subset_iff.2 Hα)
-
-lemma set_range_subset {T₁ T₂ : set E} [is_subfield T₁] [is_subfield T₂] {hyp : T₁ ⊆ T₂} :
-set.range (algebra_map T₁ E) ⊆ T₂ :=
-begin
-    intros x hx,
-    cases hx with f hf,
-    rw ←hf,
-    cases f with t ht,
-    exact hyp ht,
-end
-
-lemma set_range_subset_adjoin : set.range (algebra_map F E) ⊆ adjoin F S :=
-begin
-    intros x hx,
-    cases hx with f hf,
-    rw ←hf,
-    exact adjoin_contains_field F S f,
-end
-
-lemma set_range_subset_adjoin_simple : set.range (algebra_map F E) ⊆ adjoin_simple F α :=
-by apply set_range_subset_adjoin
-
 lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
 begin
-    apply set.eq_of_subset_of_subset,
-    apply adjoin_simple_subset,
-    apply set_range_subset,
-    apply adjoin_simple_subset,
-    apply set_range_subset_adjoin,
-    apply adjoin_contains_element',
-    exact set.mem_insert α {β},
-    apply adjoin_contains_element',
-    apply set.subset_insert,
-    exact set.mem_singleton β,
-    apply adjoin_subset,
-    intros x hx,
-    cases hx with f hf,
-    rw ←hf,
-    rw adjoin_simple.composition F α,
-    apply adjoin_simple_contains_field,
-    intros x hx,
-    rw set.mem_insert_iff at hx,
-    cases hx,
-    change x = algebra_map (adjoin_simple F α) E (adjoin_simple.gen F α) at hx,
-    rw hx,
-    apply adjoin_simple_contains_field,
-    rw set.mem_singleton_iff at hx,
-    rw hx,
-    apply adjoin_simple_contains_element,
+    dsimp[adjoin_simple],
+    rw adjoin_twice,
+    refl,
 end
+
+lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
+adjoin.composition F {α}
 
 variables {E' : Type*} [field E'] [algebra F E'] (α' : E') (hα' : (minimal_polynomial h).eval₂ (algebra_map F E') α' = 0)
 
