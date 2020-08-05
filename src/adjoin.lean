@@ -506,4 +506,4 @@ begin
     exact algequiv.right_inv,
     rw ← @linear_equiv.findim_eq F (adjoin_root (minimal_polynomial h)) _ _ _ (adjoin_simple F α) _ _ linequiv (quotient_degree_finite F α h),
     exact quotient_degree F α h,
-endadjoin_simple
+end

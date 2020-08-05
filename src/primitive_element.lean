@@ -25,6 +25,8 @@ open finite_dimensional
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
+def roots (f : polynomial F) := {α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
+
 /- Primitive element theorem for finite fields. -/
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
@@ -57,19 +59,30 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 lemma primitive_element_two_inf_milne (α β : E) (hα : element_is_separable F α) (hF : infinite F) :
     ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ := sorry
 
+lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : polynomial F) (F_inf : F.infinite) :
+    ∃ c : F, ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
+
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
-lemma primitive_element_two_inf  (α β : E) (h_sep : is_separable F E) (hF : infinite F) :
-    ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ :=
+lemma primitive_element_two_inf  (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
+    (F_inf : F.infinite) : ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ :=
 begin
-    -- set f := minimal_polynomial (Exists.some $ h_sep α) with hf,
-    rcases h_sep α with ⟨hα, hf⟩,
-    rcases h_sep β with ⟨hβ, hg⟩,
-    set f := minimal_polynomial hα,
-    set g := minimal_polynomial hβ,
-    -- let g_roots := {β' : E | polynomial.eval₂ (algebra_map F E) β' g = 0},
-    -- let f_roots := {α' : E | polynomial.eval₂ (algebra_map F E) α' f = 0},
-    -- have : ∃ c : F, ∀ (β' : g_roots) (α' : f_roots), β ≠ β' → α + c*β ≠ α' + c*β' := sorry,
-    -- have : ∃ c : F, ∀ (β' : g.roots) (α' : f.roots), 
+    rcases F_sep α with ⟨hα, hf⟩,
+    rcases F_sep β with ⟨hβ, hg⟩,
+    let f := minimal_polynomial hα,
+    let g := minimal_polynomial hβ,
+    cases primitive_element_two_aux E F α β f g F_inf with c hc,
+    let γ := α + c*β,
+    use γ,
+    have αβ_in_Fγ : {α, β} ⊆ adjoin_simple F γ := sorry,
+    have Fαβ_sub_Fγ : adjoin F {α, β} ⊆ adjoin_simple F γ :=
+        adjoin_subset F {α, β} (adjoin_contains_field_set F {γ}) αβ_in_Fγ,
+    have γ_in_Fαβ : {γ} ⊆ adjoin F {α, β},
+    {   -- have : γ ∈ (adjoin F {α, β}) := sorry,
+        sorry,
+    },
+    have Fγ_sub_Fαβ : adjoin_simple F γ ⊆ adjoin F {α, β} :=
+        adjoin_subset F {γ} (adjoin_contains_field_set F {α, β}) γ_in_Fαβ,
+    exact set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ,
 end
 
 /- Primitive element theorem when F = E. -/
@@ -134,7 +147,7 @@ begin
             have Fα_sep : is_separable (adjoin_simple F α) E := sorry,
             obtain ⟨β, hβ⟩ := ih (findim (adjoin_simple F α) E) Fα_le_n (adjoin_simple F α)
                 Fα_sep Fα_findim Fα_inf rfl,
-            obtain ⟨γ, hγ⟩ := primitive_element_two_inf F E α β F_sep (set.infinite_coe_iff.mpr F_inf),
+            obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
             rw [adjoin_simple_twice, hγ] at hβ,
             exact ⟨γ, hβ⟩,
         },
