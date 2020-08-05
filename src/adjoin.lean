@@ -35,6 +35,9 @@ begin
     exact adjoin_contains_field F S ⟨x,HT hx⟩,
 end
 
+lemma adjoin_contains_field_as_subfield (F : set E) {HF : is_subfield F} : F ⊆ adjoin F S :=
+λ x hx, adjoin_contains_field F S ⟨x, hx⟩
+
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
 begin
     apply field.mem_closure,
@@ -170,7 +173,7 @@ lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_si
 
 lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
 begin
-    dsimp[adjoin_simple],
+    dsimp [adjoin_simple],
     rw adjoin_twice,
     refl,
 end
