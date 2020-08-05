@@ -1,6 +1,7 @@
 import adjoin
 import separable
 import linear_algebra.finite_dimensional
+import subfield_stuff
 import data.set.finite
 
 
@@ -138,16 +139,24 @@ begin
 end
 
 /-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf (hs : is_separable F E) (hfd : finite_dimensional F E) (hF : infinite F) :
+theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
     ∃ α, adjoin_simple F α = (⊤ : set E) :=
 begin
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := sorry,
     have F'_findim : finite_dimensional F' E := sorry,
-    have F'_inf : F'.infinite := sorry,
+    have F'_inf : F'.infinite :=
+    begin
+        apply set.infinite_coe_iff.mp,
+        apply infinite.of_injective (set.range_factorization ⇑(algebra_map F E)),
+        have : function.injective (algebra_map F E) := (algebra_map F E).injective,
+        intros x y hxy,
+        injections_and_clear,
+        tauto,
+    end,
     obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
     use α,
-    sorry,
+    simp only [*, adjoin_simple_equals_adjoin_simple_range],
 end
 
 
