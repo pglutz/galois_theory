@@ -75,8 +75,7 @@ begin
     exact dec_trivial,
     rw ← F_eq_E,
     intro hx,
-    have : x = algebra_map F E ⟨x, hx⟩ := rfl,
-    rw this,
+    rw (show x = algebra_map F E ⟨x, hx⟩, from rfl),
     apply adjoin_contains_field,
 end
 
@@ -145,6 +144,9 @@ begin
     use α,
     sorry,
 end
+
+
+/- Actual primitive element theorem. -/
 
 /-- Primitive element theorem. -/
 theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
