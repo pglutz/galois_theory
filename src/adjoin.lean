@@ -36,6 +36,9 @@ begin
     exact adjoin_contains_field F S ⟨x,HT hx⟩,
 end
 
+lemma adjoin_contains_field_as_subfield (F : set E) {HF : is_subfield F} : F ⊆ adjoin F S :=
+λ x hx, adjoin_contains_field F S ⟨x, hx⟩
+
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
 begin
     apply field.mem_closure,
