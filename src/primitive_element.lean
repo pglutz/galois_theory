@@ -80,8 +80,23 @@ begin
     apply adjoin_contains_field,
 end
 
+-- Should these two lemmas go in adjoin.lean?
+/- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
+lemma adjoin_findim_of_findim (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) :
+    finite_dimensional (adjoin_simple F α) E :=
+begin
+    sorry,
+end
+
+/- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
+lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) (hα : α ∉ F) :
+    findim (adjoin_simple F α) E < findim F E :=
+begin 
+    sorry,
+end
+
 /- Primitive element theorem for infinite fields when F is actually a subset of E . -/
-theorem primitive_element_inf_aux (F : set E) (hF : is_subfield F) (h_sep : is_separable F E)
+theorem primitive_element_inf_aux (F : set E) [hF : is_subfield F] (h_sep : is_separable F E)
     (h_dim: finite_dimensional F E) (h_inf : infinite F) (n : ℕ) (hn : findim F E = n) :
     (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
 begin
@@ -89,7 +104,7 @@ begin
     revert F,
     apply n.strong_induction_on,
     clear n,
-    intros n ih F hF h_sep h_finddim h_inf hn,
+    intros n ih F hF h_sep h_findim h_inf hn,
     by_cases F_neq_E : F = (⊤ : set E),
     {   exact primitive_element_trivial E F hF F_neq_E, },
     {   have : ∃ α : E, α ∉ F :=
@@ -101,11 +116,15 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : adjoin_simple F α = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional (adjoin_simple F α) E := sorry,
-            have Fα_le_n : findim (adjoin_simple F α) E < n := sorry,
+        {   have Fα_findim : finite_dimensional (adjoin_simple F α) E := adjoin_findim_of_findim E F h_findim α,
+            have Fα_le_n : findim (adjoin_simple F α) E < n :=
+            begin
+                rw ← hn,
+                exact adjoin_dim_lt E F h_findim α hα,
+            end,
             have Fα_inf : infinite (adjoin_simple F α) := sorry,
             have Fα_sep : is_separable (adjoin_simple F α) E := sorry,
-            obtain ⟨β, hβ⟩ := ih (findim (adjoin_simple F α) E) Fα_le_n (adjoin_simple F α) _
+            obtain ⟨β, hβ⟩ := ih (findim (adjoin_simple F α) E) Fα_le_n (adjoin_simple F α)
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf F E α β h_sep h_inf,
             rw [adjoin_simple_twice, hγ] at hβ,
@@ -122,7 +141,7 @@ begin
     have F'_sep : is_separable F' E := sorry,
     have F'_findim : finite_dimensional F' E := sorry,
     have F'_inf : infinite F' := sorry,
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' _ F'_sep F'_findim F'_inf (findim F' E) rfl,
+    obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
     use α,
     sorry,
 end
