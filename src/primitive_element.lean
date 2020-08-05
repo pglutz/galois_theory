@@ -80,10 +80,10 @@ begin
     apply adjoin_contains_field,
 end
 
-/- Primitive element theorem for adjoining two elements when F is actually a subset of E rather than just having an 
-    embedding into E. -/
-theorem primitive_element_inf_aux' (F : set E) (hF : is_subfield F) (h_sep : is_separable F E) (h_dim: finite_dimensional F E) (h_inf : infinite F)
-     (n : ℕ) (hn : findim F E = n) : (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
+/- Primitive element theorem for infinite fields when F is actually a subset of E . -/
+theorem primitive_element_inf_aux (F : set E) (hF : is_subfield F) (h_sep : is_separable F E)
+    (h_dim: finite_dimensional F E) (h_inf : infinite F) (n : ℕ) (hn : findim F E = n) :
+    (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
 begin
     tactic.unfreeze_local_instances,
     revert F,
@@ -115,15 +115,17 @@ begin
 end
 
 /-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf_aux (h_sep : is_separable F E) (h_dim: finite_dimensional F E) (h_inf : infinite F)
-     (n : ℕ) (hn : findim F E = n) : (∃ α : E, adjoin_simple F α = (⊤ : set E)) :=
+theorem primitive_element_inf (hs : is_separable F E) (hfd : finite_dimensional F E) (hF : infinite F) :
+    ∃ α, adjoin_simple F α = (⊤ : set E) :=
 begin
+    set F' := set.range (algebra_map F E) with hF',
+    have F'_sep : is_separable F' E := sorry,
+    have F'_findim : finite_dimensional F' E := sorry,
+    have F'_inf : infinite F' := sorry,
+    obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' _ F'_sep F'_findim F'_inf (findim F' E) rfl,
+    use α,
     sorry,
 end
-
-/-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf (hs : is_separable F E) (hfd : finite_dimensional F E) (hF : infinite F) :
-    ∃ α, adjoin_simple F α = (⊤ : set E) := primitive_element_inf_aux F E hs hfd hF (findim F E) rfl
 
 /-- Primitive element theorem. -/
 theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
