@@ -1,6 +1,6 @@
-import ring_theory.algebra
 import field_theory.subfield
 import field_theory.separable
+import field_theory.tower
 
 section
 
@@ -107,6 +107,13 @@ begin
     refl,
 end
 
+lemma reverse_inclusion_of_field (f : F) :
+reverse_inclusion_ring_hom F E ↑f = f :=
+begin
+    change (inclusion_isomorphism F E).symm (inclusion_isomorphism F E f) = f,
+    rw alg_equiv.symm_apply_apply,
+end
+
 end
 
 variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E] {x : E}
@@ -162,4 +169,37 @@ begin
     use inclusion.integral hx,
     rw inclusion.minimal_polynomial,
     exact polynomial.separable.map hs,
+end
+
+noncomputable instance why_does_this_need_a_name : algebra (set.range (algebra_map F E)) F := {
+    smul := λ e f, reverse_inclusion_ring_hom F E (e * f),
+    to_fun := (reverse_inclusion_ring_hom F E),
+    map_zero' := (reverse_inclusion_ring_hom F E).map_zero',
+    map_add' := (reverse_inclusion_ring_hom F E).map_add',
+    map_one' := (reverse_inclusion_ring_hom F E).map_one',
+    map_mul' := (reverse_inclusion_ring_hom F E).map_mul',
+    smul_def' :=
+    begin
+        intros e f,
+        change reverse_inclusion_ring_hom F E (e * f) = (reverse_inclusion_ring_hom F E e) * f,
+        rw ring_hom.map_mul,
+        rw reverse_inclusion_of_field,
+    end,
+    commutes' := λ e f, mul_comm _ _,
+}
+
+instance why_does_this_also_need_a_name : is_algebra_tower (set.range (algebra_map F E)) F E := {
+    smul_assoc :=
+    begin
+        intros x y z,
+        
+    end
+}
+
+#check finite_dimensional.trans (set.range (algebra_map F E)) F E
+
+lemma inclusion.finite_dimensional : finite_dimensional F E → finite_dimensional (set.range (algebra_map F E)) E :=
+begin
+    intro h,
+    apply finite_dimensional.trans,
 end

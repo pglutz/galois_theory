@@ -11,6 +11,17 @@ variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E)
 def adjoin : set E :=
 field.closure (set.range (algebra_map F E) ∪ S)
 
+#check set.subset_union_right
+
+lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
+begin
+    apply field.closure_mono,
+    apply set.union_subset,
+    apply set.subset_union_left,
+    apply set.subset_union_of_subset_right,
+    exact h,
+end 
+
 lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F S) :=
 begin
     apply field.mem_closure,
