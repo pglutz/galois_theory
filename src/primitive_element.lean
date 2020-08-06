@@ -148,7 +148,7 @@ begin
             end,
             have Fα_inf : (adjoin_simple F α).infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
-            have Fα_sep : is_separable (adjoin_simple F α) E := sorry,
+            have Fα_sep : is_separable (adjoin_simple F α) E := adjoin_simple_is_separable F F_sep α,
             obtain ⟨β, hβ⟩ := ih (findim (adjoin_simple F α) E) Fα_le_n (adjoin_simple F α)
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
