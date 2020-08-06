@@ -192,14 +192,41 @@ instance why_does_this_also_need_a_name : is_algebra_tower (set.range (algebra_m
     smul_assoc :=
     begin
         intros x y z,
-        
+        rw algebra.smul_def'',
+        change ↑(inclusion_isomorphism F E ((inclusion_isomorphism F E).symm (x * y))) * z = _,
+        rw alg_equiv.apply_symm_apply,
+        rw is_submonoid.coe_mul,
+        rw mul_assoc,
+        rw algebra.smul_def'',
+        rw algebra.smul_def'',
+        refl,
     end
 }
 
-#check finite_dimensional.trans (set.range (algebra_map F E)) F E
+noncomputable def inclusion_linear_equiv : F ≃ₗ[set.range (algebra_map F E)] set.range (algebra_map F E) := {
+    to_fun := (inclusion_isomorphism F E),
+    map_add' := (inclusion_isomorphism F E).map_add',
+    inv_fun := (inclusion_isomorphism F E).inv_fun,
+    left_inv := (inclusion_isomorphism F E).left_inv,
+    right_inv := (inclusion_isomorphism F E).right_inv,
+    map_smul' :=
+    begin
+        intros x y,
+        change (inclusion_isomorphism F E ((inclusion_isomorphism F E).symm (x * y))) = x * ↑y,
+        rw alg_equiv.apply_symm_apply,
+    end
+}
+
+instance finite_dimensional_of_field : finite_dimensional F F :=
+begin
+    rw finite_dimensional.finite_dimensional_iff_dim_lt_omega,
+    rw ←finite_dimensional.findim_eq_dim,
+    rw finite_dimensional.findim_of_field,
+    exact cardinal.nat_lt_omega 1,
+end
+
+instance wow_this_also_needs_a_name : finite_dimensional (set.range (algebra_map F E)) F :=
+linear_equiv.finite_dimensional ((@inclusion_linear_equiv F _ E _ _).symm)
 
 lemma inclusion.finite_dimensional : finite_dimensional F E → finite_dimensional (set.range (algebra_map F E)) E :=
-begin
-    intro h,
-    apply finite_dimensional.trans,
-end
+λ h, @finite_dimensional.trans (set.range (algebra_map F E)) F E _ _ _ _ _ _ _ _ h

@@ -164,7 +164,7 @@ theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dime
 begin
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := sorry,
+    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
     have F'_inf : F'.infinite :=
     begin
         apply set.infinite_coe_iff.mp,
