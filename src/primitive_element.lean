@@ -109,6 +109,8 @@ end
 lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
     finite_dimensional (adjoin_simple F α) E :=
 begin
+    apply iff_fg.mpr,
+    have b := classical.some_spec (finite_dimensional.exists_is_basis_finset F E),
     sorry,
 end
 
