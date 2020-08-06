@@ -72,5 +72,5 @@ separable.subfield_aux (set.range (algebra_map F E)) K h (inclusion.separable F_
 lemma adjoin_is_separable (F_sep : is_separable F E) (S : set E) : is_separable (adjoin F S) E :=
 separable.subfield F (adjoin F S) F_sep (adjoin_contains_field_set F S)
 
-lemma adjoin_simple_is_separable (F_sep : is_separable F E) (α : E) : is_separable (adjoin_simple F α) E :=
+lemma adjoin_simple_is_separable (F_sep : is_separable F E) (α : E) : is_separable (F[α]) E :=
 adjoin_is_separable F F_sep {α}
