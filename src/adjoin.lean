@@ -117,6 +117,10 @@ begin
     exact ⟨HF,HS⟩,
 end
 
+/-- If S ⊆ T then F[S] ⊆ F[T] -/
+lemma adjoin_subset' {T : set E} (HT : S ⊆ adjoin F T) : adjoin F S ⊆ adjoin F T :=
+adjoin_subset F S (adjoin_contains_field_set F T) HT
+
 lemma set_range_subset {T₁ T₂ : set E} [is_subfield T₁] [is_subfield T₂] {hyp : T₁ ⊆ T₂} :
 set.range (algebra_map T₁ E) ⊆ T₂ :=
 begin
@@ -178,6 +182,10 @@ variables (α : E) (h : is_integral F α)
 
 def adjoin_simple : set E := adjoin F {α}
 
+-- Let's try out this notation?
+notation K`[`β`]` := adjoin_simple K β
+notation K`[`β `,` γ`]` := adjoin K {β, γ}
+
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
 adjoin_contains_field F {α} x
 
@@ -193,9 +201,17 @@ adjoin.is_subfield F {α}
 instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
 adjoin.is_algebra F {α}
 
-/- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
+/-- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
 lemma adjoin_simple_equals_adjoin_simple_range (α : E) : adjoin_simple F α = adjoin_simple (set.range (algebra_map F E)) α :=
 adjoin_equals_adjoin_range F {α}
+
+/-- A subfield of E that contains F and α also contains F[α] -/
+lemma adjoin_simple_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (Hα : α ∈ T) : adjoin_simple F α ⊆ T :=
+adjoin_subset F {α} HF (set.singleton_subset_iff.mpr Hα)
+
+/-- If α is in F[T] then F[α] ⊆ F[T] -/
+lemma adjoin_simple_subset' {T : set E} (HT : α ∈ adjoin F T) : adjoin_simple F α ⊆ adjoin F T :=
+adjoin_subset' F {α} (set.singleton_subset_iff.mpr HT)
 
 --generator of F(α)
 def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩

@@ -1,6 +1,7 @@
 import field_theory.subfield
 import field_theory.separable
 import field_theory.tower
+import data.set.finite
 
 section
 
@@ -230,3 +231,11 @@ linear_equiv.finite_dimensional ((@inclusion_linear_equiv F _ E _ _).symm)
 
 lemma inclusion.finite_dimensional : finite_dimensional F E → finite_dimensional (set.range (algebra_map F E)) E :=
 λ h, @finite_dimensional.trans (set.range (algebra_map F E)) F E _ _ _ _ _ _ _ _ h
+
+/-- If F is infinite then its inclusion into E is infinite. -/
+lemma inclusion.infinite (hF : infinite F) : (set.range (algebra_map F E)).infinite :=
+begin
+    apply set.infinite_coe_iff.mp,
+    apply infinite.of_injective (set.range_factorization (algebra_map F E)),
+    exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
+end

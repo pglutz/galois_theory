@@ -60,34 +60,47 @@ lemma primitive_element_two_inf_milne (α β : E) (hα : element_is_separable F 
     ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ := sorry
 
 lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : polynomial F) (F_inf : F.infinite) :
-    ∃ c : F, ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
+    ∃ c : F, c ≠ 0 ∧ ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
 lemma primitive_element_two_inf  (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
-    (F_inf : F.infinite) : ∃ γ : E, adjoin F {α, β} = adjoin_simple F γ :=
+    (F_inf : F.infinite) : ∃ γ : E, F[α, β] = F[γ] :=
 begin
     rcases F_sep α with ⟨hα, hf⟩,
     rcases F_sep β with ⟨hβ, hg⟩,
     let f := minimal_polynomial hα,
     let g := minimal_polynomial hβ,
-    cases primitive_element_two_aux E F α β f g F_inf with c hc,
+    rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
+    replace c_ne_0 : (c : E) ≠ 0 :=
+    begin
+        revert c_ne_0,
+        contrapose!,
+        intro h,
+        rw ← (algebra_map F E).map_zero at h,
+        exact (algebra_map F E).injective h,
+    end,
     let γ := α + c*β,
     use γ,
-    have αβ_in_Fγ : {α, β} ⊆ adjoin_simple F γ := sorry,
-    have Fαβ_sub_Fγ : adjoin F {α, β} ⊆ adjoin_simple F γ :=
-        adjoin_subset F {α, β} (adjoin_contains_field_set F {γ}) αβ_in_Fγ,
-    have γ_in_Fαβ : ({γ} : set E) ⊆ adjoin F {α, β},
-    {   intros _ h,
-        cases h,
-        have α_in : α ∈ (adjoin F {α, β} : set E) := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
-        have β_in : β ∈ (adjoin F {α, β} : set E) := adjoin_contains_element F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
-        have cβ_in : ↑c*β ∈ (adjoin F {α, β} : set E) := is_submonoid.mul_mem (adjoin_contains_field F {α, β} c) β_in,
-        exact is_add_submonoid.add_mem α_in cβ_in,
-    },
-    have Fγ_sub_Fαβ : adjoin_simple F γ ⊆ adjoin F {α, β} :=
-        adjoin_subset F {γ} (adjoin_contains_field_set F {α, β}) γ_in_Fαβ,
+    have γ_in_Fγ : γ ∈ adjoin_simple F γ := adjoin_simple_contains_element F γ,
+    have c_in_Fγ : ↑c ∈ adjoin_simple F γ := adjoin_simple_contains_field F γ c,
+    have c_inv_in_Fγ : ↑c⁻¹ ∈ adjoin_simple F γ := is_subfield.inv_mem c_in_Fγ,
+    have α_in_Fγ : α ∈ adjoin_simple F γ := sorry,
+    have cβ_in_Fγ : ↑c*β ∈ adjoin_simple F γ := by rw (show ↑c*β = γ - α, by simp *);
+        exact is_add_subgroup.sub_mem (adjoin_simple F γ) γ α γ_in_Fγ α_in_Fγ,
+    have β_in_Fγ : β ∈ adjoin_simple F γ := by rw (show β = c⁻¹*(c*β), by simp *);
+        exact is_submonoid.mul_mem c_inv_in_Fγ cβ_in_Fγ,
+    have αβ_in_Fγ : {α, β} ⊆ adjoin_simple F γ := λ x hx, by cases hx; cases hx; assumption,
+    have Fαβ_sub_Fγ : adjoin F {α, β} ⊆ adjoin_simple F γ := adjoin_subset' F {α, β} αβ_in_Fγ,
+    have α_in_Fαβ : α ∈ adjoin F {α, β} := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
+    have β_in_Fαβ : β ∈ adjoin F {α, β} := adjoin_contains_element F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
+    have c_in_Fαβ : ↑c ∈ (adjoin F {α, β} : set E) := adjoin_contains_field F {α, β} c,
+    have cβ_in_Fαβ : ↑c*β ∈ adjoin F {α, β} := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
+    have γ_in_Fαβ : γ ∈ adjoin F {α, β} := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
+    have Fγ_sub_Fαβ : adjoin_simple F γ ⊆ adjoin F {α, β} := adjoin_simple_subset' F γ γ_in_Fαβ,
     exact set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ,
 end
+
+
 
 /- Primitive element theorem when F = E. -/
 lemma primitive_element_trivial (F : set E) (hF : is_subfield F) (F_eq_E : F = (⊤ : set E)) :
@@ -109,8 +122,6 @@ end
 lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
     finite_dimensional (adjoin_simple F α) E :=
 begin
-    apply iff_fg.mpr,
-    have b := classical.some_spec (finite_dimensional.exists_is_basis_finset F E),
     sorry,
 end
 
@@ -143,11 +154,7 @@ begin
         by_cases h : adjoin_simple F α = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
         {   have Fα_findim : finite_dimensional (adjoin_simple F α) E := adjoin_findim_of_findim F E F_findim α,
-            have Fα_le_n : findim (adjoin_simple F α) E < n :=
-            begin
-                rw ← hn,
-                exact adjoin_dim_lt E F F_findim α hα,
-            end,
+            have Fα_le_n : findim (adjoin_simple F α) E < n := by rw ← hn; exact adjoin_dim_lt E F F_findim α hα,
             have Fα_inf : (adjoin_simple F α).infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
             have Fα_sep : is_separable (adjoin_simple F α) E := adjoin_simple_is_separable F F_sep α,
@@ -167,15 +174,7 @@ begin
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    have F'_inf : F'.infinite :=
-    begin
-        apply set.infinite_coe_iff.mp,
-        apply infinite.of_injective (set.range_factorization ⇑(algebra_map F E)),
-        have : function.injective (algebra_map F E) := (algebra_map F E).injective,
-        intros x y hxy,
-        injections_and_clear,
-        tauto,
-    end,
+    have F'_inf : F'.infinite := inclusion.infinite F_inf,
     obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
     exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end
@@ -192,4 +191,16 @@ begin
     exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
 end
 
-example (F : set E) [is_subfield F] (α β : E) (hα : α ∈ F) (hβ : β ∈ F) : α + β ∈ F := is_add_submonoid.add_mem hα hβ
+-- lemma adjoin_findim_of_findim' (F_findim : finite_dimensional F E) (α : E) :
+--     finite_dimensional (adjoin_simple F α) E :=
+-- begin
+--     apply iff_fg.mpr,
+--     have b := classical.some (finite_dimensional.exists_is_basis_finset F E),
+--     have hb := classical.some_spec (finite_dimensional.exists_is_basis_finset F E),
+--     use b,
+--     ext, split, exact λ _, by tauto,
+--     {   intro _,
+--         cases hb with _ b_spans,
+--         sorry,
+--     },
+-- end
