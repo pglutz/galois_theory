@@ -76,9 +76,13 @@ begin
     have αβ_in_Fγ : {α, β} ⊆ adjoin_simple F γ := sorry,
     have Fαβ_sub_Fγ : adjoin F {α, β} ⊆ adjoin_simple F γ :=
         adjoin_subset F {α, β} (adjoin_contains_field_set F {γ}) αβ_in_Fγ,
-    have γ_in_Fαβ : {γ} ⊆ adjoin F {α, β},
-    {   -- have : γ ∈ (adjoin F {α, β}) := sorry,
-        sorry,
+    have γ_in_Fαβ : ({γ} : set E) ⊆ adjoin F {α, β},
+    {   intros _ h,
+        cases h,
+        have α_in : α ∈ (adjoin F {α, β} : set E) := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
+        have β_in : β ∈ (adjoin F {α, β} : set E) := adjoin_contains_element F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
+        have cβ_in : ↑c*β ∈ (adjoin F {α, β} : set E) := is_submonoid.mul_mem (adjoin_contains_field F {α, β} c) β_in,
+        exact is_add_submonoid.add_mem α_in cβ_in,
     },
     have Fγ_sub_Fαβ : adjoin_simple F γ ⊆ adjoin F {α, β} :=
         adjoin_subset F {γ} (adjoin_contains_field_set F {α, β}) γ_in_Fαβ,
@@ -185,3 +189,5 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
 end
+
+example (F : set E) [is_subfield F] (α β : E) (hα : α ∈ F) (hβ : β ∈ F) : α + β ∈ F := is_add_submonoid.add_mem hα hβ
