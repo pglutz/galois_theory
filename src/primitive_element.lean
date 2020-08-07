@@ -1,6 +1,7 @@
 import adjoin
 import separable
 import linear_algebra.finite_dimensional
+import linear_algebra.basic
 import subfield_stuff
 import data.set.finite
 import field_theory.tower
@@ -10,14 +11,38 @@ import field_theory.tower
 
 namespace quotient
 
+variables {R M : Type*} [ring R] [add_comm_group M]
+variables [semimodule R M]
+variables (p : submodule R M)
+
 lemma nontrivial_of_lt_top (h : p < ⊤) : nontrivial (p.quotient) :=
 begin
-  obtain ⟨x, _, not_mem_s⟩ := exists_of_lt h,
-  refine ⟨⟨mk x, 0, _⟩⟩,
-  simpa using not_mem_s
+  obtain ⟨x, _, not_mem_s⟩ := submodule.exists_of_lt h,
+  refine ⟨⟨submodule.quotient.mk x, 0, _⟩⟩,
+  simpa using not_mem_s,
 end
 
 end quotient
+
+namespace submodule
+
+section semimodule
+
+variables {R M : Type*} [semiring R] [add_comm_monoid M] [semimodule R M]
+
+/-- If `s ≤ t`, then we can view `s` as a submodule of `t` by taking the comap
+of `t.subtype`. -/
+def comap_subtype_equiv_of_le {p q : submodule R M} (hpq : p ≤ q) :
+p.comap q.subtype ≃ₗ[R] p :=
+{ to_fun := λ x, ⟨x, x.2⟩,
+  inv_fun := λ x, ⟨⟨x, hpq x.2⟩, x.2⟩,
+  left_inv := λ x, by simp only [coe_mk, submodule.eta, coe_coe],
+  right_inv := λ x, by simp only [subtype.coe_mk, submodule.eta, coe_coe],
+  map_add' := λ x y, rfl,
+  map_smul' := λ c x, rfl }
+
+end semimodule
+end submodule
 
 namespace finite_dimensional
 
@@ -61,7 +86,7 @@ end
 lemma inf_of_subset_inf {X : Type*} {s : set X} {t : set X} (hst : s ⊆ t) (hs : s.infinite) : t.infinite :=
 mt (λ ht, ht.subset hst) hs
 
--- Is this really not in mathlib
+-- Is this really not in mathlib?
 /-- If M is an algebra over a field F and x is a nonzero element of F then x as an element of M is also nonzero. -/
 lemma ne_zero_of_ne_zero (F M : Type*) [field F] [comm_semiring M] [nontrivial M] [algebra F M]
     {x : F} (hx : x ≠ 0) : algebra_map F M x ≠ 0 :=
@@ -209,11 +234,6 @@ end
 lemma adjoin_dim_one (α : E) [hF : finite_dimensional F (F[α])] (F_dim : findim F (F[α]) = 1) :
     ∃ x, algebra_map F E x = α :=
 begin
-    -- cases (finite_dimensional.exists_is_basis_finset F (F[α])) with b hb,
-    -- have b_singleton := findim_eq_card_basis hb,
-    -- rw F_dim at b_singleton,
-    -- let b : finset (F[α]) := ⟨[(1 : F[α]), ⟨α, adjoin_simple_contains_element F α⟩], sorry⟩,
-    -- have : linear_independent F (λ (x : ↥↑b), ↑x) := sorry,
     sorry,
 end
 
