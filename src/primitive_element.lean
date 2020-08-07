@@ -5,6 +5,10 @@ import linear_algebra.basic
 import subfield_stuff
 import data.set.finite
 import field_theory.tower
+import algebra.gcd_domain
+
+noncomputable theory
+local attribute [instance, priority 100] classical.prop_decidable
 
 
 /- Code from PR #3720. Delete this once that gets merged. -/
@@ -129,7 +133,7 @@ end
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
 /-- A finite dimensional vector space over a finite field is finite. -/
-noncomputable def finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
+def finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
     module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
 /-- Primitive element theorem for F ⊂ E assuming E is finite. -/
@@ -157,8 +161,14 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : polynomial F) (F_inf : F.infinite) :
     ∃ c : F, c ≠ 0 ∧ ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
 
+lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
+    (F_inf : F.infinite) : ∃ c : E, β ∈ F[α + c*β] :=
+begin
+    sorry
+end
+
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
-lemma primitive_element_two_inf  (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
+lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
     (F_inf : F.infinite) : ∃ γ : E, F[α, β] = F[γ] :=
 begin
     rcases F_sep α with ⟨hα, hf⟩,
