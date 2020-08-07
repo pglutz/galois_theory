@@ -143,14 +143,12 @@ begin
     rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
     replace c_ne_0 : (c : E) ≠ 0 := ne_zero_of_ne_zero F E c_ne_0,
     let γ := α + c*β,
-    have α_in_Fγ : α ∈ F[γ] := sorry,
+    have β_in_Fγ : β ∈ F[γ] := sorry,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
-    have c_inv_in_Fγ : ↑c⁻¹ ∈ F[γ] := is_subfield.inv_mem c_in_Fγ,
-    have cβ_in_Fγ : ↑c*β ∈ F[γ] := by rw (show ↑c*β = γ - α, by simp *);
-        exact is_add_subgroup.sub_mem (F[γ]) γ α γ_in_Fγ α_in_Fγ,
-    have β_in_Fγ : β ∈ F[γ] := by rw (show β = c⁻¹*(c*β), by simp *);
-        exact is_submonoid.mul_mem c_inv_in_Fγ cβ_in_Fγ,
+    have cβ_in_Fγ : ↑c*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
+    have α_in_Fγ : α ∈ F[γ] := by rw (show α = γ - ↑c*β, by simp *);
+        exact is_add_subgroup.sub_mem (F[γ]) γ (↑c*β) γ_in_Fγ cβ_in_Fγ,
     have αβ_in_Fγ : {α, β} ⊆ F[γ] := λ x hx, by cases hx; cases hx; assumption,
     have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
     have α_in_Fαβ : α ∈ F[α, β] := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
