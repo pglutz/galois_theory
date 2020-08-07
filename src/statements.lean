@@ -39,10 +39,13 @@ begin
 end
 
 --splitting field of separable polynomial
-definition is_galois' : Prop := sorry
+definition is_galois' : Prop := ∃ f: polynomial F, polynomial.is_splitting_field F E f
 
 --fixed field of aut
 definition is_galois'' : Prop := base_field_image F E = mul_action.fixed_points (E ≃ₐ[F] E) E
 
 --fixed field of some subgroup of aut
 definition is_galois''' : Prop := ∃ H : subgroup (E ≃ₐ[F] E), base_field_image F E = mul_action.fixed_points H E
+
+lemma is_galois_iff_is_galois' : is_galois F E ↔ is_galois' F E := sorry
+lemma is_galois_iff_is_galois'' : is_galois F E ↔ is_galois'' F E := sorry
