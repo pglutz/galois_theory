@@ -6,6 +6,44 @@ import data.set.finite
 import field_theory.tower
 
 
+/- Code from PR #3720. Delete this once that gets merged. -/
+
+namespace quotient
+
+lemma nontrivial_of_lt_top (h : p < ⊤) : nontrivial (p.quotient) :=
+begin
+  obtain ⟨x, _, not_mem_s⟩ := exists_of_lt h,
+  refine ⟨⟨mk x, 0, _⟩⟩,
+  simpa using not_mem_s
+end
+
+end quotient
+
+namespace finite_dimensional
+
+variables {K V : Type*} [field K] [add_comm_group V] [vector_space K V]
+
+/-- A finite dimensional space has positive `findim` iff it is nontrivial. -/
+lemma findim_pos_iff [finite_dimensional K V] : 0 < findim K V ↔ nontrivial V :=
+iff.trans (by { rw ← findim_eq_dim, norm_cast }) (@dim_pos_iff_nontrivial K V _ _ _)
+
+/-- A nontrivial finite dimensional space has positive `findim`. -/
+lemma findim_pos [finite_dimensional K V] [h : nontrivial V] : 0 < findim K V :=
+findim_pos_iff.mpr h
+
+lemma findim_pos_iff_exists_ne_zero [finite_dimensional K V] : 0 < findim K V ↔ ∃ x : V, x ≠ 0 :=
+iff.trans (by { rw ← findim_eq_dim, norm_cast }) (@dim_pos_iff_exists_ne_zero K V _ _ _)
+
+/-- The dimension of a strict submodule is strictly bounded by the dimension of the ambient space. -/
+lemma findim_lt [finite_dimensional K V] {s : submodule K V} (h : s < ⊤) :
+  findim K s < findim K V :=
+begin
+  rw [← s.findim_quotient_add_findim, add_comm],
+  exact nat.lt_add_of_zero_lt_left _ _ (findim_pos_iff.mpr (quotient.nontrivial_of_lt_top _ h)),
+end
+
+end finite_dimensional
+
 /- Some stupid lemmas used below. Maybe some of them are already in mathlib? -/
 
 -- This should go into field_theory/subfield eventually probably
