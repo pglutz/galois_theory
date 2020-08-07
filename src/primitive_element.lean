@@ -190,24 +190,18 @@ begin
     have hβ' : is_integral F' β' := sorry,
     have hα'_sep : (minimal_polynomial hα').separable,
     have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
-
+    sorry,
     rcases primitive_element_two_aux K F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
     replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
-
+    sorry,
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
 lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
     (F_inf : F.infinite) : ∃ γ : E, F[α, β] = F[γ] :=
 begin
-    rcases F_sep α with ⟨hα, hf⟩,
-    rcases F_sep β with ⟨hβ, hg⟩,
-    let f := minimal_polynomial hα,
-    let g := minimal_polynomial hβ,
-    rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
-    replace c_ne_0 : (c : E) ≠ 0 := ne_zero_of_ne_zero F E c_ne_0,
+    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key E F α β F_sep F_inf,
     let γ := α + c*β,
-    have β_in_Fγ : β ∈ F[γ] := sorry,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
     have cβ_in_Fγ : ↑c*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
@@ -281,20 +275,19 @@ lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensio
     findim (F[α]) E < findim F E :=
 begin 
     rw ← findim_mul_findim F (F[α]) E,
-    have : 0 < vector_space.dim (F[α]) E := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim (F[α]) E := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
-    have : 0 < vector_space.dim F (F[α]) := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim F (F[α]) := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
+    have : 0 < findim (F[α]) E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : 0 < findim F (F[α]) := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : findim F (F[α]) > 1 :=
     begin
-        by_contra h,
-        push_neg at h,
-        replace h : findim F (F[α]) = 1 := by linarith,
-        obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
-        rw algebra.subring_algebra_map_apply at x_eq_α,
-        change x = α at x_eq_α,
-        rw x_eq_α at x_in_F,
-        exact hα x_in_F,
+        sorry,
+        -- by_contra h,
+        -- push_neg at h,
+        -- replace h : findim F (F[α]) = 1 := by linarith,
+        -- obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
+        -- rw algebra.subring_algebra_map_apply at x_eq_α,
+        -- change x = α at x_eq_α,
+        -- rw x_eq_α at x_in_F,
+        -- exact hα x_in_F,
     end,
     nlinarith,
 end
