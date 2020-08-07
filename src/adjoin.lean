@@ -185,6 +185,8 @@ def adjoin_simple : set E := adjoin F {α}
 -- Let's try out this notation?
 notation K`[`β`]` := adjoin_simple K β
 notation K`[`β `,` γ`]` := adjoin K {β, γ}
+-- This notation would allow us to write F[α, β] for adjoin_simple (adjoin_simple F α) β
+-- notation K`⟨`L:(foldr `,` (x M, adjoin_simple M x) K `⟩`) := L 
 
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
 adjoin_contains_field F {α} x

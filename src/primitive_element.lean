@@ -5,6 +5,8 @@ import subfield_stuff
 import data.set.finite
 
 
+/- Some stupid lemmas used below. Maybe some of them are already in mathlib? -/
+
 -- This should go into field_theory/subfield eventually probably
 lemma is_subfield.pow_mem {K : Type*} [field K] {a : K} {n : ℤ} {s : set K} [is_subfield s] (h : a ∈ s) : a ^ n ∈ s :=
 begin
@@ -16,20 +18,53 @@ begin
         exact is_submonoid.pow_mem (is_subfield.inv_mem h), },
 end
 
+/-- If a subset of a set is infinite then the set is infinite. -/
 lemma inf_of_subset_inf {X : Type*} {s : set X} {t : set X} (hst : s ⊆ t) (hs : s.infinite) : t.infinite :=
 mt (λ ht, ht.subset hst) hs
 
-open finite_dimensional
+-- Is this really not in mathlib
+/-- If M is an algebra over a field F and x is a nonzero element of F then x as an element of M is also nonzero. -/
+lemma ne_zero_of_ne_zero (F M : Type*) [field F] [comm_semiring M] [nontrivial M] [algebra F M]
+    {x : F} (hx : x ≠ 0) : algebra_map F M x ≠ 0 :=
+begin
+    revert hx,
+    contrapose!,
+    intro h,
+    rw ← (algebra_map F M).map_zero at h,
+    exact (algebra_map F M).injective h,
+end
 
-/- Prove the primitive element theorem. -/
+
+/- Proof of the primitive element theorem. -/
+
+open finite_dimensional
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
+/-- The set of roots of a polynomial f in a field E where f is a polynomial in F and F ⊆ E. -/
 def roots (f : polynomial F) := {α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
+
+/- Trivial case of the primitive element theorem. -/
+
+/-- Primitive element theorem when F = E. -/
+lemma primitive_element_trivial (F : set E) (hF : is_subfield F) (F_eq_E : F = (⊤ : set E)) :
+    ∃ α : E, F[α] = (⊤ : set E) :=
+begin
+    use 0,
+    ext,
+    split,
+    intro _,
+    exact dec_trivial,
+    rw ← F_eq_E,
+    intro hx,
+    rw (show x = algebra_map F E ⟨x, hx⟩, from rfl),
+    apply adjoin_contains_field,
+end
 
 /- Primitive element theorem for finite fields. -/
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
+/-- A finite dimensional vector space over a finite field is finite. -/
 noncomputable def finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
     module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
@@ -71,20 +106,12 @@ begin
     let f := minimal_polynomial hα,
     let g := minimal_polynomial hβ,
     rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
-    replace c_ne_0 : (c : E) ≠ 0 :=
-    begin
-        revert c_ne_0,
-        contrapose!,
-        intro h,
-        rw ← (algebra_map F E).map_zero at h,
-        exact (algebra_map F E).injective h,
-    end,
+    replace c_ne_0 : (c : E) ≠ 0 := ne_zero_of_ne_zero F E c_ne_0,
     let γ := α + c*β,
-    use γ,
+    have α_in_Fγ : α ∈ F[γ] := sorry,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
     have c_inv_in_Fγ : ↑c⁻¹ ∈ F[γ] := is_subfield.inv_mem c_in_Fγ,
-    have α_in_Fγ : α ∈ F[γ] := sorry,
     have cβ_in_Fγ : ↑c*β ∈ F[γ] := by rw (show ↑c*β = γ - α, by simp *);
         exact is_add_subgroup.sub_mem (F[γ]) γ α γ_in_Fγ α_in_Fγ,
     have β_in_Fγ : β ∈ F[γ] := by rw (show β = c⁻¹*(c*β), by simp *);
@@ -97,42 +124,25 @@ begin
     have cβ_in_Fαβ : ↑c*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
     have γ_in_Fαβ : γ ∈ F[α, β] := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
     have Fγ_sub_Fαβ : F[γ] ⊆ F[α, β] := adjoin_simple_subset' F γ γ_in_Fαβ,
-    exact set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ,
-end
-
-
-
-/- Primitive element theorem when F = E. -/
-lemma primitive_element_trivial (F : set E) (hF : is_subfield F) (F_eq_E : F = (⊤ : set E)) :
-    ∃ α : E, F[α] = (⊤ : set E) :=
-begin
-    use 0,
-    ext,
-    split,
-    intro _,
-    exact dec_trivial,
-    rw ← F_eq_E,
-    intro hx,
-    rw (show x = algebra_map F E ⟨x, hx⟩, from rfl),
-    apply adjoin_contains_field,
+    exact ⟨γ, set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ⟩,
 end
 
 -- Should these two lemmas go in adjoin.lean?
-/- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
+/-- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
 lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
     finite_dimensional (F[α]) E :=
 begin
     sorry,
 end
 
-/- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
+/-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
 lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) (hα : α ∉ F) :
     findim (F[α]) E < findim F E :=
 begin 
     sorry,
 end
 
-/- Primitive element theorem for infinite fields when F is actually a subset of E . -/
+/-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
 theorem primitive_element_inf_aux (F : set E) [hF : is_subfield F] (F_sep : is_separable F E)
     (F_findim: finite_dimensional F E) (F_inf : F.infinite) (n : ℕ) (hn : findim F E = n) :
     (∃ α : E, F[α] = (⊤ : set E)) :=
