@@ -3,6 +3,7 @@ import separable
 import linear_algebra.finite_dimensional
 import subfield_stuff
 import data.set.finite
+import field_theory.tower
 
 
 /- Some stupid lemmas used below. Maybe some of them are already in mathlib? -/
@@ -140,7 +141,7 @@ def submodule_restrict_field (α : E) (p : submodule (F[α]) E) : submodule F E 
 
 -- Should these two lemmas go in adjoin.lean?
 /-- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
-lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
+instance adjoin_findim_of_findim [F_findim : finite_dimensional F E] (α : E) :
     finite_dimensional (F[α]) E :=
 begin
     rw iff_fg,
@@ -162,65 +163,17 @@ begin
     apply finite_dimensional.span_of_finite (F[α]) hB.2,
 end
 
-lemma adjoin_findim_of_findim_base (F_findim : finite_dimensional F E) (α : E) :
-    finite_dimensional F (F[α]) :=
-begin
-    have h := finite_dimensional.finite_dimensional_submodule (adjoin_simple_as_submodule F α),
-    exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
-end
-
---I'm sure that this can be shortened...
-lemma adjoin_dim_let_aux (a b c : ℕ) (habc : a * b = c) (hbc : c ≤ b) (hc : c ≠ 0) : a = 1 :=
-begin
-    rw ←habc at hbc,
-    rw ←habc at hc,
-    have ha : a ≠ 0 := left_ne_zero_of_mul hc,
-    have hb : b ≠ 0 := right_ne_zero_of_mul hc,
-    have ha' : 0 < a := nat.pos_of_ne_zero ha,
-    have hb' : 0 < b := nat.pos_of_ne_zero hb,
-    have h : b ≤ a * b := nat.le_mul_of_pos_left ha',
-    replace h : a * b = b, exact le_antisymm hbc h,
-    cases a,
-    exfalso,
-    apply ha,
-    refl,
-    rw nat.succ_eq_add_one at h,
-    rw add_mul at h,
-    rw one_mul at h,
-    rw add_comm at h,
-    replace h := nat.sub_eq_of_eq_add h.symm,
-    rw nat.sub_self at h,
-    replace h := h.symm,
-    rw nat.mul_eq_zero at h,
-    cases h,
-    rw h,
-    exfalso,
-    apply hb,
-    exact h,
-end
+instance adjoin_simple_is_findim (α : E) : finite_dimensional F (F[α]) := sorry
 
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
-lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) (hα : α ∉ F) :
+lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
     findim (F[α]) E < findim F E :=
 begin 
-    have h1 : finite_dimensional F (F[α]) := adjoin_findim_of_findim_base F E F_findim α,
-    have h2 : finite_dimensional (F[α]) E := adjoin_findim_of_findim F E F_findim α,
-    have habc := @finite_dimensional.findim_mul_findim F (F[α]) E _ _ _ _ _ _ _ h1 h2,
-    by_contradiction,
-    rename a hbc,
-    push_neg at hbc,
-    have hc : findim F E ≠ 0,
-    have hc' : 0 < vector_space.dim F E,
-    rw dim_pos_iff_exists_ne_zero,
-    exact ⟨1,one_ne_zero⟩,
-    rw ←findim_eq_dim at hc',
-    intro h,
-    rw h at hc',
-    apply hc'.2,
-    refl,
-    have key := adjoin_dim_let_aux _ _ _ habc hbc hc,
-    sorry,
-    -- this last step might be in mathlib
+    rw ← findim_mul_findim F (F[α]) E,
+    have : findim (F[α]) E > 0 := sorry,
+    have : findim F (F[α]) > 1 := sorry,
+    have : findim (F[α]) E > 0 := sorry,
+    nlinarith,
 end
 
 /-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
@@ -244,8 +197,8 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional (F[α]) E := adjoin_findim_of_findim F E F_findim α,
-            have Fα_le_n : findim (F[α]) E < n := by rw ← hn; exact adjoin_dim_lt E F F_findim α hα,
+        {   have Fα_findim : finite_dimensional (F[α]) E := adjoin_findim_of_findim F E α,
+            have Fα_le_n : findim (F[α]) E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
             have Fα_inf : (F[α]).infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
             have Fα_sep : is_separable (F[α]) E := adjoin_simple_is_separable F F_sep α,
@@ -281,17 +234,3 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
 end
-
--- lemma adjoin_findim_of_findim' (F_findim : finite_dimensional F E) (α : E) :
---     finite_dimensional (adjoin_simple F α) E :=
--- begin
---     apply iff_fg.mpr,
---     have b := classical.some (finite_dimensional.exists_is_basis_finset F E),
---     have hb := classical.some_spec (finite_dimensional.exists_is_basis_finset F E),
---     use b,
---     ext, split, exact λ _, by tauto,
---     {   intro _,
---         cases hb with _ b_spans,
---         sorry,
---     },
--- end
