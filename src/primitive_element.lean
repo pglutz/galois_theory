@@ -252,20 +252,19 @@ lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensio
     findim (F[α]) E < findim F E :=
 begin 
     rw ← findim_mul_findim F (F[α]) E,
-    have : 0 < vector_space.dim (F[α]) E := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim (F[α]) E := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
-    have : 0 < vector_space.dim F (F[α]) := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim F (F[α]) := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
+    have : 0 < findim (F[α]) E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : 0 < findim F (F[α]) := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : findim F (F[α]) > 1 :=
     begin
-        by_contra h,
-        push_neg at h,
-        replace h : findim F (F[α]) = 1 := by linarith,
-        obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
-        rw algebra.subring_algebra_map_apply at x_eq_α,
-        change x = α at x_eq_α,
-        rw x_eq_α at x_in_F,
-        exact hα x_in_F,
+        sorry,
+        -- by_contra h,
+        -- push_neg at h,
+        -- replace h : findim F (F[α]) = 1 := by linarith,
+        -- obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
+        -- rw algebra.subring_algebra_map_apply at x_eq_α,
+        -- change x = α at x_eq_α,
+        -- rw x_eq_α at x_in_F,
+        -- exact hα x_in_F,
     end,
     nlinarith,
 end
