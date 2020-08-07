@@ -108,6 +108,35 @@ instance adjoin.is_algebra : algebra F (adjoin F S) := {
     end
 }
 
+def adjoin_as_submodule : submodule F E := {
+    carrier := adjoin F S,
+    zero_mem' := is_add_submonoid.zero_mem,
+    add_mem' := λ a b, is_add_submonoid.add_mem,
+    smul_mem' :=
+    begin
+        intros a b hb,
+        rw algebra.smul_def,
+        exact is_submonoid.mul_mem (adjoin_contains_field F S a) hb,
+    end
+}
+
+definition adjoin_as_submodule_equiv : (adjoin F S) ≃ₗ[F] (adjoin_as_submodule F S) := {
+    to_fun := λ x, x,
+    map_add' := λ x y, rfl,
+    map_smul' :=
+    begin
+        intros x y,
+        ext1,
+        change _ = x • ↑y,
+        rw algebra.smul_def,
+        rw algebra.smul_def,
+        refl,
+    end,
+    inv_fun := λ x, x,
+    left_inv := λ x, rfl,
+    right_inv := λ x, rfl,
+}
+
 lemma adjoin_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (HS : S ⊆ T) : adjoin F S ⊆ T :=
 begin
     apply field.closure_subset,
@@ -176,6 +205,19 @@ begin
     refl,
 end
 
+instance adjoin_algebra_tower : is_algebra_tower F (adjoin F S) E := {
+    smul_assoc :=
+    begin
+        intros x y z,
+        rw algebra.smul_def,
+        rw algebra.smul_def,
+        rw algebra.smul_def,
+        rw ring_hom.map_mul,
+        rw mul_assoc,
+        refl,
+    end
+}
+
 variables (α : E) (h : is_integral F α)
 
 def adjoin_simple : set E := adjoin F {α}
@@ -200,6 +242,12 @@ adjoin.is_subfield F {α}
 
 instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
 adjoin.is_algebra F {α}
+
+def adjoin_simple_as_submodule : submodule F E :=
+adjoin_as_submodule F {α}
+
+definition adjoin_simple_as_submodule_equiv : (adjoin_simple F α) ≃ₗ[F] (adjoin_simple_as_submodule F α) :=
+adjoin_as_submodule_equiv F {α}
 
 /-- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
 lemma adjoin_simple_equals_adjoin_simple_range (α : E) : adjoin_simple F α = adjoin_simple (set.range (algebra_map F E)) α :=
@@ -227,6 +275,9 @@ end
 
 lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
 adjoin.composition F {α}
+
+instance adjoin_simple_algebra_tower : is_algebra_tower F (F[α]) E :=
+adjoin_algebra_tower F {α}
 
 variables {E' : Type*} [field E'] [algebra F E'] (α' : E') (hα' : (minimal_polynomial h).eval₂ (algebra_map F E') α' = 0)
 

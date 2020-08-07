@@ -90,10 +90,6 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 
 /- Primitive element theorem for infinite fields. -/
 
---Milne's version
-lemma primitive_element_two_inf_milne (α β : E) (hα : element_is_separable F α) (hF : infinite F) :
-    ∃ γ : E, F[α, β] = F[γ] := sorry
-
 lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : polynomial F) (F_inf : F.infinite) :
     ∃ c : F, c ≠ 0 ∧ ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
 
@@ -166,11 +162,65 @@ begin
     apply finite_dimensional.span_of_finite (F[α]) hB.2,
 end
 
+lemma adjoin_findim_of_findim_base (F_findim : finite_dimensional F E) (α : E) :
+    finite_dimensional F (F[α]) :=
+begin
+    have h := finite_dimensional.finite_dimensional_submodule (adjoin_simple_as_submodule F α),
+    exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
+end
+
+--I'm sure that this can be shortened...
+lemma adjoin_dim_let_aux (a b c : ℕ) (habc : a * b = c) (hbc : c ≤ b) (hc : c ≠ 0) : a = 1 :=
+begin
+    rw ←habc at hbc,
+    rw ←habc at hc,
+    have ha : a ≠ 0 := left_ne_zero_of_mul hc,
+    have hb : b ≠ 0 := right_ne_zero_of_mul hc,
+    have ha' : 0 < a := nat.pos_of_ne_zero ha,
+    have hb' : 0 < b := nat.pos_of_ne_zero hb,
+    have h : b ≤ a * b := nat.le_mul_of_pos_left ha',
+    replace h : a * b = b, exact le_antisymm hbc h,
+    cases a,
+    exfalso,
+    apply ha,
+    refl,
+    rw nat.succ_eq_add_one at h,
+    rw add_mul at h,
+    rw one_mul at h,
+    rw add_comm at h,
+    replace h := nat.sub_eq_of_eq_add h.symm,
+    rw nat.sub_self at h,
+    replace h := h.symm,
+    rw nat.mul_eq_zero at h,
+    cases h,
+    rw h,
+    exfalso,
+    apply hb,
+    exact h,
+end
+
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
 lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] (F_findim : finite_dimensional F E) (α : E) (hα : α ∉ F) :
     findim (F[α]) E < findim F E :=
 begin 
+    have h1 : finite_dimensional F (F[α]) := adjoin_findim_of_findim_base F E F_findim α,
+    have h2 : finite_dimensional (F[α]) E := adjoin_findim_of_findim F E F_findim α,
+    have habc := @finite_dimensional.findim_mul_findim F (F[α]) E _ _ _ _ _ _ _ h1 h2,
+    by_contradiction,
+    rename a hbc,
+    push_neg at hbc,
+    have hc : findim F E ≠ 0,
+    have hc' : 0 < vector_space.dim F E,
+    rw dim_pos_iff_exists_ne_zero,
+    exact ⟨1,one_ne_zero⟩,
+    rw ←findim_eq_dim at hc',
+    intro h,
+    rw h at hc',
+    apply hc'.2,
+    refl,
+    have key := adjoin_dim_let_aux _ _ _ habc hbc hc,
     sorry,
+    -- this last step might be in mathlib
 end
 
 /-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
