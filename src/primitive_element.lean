@@ -162,7 +162,7 @@ lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : p
     ∃ c : F, c ≠ 0 ∧ ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
 
 lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
-    (F_inf : F.infinite) : ∃ c : E, β ∈ F[α + c*β] :=
+    (F_inf : F.infinite) : ∃ c : F, β ∈ F[α + c*β] :=
 begin
     sorry
 end
@@ -171,14 +171,14 @@ end
 lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
     (F_inf : F.infinite) : ∃ γ : E, F[α, β] = F[γ] :=
 begin
-    rcases F_sep α with ⟨hα, hf⟩,
-    rcases F_sep β with ⟨hβ, hg⟩,
-    let f := minimal_polynomial hα,
-    let g := minimal_polynomial hβ,
-    rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
-    replace c_ne_0 : (c : E) ≠ 0 := ne_zero_of_ne_zero F E c_ne_0,
+    -- rcases F_sep α with ⟨hα, hf⟩,
+    -- rcases F_sep β with ⟨hβ, hg⟩,
+    -- let f := minimal_polynomial hα,
+    -- let g := minimal_polynomial hβ,
+    -- rcases primitive_element_two_aux E F α β f g F_inf with ⟨c, c_ne_0, hc⟩,
+    -- replace c_ne_0 : (c : E) ≠ 0 := ne_zero_of_ne_zero F E c_ne_0,
+    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key E F α β F_sep F_inf,
     let γ := α + c*β,
-    have β_in_Fγ : β ∈ F[γ] := sorry,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
     have cβ_in_Fγ : ↑c*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
