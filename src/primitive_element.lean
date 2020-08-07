@@ -170,24 +170,36 @@ begin
     exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
 end
 
-lemma dim_one_iff_top {E : Type*} [field E] {F : set E} [is_subfield F] [finite_dimensional F E] :
-    findim F E = 1 ↔ F = (⊤ : set E) := sorry
+lemma adjoin_dim_one (α : E) [hF : finite_dimensional F (F[α])] (F_dim : findim F (F[α]) = 1) :
+    ∃ x, algebra_map F E x = α :=
+begin
+    -- cases (finite_dimensional.exists_is_basis_finset F (F[α])) with b hb,
+    -- have b_singleton := findim_eq_card_basis hb,
+    -- rw F_dim at b_singleton,
+    -- let b : finset (F[α]) := ⟨[(1 : F[α]), ⟨α, adjoin_simple_contains_element F α⟩], sorry⟩,
+    -- have : linear_independent F (λ (x : ↥↑b), ↑x) := sorry,
+    sorry,
+end
 
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
 lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
     findim (F[α]) E < findim F E :=
 begin 
     rw ← findim_mul_findim F (F[α]) E,
-    have : 0 < vector_space.dim (F[α]) E := dim_pos_iff_nontrivial.mpr _,
+    have : 0 < vector_space.dim (F[α]) E := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : 0 < findim (F[α]) E := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
-    have : 0 < vector_space.dim F (F[α]) := dim_pos_iff_nontrivial.mpr _,
+    have : 0 < vector_space.dim F (F[α]) := dim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : 0 < findim F (F[α]) := by rw ← findim_eq_dim at this; norm_cast at *; assumption,
     have : findim F (F[α]) > 1 :=
     begin
         by_contra h,
         push_neg at h,
         replace h : findim F (F[α]) = 1 := by linarith,
-        sorry,
+        obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
+        rw algebra.subring_algebra_map_apply at x_eq_α,
+        change x = α at x_eq_α,
+        rw x_eq_α at x_in_F,
+        exact hα x_in_F,
     end,
     nlinarith,
 end

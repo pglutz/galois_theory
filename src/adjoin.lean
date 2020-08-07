@@ -162,7 +162,6 @@ end
     range(F → E) into E. -/
 lemma algebra_map_twice : set.range (algebra_map (set.range (algebra_map F E)) E) = set.range (algebra_map F E) :=
 begin
-    have : is_subfield (set.range (algebra_map F E)) := range.is_subfield (algebra_map F E),
     ext, split,
     {   rintros ⟨⟨y, ⟨z, rfl⟩⟩, rfl⟩,
         exact ⟨z, rfl⟩,
