@@ -127,12 +127,43 @@ begin
     exact ⟨γ, set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ⟩,
 end
 
+def submodule_restrict_field (α : E) (p : submodule (F[α]) E) : submodule F E := {
+    carrier := p.carrier,
+    zero_mem' := p.zero_mem',
+    add_mem' := p.add_mem',
+    smul_mem' :=
+    begin
+        intros c x hx,
+        rw algebra.smul_def,
+        rw adjoin_simple.composition F α,
+        rw ring_hom.comp_apply,
+        rw ←algebra.smul_def,
+        exact p.smul_mem' _ hx,
+    end
+}
+
 -- Should these two lemmas go in adjoin.lean?
 /-- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
 lemma adjoin_findim_of_findim (F_findim : finite_dimensional F E) (α : E) :
     finite_dimensional (F[α]) E :=
 begin
-    sorry,
+    rw iff_fg,
+    rw submodule.fg_iff_finite_dimensional,
+    cases (finite_dimensional.exists_is_basis_finite F E) with B hB,
+    have key : submodule.span (F[α]) B = ⊤,
+    ext,
+    simp only [submodule.mem_top, iff_true],
+    have hx : x ∈ submodule.span F (set.range coe),
+    rw hB.1.2,
+    exact submodule.mem_top,
+    rw submodule.mem_span,
+    intros p hp,
+    rw submodule.mem_span at hx,
+    apply hx (submodule_restrict_field F E α p),
+    rw subtype.range_coe,
+    exact hp,
+    rw ←key,
+    apply finite_dimensional.span_of_finite (F[α]) hB.2,
 end
 
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
