@@ -11,7 +11,6 @@ import field_theory.splitting_field
 noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 
-
 /- Code from PR #3720. Delete this once that gets merged. -/
 
 namespace quotient
