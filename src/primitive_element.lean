@@ -177,7 +177,13 @@ begin
     use c,
     let f' := f_E.comp(polynomial.C (α+c*β)-(polynomial.C ↑c) * (polynomial.X)),
     let h := euclidean_domain.gcd f' g_E,
-    have h_sep : h.separable := sorry,
+    have h_sep : h.separable,
+    have div := euclidean_domain.gcd_dvd_right f' g_E,
+    cases div with p mul,
+    dsimp[←h] at mul,
+    apply polynomial.separable.of_mul_left,
+    rw ←mul,
+    exact polynomial.separable.map hg,
     have h_root : h.eval β = 0 := sorry,
 
 
