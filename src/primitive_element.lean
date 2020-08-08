@@ -294,89 +294,143 @@ begin
     exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
 end
 
-lemma adjoin_dim_one (α : E) [hF : finite_dimensional F F[α]] (F_dim : findim F F[α] = 1) :
-    ∃ x, algebra_map F E x = α :=
+-- lemma field_findim_lt_aux (F : set E) [is_subfield F] [hF : finite_dimensional F E] (h : ∃ x : E, x ∉ F) :
+--     1 < findim F E :=
+-- begin
+--     rw [← findim_of_field F, linear_equiv.findim_eq (base_field_linear_equiv F)],
+--     apply findim_lt,
+--     cases h with x hx,
+--     refine submodule.lt_iff_le_and_exists.mpr (by tauto),
+-- end
+
+-- instance finite_dimensional_over_base_field [hF : finite_dimensional F E] :
+--     finite_dimensional (set.range (algebra_map F E)) E := sorry
+
+
+-- def base_field_as_submodule' : submodule F E := {
+--     carrier := (set.range (algebra_map F E)),
+--     zero_mem' := is_add_submonoid.zero_mem,
+--     add_mem' := λ a b, is_add_submonoid.add_mem,
+--     smul_mem' :=
+--     begin
+--         rintros a x ⟨b, hb⟩,
+--         rw ← hb,
+--         rw algebra.smul_def,
+--         refine is_submonoid.mul_mem _ _,
+--         exact set.mem_range_self a,
+--         exact set.mem_range_self b,
+--     end
+-- }
+
+-- def base_field_linear_equiv' : F ≃ₗ[F] base_field_as_submodule' F E :=
+-- {
+--     to_fun := inclusion_isomorphism F E,
+--     map_add' := (inclusion_isomorphism F E).map_add,
+--     inv_fun := (inclusion_isomorphism F E).inv_fun,
+--     left_inv := (inclusion_isomorphism F E).left_inv,
+--     right_inv := (inclusion_isomorphism F E).right_inv,
+--     map_smul' :=
+--     begin
+--         intros x y,
+--         simp [inclusion_isomorphism, inclusion_algebra_hom, algebra_equiv_of_bij_hom],
+--         rw algebra.smul_def',
+--     end
+-- }
+
+lemma field_findim_lt [hF : finite_dimensional F E] : (∃ x : E, x ∉ set.range (algebra_map F E)) →
+    1 < findim F E :=
 begin
+    -- have := field_findim_lt_aux E (set.range (algebra_map F E)) h,    
+    contrapose!,
+    intros F_dim x,
+    have : 0 < findim F E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : findim F E = 1 := by omega,
+    let s : set E := {1},
+    have : is_basis F (coe : s → E) := sorry,
+    let f := is_basis.repr this x,
+    rw set.mem_range,
+    let y := f ⟨1, set.mem_singleton 1⟩,
+    
+    use y,
+    unfold_coes,
+    have : x = y • 1 := sorry,
+    
     sorry,
 end
 
-/-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
-lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
-    findim F[α] E < findim F E :=
-begin 
-    rw ← findim_mul_findim F F[α] E,
-    have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim F F[α] := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : findim F F[α] > 1 :=
-    begin
-        sorry,
-        -- by_contra h,
-        -- push_neg at h,
-        -- replace h : findim F F[α] = 1 := by linarith,
-        -- obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
-        -- rw algebra.subring_algebra_map_apply at x_eq_α,
-        -- change x = α at x_eq_α,
-        -- rw x_eq_α at x_in_F,
-        -- exact hα x_in_F,
-    end,
-    nlinarith,
-end
+-- /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
+-- lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
+--     findim F[α] E < findim F E :=
+-- begin 
+--     rw ← findim_mul_findim F F[α] E,
+--     have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+--     have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) :=
+--     begin
+--         revert hα,
+--         contrapose!,
+--         rintros ⟨⟨x, hx⟩, hx'⟩,
+--         injections_and_clear,
+--         finish,
+--     end,
+--     have : findim F F[α] > 1 := field_findim_lt F F[α] (by tauto),
+--     nlinarith,
+-- end
 
-/-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
-theorem primitive_element_inf_aux (F : set E) [hF : is_subfield F] (F_sep : is_separable F E)
-    (F_findim: finite_dimensional F E) (F_inf : F.infinite) (n : ℕ) (hn : findim F E = n) :
-    (∃ α : E, F[α] = (⊤ : set E)) :=
-begin
-    tactic.unfreeze_local_instances,
-    revert F,
-    apply n.strong_induction_on,
-    clear n,
-    intros n ih F hF F_sep F_findim F_inf hn,
-    by_cases F_neq_E : F = (⊤ : set E),
-    {   exact primitive_element_trivial E F hF F_neq_E, },
-    {   have : ∃ α : E, α ∉ F :=
-        begin
-            revert F_neq_E,
-            contrapose!,
-            exact λ h, set.ext (λ x, ⟨λ _, dec_trivial, λ _, h x⟩),
-        end,
-        rcases this with ⟨α, hα⟩,
-        by_cases h : F[α] = (⊤ : set E),
-        {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F E α,
-            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
-            have Fα_inf : F[α].infinite :=
-                inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
-            have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
-            obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
-                Fα_sep Fα_findim Fα_inf rfl,
-            obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
-            rw [adjoin_simple_twice, hγ] at hβ,
-            exact ⟨γ, hβ⟩,
-        },
-    },
-end
+-- /-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
+-- theorem primitive_element_inf_aux (F : set E) [hF : is_subfield F] (F_sep : is_separable F E)
+--     (F_findim: finite_dimensional F E) (F_inf : F.infinite) (n : ℕ) (hn : findim F E = n) :
+--     (∃ α : E, F[α] = (⊤ : set E)) :=
+-- begin
+--     tactic.unfreeze_local_instances,
+--     revert F,
+--     apply n.strong_induction_on,
+--     clear n,
+--     intros n ih F hF F_sep F_findim F_inf hn,
+--     by_cases F_neq_E : F = (⊤ : set E),
+--     {   exact primitive_element_trivial E F hF F_neq_E, },
+--     {   have : ∃ α : E, α ∉ F :=
+--         begin
+--             revert F_neq_E,
+--             contrapose!,
+--             exact λ h, set.ext (λ x, ⟨λ _, dec_trivial, λ _, h x⟩),
+--         end,
+--         rcases this with ⟨α, hα⟩,
+--         by_cases h : F[α] = (⊤ : set E),
+--         {   exact ⟨α, h⟩,   },
+--         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F E α,
+--             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
+--             have Fα_inf : F[α].infinite :=
+--                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
+--             have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
+--             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
+--                 Fα_sep Fα_findim Fα_inf rfl,
+--             obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
+--             rw [adjoin_simple_twice, hγ] at hβ,
+--             exact ⟨γ, hβ⟩,
+--         },
+--     },
+-- end
 
-/-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
-    ∃ α, F[α] = (⊤ : set E) :=
-begin
-    set F' := set.range (algebra_map F E) with hF',
-    have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    have F'_inf : F'.infinite := inclusion.infinite F_inf,
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
-    exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
-end
+-- /-- Primitive element theorem for infinite fields. -/
+-- theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
+--     ∃ α, F[α] = (⊤ : set E) :=
+-- begin
+--     set F' := set.range (algebra_map F E) with hF',
+--     have F'_sep : is_separable F' E := inclusion.separable F_sep,
+--     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
+--     have F'_inf : F'.infinite := inclusion.infinite F_inf,
+--     obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
+--     exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
+-- end
 
 
-/- Actual primitive element theorem. -/
+-- /- Actual primitive element theorem. -/
 
-/-- Primitive element theorem. -/
-theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
-    (∃ α : E, F[α] = (⊤ : set E)) :=
-begin
-    by_cases F_finite : nonempty (fintype F),
-    exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
-    exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
-end
+-- /-- Primitive element theorem. -/
+-- theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
+--     (∃ α : E, F[α] = (⊤ : set E)) :=
+-- begin
+--     by_cases F_finite : nonempty (fintype F),
+--     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
+--     exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
+-- end
