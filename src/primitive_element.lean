@@ -155,7 +155,7 @@ begin
     rcases primitive_element_two_aux E' F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
     replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
     sorry,-/
-    sorry
+    sorry,
     --have hα'_sep : (minimal_polynomial hα').separable,
     --have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
     --sorry,
@@ -232,68 +232,21 @@ begin
     exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
 end
 
--- lemma field_findim_lt_aux (F : set E) [is_subfield F] [hF : finite_dimensional F E] (h : ∃ x : E, x ∉ F) :
---     1 < findim F E :=
--- begin
---     rw [← findim_of_field F, linear_equiv.findim_eq (base_field_linear_equiv F)],
---     apply findim_lt,
---     cases h with x hx,
---     refine submodule.lt_iff_le_and_exists.mpr (by tauto),
--- end
-
--- instance finite_dimensional_over_base_field [hF : finite_dimensional F E] :
---     finite_dimensional (set.range (algebra_map F E)) E := sorry
-
-
--- def base_field_as_submodule' : submodule F E := {
---     carrier := (set.range (algebra_map F E)),
---     zero_mem' := is_add_submonoid.zero_mem,
---     add_mem' := λ a b, is_add_submonoid.add_mem,
---     smul_mem' :=
---     begin
---         rintros a x ⟨b, hb⟩,
---         rw ← hb,
---         rw algebra.smul_def,
---         refine is_submonoid.mul_mem _ _,
---         exact set.mem_range_self a,
---         exact set.mem_range_self b,
---     end
--- }
-
--- def base_field_linear_equiv' : F ≃ₗ[F] base_field_as_submodule' F E :=
--- {
---     to_fun := inclusion_isomorphism F E,
---     map_add' := (inclusion_isomorphism F E).map_add,
---     inv_fun := (inclusion_isomorphism F E).inv_fun,
---     left_inv := (inclusion_isomorphism F E).left_inv,
---     right_inv := (inclusion_isomorphism F E).right_inv,
---     map_smul' :=
---     begin
---         intros x y,
---         simp [inclusion_isomorphism, inclusion_algebra_hom, algebra_equiv_of_bij_hom],
---         rw algebra.smul_def',
---     end
--- }
-
 -- I'm abandoning the findim_lt approach in favor of working directly with a basis.
-lemma field_findim_lt [hF : finite_dimensional F E] : (∃ x : E, x ∉ set.range (algebra_map F E)) →
+lemma algebra_findim_lt [hF : finite_dimensional F E] : (∃ x : E, x ∉ set.range (algebra_map F E)) →
     1 < findim F E :=
 begin
-    -- have := field_findim_lt_aux E (set.range (algebra_map F E)) h,    
     contrapose!,
     intros E_dim x,
     have : 0 < findim F E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     replace E_dim : findim F E = 1 := by omega,
-    set s : finset E := {1} with hs,
-    have s_nonempty : s.nonempty := finset.singleton_nonempty 1,
-    have s_lin_ind : linear_independent F (coe : (↑s : set E) → E) :=
+    set s : set E := {1} with hs,
+    have : fintype s := unique.fintype,
+    have s_lin_ind : linear_independent F (coe : s → E) := linear_independent_singleton one_ne_zero,
+    have s_card : s.to_finset.card = findim F E := by change s.to_finset.card with 1; rw E_dim,
+    have s_basis : is_basis F (coe : s → E) :=
     begin
-        sorry,
-    end,
-    have s_card : s.card = findim F E := by change s.card with 1; rw E_dim,
-    have s_basis : is_basis F (coe : (↑s : set E) → E) :=
-    begin
-        exact finset_is_basis_of_linear_independent_of_card_eq_findim s_nonempty s_lin_ind s_card,
+        exact set_is_basis_of_linear_independent_of_card_eq_findim s_lin_ind s_card,
     end,
     set f := is_basis.repr s_basis x with hf,
     rw set.mem_range,
@@ -324,7 +277,7 @@ begin
         injections_and_clear,
         finish,
     end,
-    have : findim F F[α] > 1 := field_findim_lt F F[α] (by tauto),
+    have : findim F F[α] > 1 := algebra_findim_lt F F[α] (by tauto),
     nlinarith,
 end
 
