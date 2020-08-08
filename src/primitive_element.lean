@@ -168,7 +168,17 @@ begin
     rcases F_sep β with ⟨hβ, hg⟩,
     let f := minimal_polynomial hα,
     let g := minimal_polynomial hβ,
-    let E' := polynomial.splitting_field (g.map (algebra_map F E)),
+    let f_E := f.map (algebra_map F E),
+    let g_E := g.map (algebra_map F E),
+    let E' := polynomial.splitting_field g_E,
+    let ι := algebra_map E E',
+    have key : ∃ c : F, ∀ α' : roots F E' f, ∀ β' : roots F E' g, ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) := sorry,
+    cases key with c hc,
+    use c,
+    let f' := f_E.comp(polynomial.C (α+c*β)-(polynomial.C ↑c) * (polynomial.X)),
+    let h := euclidean_domain.gcd f' g_E,
+    have h_sep : h.separable := sorry,
+    have h_root : h.eval β = 0 := sorry,
 
 
     /-let f_E := f.map(algebra_map F E),
@@ -183,7 +193,6 @@ begin
     have hα' : is_integral F' α',
     dsimp[α'],
     have hβ' : is_integral F' β' := sorry,
-<<<<<<< HEAD
     have hα'_sep : (minimal_polynomial hα').separable := sorry,
     have hf : polynomial.splits (algebra_map F' E') (minimal_polynomial hα') := sorry,
     have hg : polynomial.splits (algebra_map F' E') (minimal_polynomial hβ') := sorry,
@@ -203,14 +212,12 @@ begin
     replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
     sorry,-/
     sorry
-=======
-    have hα'_sep : (minimal_polynomial hα').separable,
-    have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
-    sorry,
+    --have hα'_sep : (minimal_polynomial hα').separable,
+    --have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
+    --sorry,
     -- rcases primitive_element_two_aux K F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
     -- replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
-    sorry,
->>>>>>> a53ac55ebf3377131f39aebd6f5681b15a8c061b
+    --sorry,
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
