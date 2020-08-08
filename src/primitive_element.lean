@@ -183,6 +183,7 @@ begin
     have hα' : is_integral F' α',
     dsimp[α'],
     have hβ' : is_integral F' β' := sorry,
+<<<<<<< HEAD
     have hα'_sep : (minimal_polynomial hα').separable := sorry,
     have hf : polynomial.splits (algebra_map F' E') (minimal_polynomial hα') := sorry,
     have hg : polynomial.splits (algebra_map F' E') (minimal_polynomial hβ') := sorry,
@@ -202,6 +203,14 @@ begin
     replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
     sorry,-/
     sorry
+=======
+    have hα'_sep : (minimal_polynomial hα').separable,
+    have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
+    sorry,
+    -- rcases primitive_element_two_aux K F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
+    -- replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
+    sorry,
+>>>>>>> a53ac55ebf3377131f39aebd6f5681b15a8c061b
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
@@ -214,7 +223,7 @@ begin
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
     have cβ_in_Fγ : ↑c*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
     have α_in_Fγ : α ∈ F[γ] := by rw (show α = γ - ↑c*β, by simp *);
-        exact is_add_subgroup.sub_mem (F[γ]) γ (↑c*β) γ_in_Fγ cβ_in_Fγ,
+        exact is_add_subgroup.sub_mem F[γ] γ (↑c*β) γ_in_Fγ cβ_in_Fγ,
     have αβ_in_Fγ : {α, β} ⊆ F[γ] := λ x hx, by cases hx; cases hx; assumption,
     have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
     have α_in_Fαβ : α ∈ F[α, β] := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
@@ -226,7 +235,7 @@ begin
     exact ⟨γ, set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ⟩,
 end
 
-def submodule_restrict_field (α : E) (p : submodule (F[α]) E) : submodule F E := {
+def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E := {
     carrier := p.carrier,
     zero_mem' := p.zero_mem',
     add_mem' := p.add_mem',
@@ -244,12 +253,12 @@ def submodule_restrict_field (α : E) (p : submodule (F[α]) E) : submodule F E 
 -- Should these two lemmas go in adjoin.lean?
 /-- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
 instance adjoin_findim_of_findim [F_findim : finite_dimensional F E] (α : E) :
-    finite_dimensional (F[α]) E :=
+    finite_dimensional F[α] E :=
 begin
     rw iff_fg,
     rw submodule.fg_iff_finite_dimensional,
     cases (finite_dimensional.exists_is_basis_finite F E) with B hB,
-    have key : submodule.span (F[α]) B = ⊤,
+    have key : submodule.span F[α] B = ⊤,
     ext,
     simp only [submodule.mem_top, iff_true],
     have hx : x ∈ submodule.span F (set.range coe),
@@ -262,17 +271,17 @@ begin
     rw subtype.range_coe,
     exact hp,
     rw ←key,
-    apply finite_dimensional.span_of_finite (F[α]) hB.2,
+    apply finite_dimensional.span_of_finite F[α] hB.2,
 end
 
 instance adjoin_findim_of_findim_base [F_findim : finite_dimensional F E] (α : E) :
-    finite_dimensional F (F[α]) :=
+    finite_dimensional F F[α] :=
 begin
     have h := finite_dimensional.finite_dimensional_submodule (adjoin_simple_as_submodule F α),
     exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
 end
 
-lemma adjoin_dim_one (α : E) [hF : finite_dimensional F (F[α])] (F_dim : findim F (F[α]) = 1) :
+lemma adjoin_dim_one (α : E) [hF : finite_dimensional F F[α]] (F_dim : findim F F[α] = 1) :
     ∃ x, algebra_map F E x = α :=
 begin
     sorry,
@@ -280,17 +289,17 @@ end
 
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
 lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
-    findim (F[α]) E < findim F E :=
+    findim F[α] E < findim F E :=
 begin 
-    rw ← findim_mul_findim F (F[α]) E,
-    have : 0 < findim (F[α]) E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : 0 < findim F (F[α]) := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : findim F (F[α]) > 1 :=
+    rw ← findim_mul_findim F F[α] E,
+    have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : 0 < findim F F[α] := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : findim F F[α] > 1 :=
     begin
         sorry,
         -- by_contra h,
         -- push_neg at h,
-        -- replace h : findim F (F[α]) = 1 := by linarith,
+        -- replace h : findim F F[α] = 1 := by linarith,
         -- obtain ⟨⟨x, x_in_F⟩, x_eq_α⟩ := adjoin_dim_one F E α h,
         -- rw algebra.subring_algebra_map_apply at x_eq_α,
         -- change x = α at x_eq_α,
@@ -321,12 +330,12 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional (F[α]) E := adjoin_findim_of_findim F E α,
-            have Fα_le_n : findim (F[α]) E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
-            have Fα_inf : (F[α]).infinite :=
+        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F E α,
+            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
+            have Fα_inf : F[α].infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
-            have Fα_sep : is_separable (F[α]) E := adjoin_simple_is_separable F F_sep α,
-            obtain ⟨β, hβ⟩ := ih (findim (F[α]) E) Fα_le_n (F[α])
+            have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
+            obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
             rw [adjoin_simple_twice, hγ] at hβ,
