@@ -222,7 +222,7 @@ variables (α : E) (h : is_integral F α)
 def adjoin_simple : set E := adjoin F {α}
 
 -- Let's try out this notation?
-notation K`[`β`]` := adjoin_simple K β
+notation K`[`:std.prec.max_plus β`]` := adjoin_simple K β
 notation K`[`β `,` γ`]` := adjoin K {β, γ}
 -- This notation would allow us to write F[α, β] for adjoin_simple (adjoin_simple F α) β
 -- notation K`⟨`L:(foldr `,` (x M, adjoin_simple M x) K `⟩`) := L 
