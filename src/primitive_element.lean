@@ -399,12 +399,15 @@ begin
 end
 
 
--- This is false but I'll figure out how to modify it to make it true later.
-instance roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] :
-    fintype (roots f E) := sorry
+-- The statement should now be true. Now just need to deal with the finsets :(
+lemma roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] 
+    (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (roots f E) :=
+begin
+    sorry,
+end
 
--- So close... :/
-lemma primitive_element_two_aux' (α β : E) (f g : polynomial F) (F_inf : infinite F) :
+-- Done! :)
+lemma primitive_element_two_aux' (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
 begin
     let ι := algebra_map F E,
@@ -448,7 +451,9 @@ begin
             },
             { exfalso, exact h ⟨c, hc⟩, },
         end,
-        exact fintype.of_surjective r r_surjective,
+        have roots_prod_fin : fintype ((roots f E) × (roots g E)) := @prod.fintype (roots f E) (roots g E)
+            (roots_is_fintype f E hf f_monic) (roots_is_fintype g E hg g_monic),
+        exact @fintype.of_surjective _ _ _ roots_prod_fin r r_surjective,
         exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
     end,
     let s' := set.finite.to_finset (nonempty.intro s_fin),
