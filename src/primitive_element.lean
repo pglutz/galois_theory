@@ -156,49 +156,23 @@ begin
     by_contradiction,
     specialize hc a,
     apply hc,
+    rw neg_sub,
     dsimp[ι],
-    --apply mul_left_cancel' (show x - (algebra_map E E') β ≠ 0, by sorry),--proved from assumption
+    rw ring_hom.map_add,
+    rw ←sub_add,
+    rw ←sub_sub,
+    rw sub_self,
+    rw zero_sub,
+    rw neg_add_eq_sub,
+    rw ring_hom.map_mul,
+    rw ←mul_sub,
+    symmetry,
+    apply mul_div_cancel,
+    intro hyp,
+    apply a,
+    rw sub_eq_zero at hyp,
+    exact hyp,
     sorry,
-
-
-
-    /-let f_E := f.map(algebra_map F E),
-    let g_E := g.map(algebra_map F E),
-    let E' := polynomial.splitting_field (f_E * g_E),
-    let α' := algebra_map E E' α,
-    let β' := algebra_map E E' β,
-    let F' := set.range (algebra_map F E'),
-    let f'' := f.map(algebra_map F F'),
-    let g'' := g.map(algebra_map F F'),
-    have F'_inf : F'.infinite := by apply inclusion.infinite (set.infinite_coe_iff.2 F_inf),
-    have hα' : is_integral F' α',
-    dsimp[α'],
-    have hβ' : is_integral F' β' := sorry,
-    have hα'_sep : (minimal_polynomial hα').separable := sorry,
-    have hf : polynomial.splits (algebra_map F' E') (minimal_polynomial hα') := sorry,
-    have hg : polynomial.splits (algebra_map F' E') (minimal_polynomial hβ') := sorry,
-    have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ' hα'_sep hf hg,
-    cases key with c hc,
-    use (inclusion_isomorphism F E').symm c,-/
-    --have swap : algebra_map E E' (α + (inclusion_isomorphism F E').symm c * β) = α' + c * β',
-    --dsimp[α',β'],
-    --rw ring_hom.map_add,
-    --rw ring_hom.map_mul,
-
-
-
-
-    /-sorry,
-    rcases primitive_element_two_aux E' F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
-    replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
-    sorry,-/
-    sorry,
-    --have hα'_sep : (minimal_polynomial hα').separable,
-    --have key := primitive_element_two_inf_key_aux E' F' F'_inf α' β' hα' hβ',
-    --sorry,
-    -- rcases primitive_element_two_aux K F' α' β' f'' g'' F'_inf with ⟨c, c_ne_0, hc⟩,
-    -- replace c_ne_0 : (c : K) ≠ 0 := ne_zero_of_ne_zero F' K c_ne_0,
-    --sorry,
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
