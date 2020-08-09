@@ -213,8 +213,20 @@ begin
     rw multiset.prod_repeat at hs,
     rw multiset.card_map at hs,
     rw hs at h_map_separable,
-    have hf : ¬is_unit (polynomial.X - polynomial.C (algebra_map F E β)) := sorry,
-    have hn : s.card ≠ 0 := sorry,
+    have hf : ¬is_unit (polynomial.X - polynomial.C (algebra_map F E β)) :=
+    begin
+        rw polynomial.is_unit_iff_degree_eq_zero,
+        rw polynomial.degree_X_sub_C,
+        exact dec_trivial,
+    end,
+    have hn : s.card ≠ 0 :=
+    begin
+        intro hs_card,
+        rw hs_card at hs,
+        rw pow_zero at hs,
+        rw mul_one at hs,
+        sorry,
+    end,
     rw (polynomial.separable.of_pow hf hn (polynomial.separable.of_mul_right h_map_separable)).2 at hs,
     rw pow_one at hs,
     apply polynomial.map_injective (algebra_map F E) (algebra_map F E).injective,
