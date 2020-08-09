@@ -129,6 +129,11 @@ begin
         rw ←mul,
         exact polynomial.separable.map hg,
     end,
+    have h_map_separable : (h.map(algebra_map E E')).separable :=
+    begin
+        apply polynomial.separable.map,
+        exact h_sep,
+    end,
     have h_root : h.eval β = 0 :=
     begin
         dsimp[h],
@@ -177,7 +182,7 @@ begin
     end,
     rw polynomial.splits_iff_exists_multiset at h_splits,
     cases h_splits with s hs,
-    have s_elements : ∀ x ∈ s, x = (algebra_map E E') β :=
+    have s_elements : ∀ x ∈ s, x = algebra_map E E' β :=
     begin
         intros x hx,
         have is_root : polynomial.eval₂ (algebra_map E E') x h = 0,
@@ -190,7 +195,29 @@ begin
         simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
         exact h_roots ⟨x,is_root⟩,
     end,
-    replace s_elements : s = multiset.repeat ((algebra_map E E') β) (s.card) := multiset.eq_repeat_of_mem s_elements,
+    replace s_elements : ∀ x ∈ multiset.map (λ (a : E'), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (algebra_map E E' β) :=
+    begin
+        intros x hx,
+        rw multiset.mem_map at hx,
+        cases hx with a ha,
+        specialize s_elements a ha.1,
+        rw s_elements at ha,
+        exact ha.2.symm,
+    end,
+    replace s_elements := multiset.eq_repeat_of_mem s_elements,
+    rw s_elements at hs,
+    rw multiset.prod_repeat at hs,
+    rw hs at h_map_separable,
+    replace h_map_separable := polynomial.separable.of_mul_right h_map_separable,
+    cases polynomial.separable.of_pow' h_map_separable with hyp hyp,
+    exfalso,
+    --show that X - C is not a unit in the ring of polynomials
+    sorry,
+    cases hyp with hyp hyp,
+    --key step!
+    sorry,
+    exfalso,
+    --show that h is not a constant (use the fact that β is a root of h)
     sorry,
 end
 
