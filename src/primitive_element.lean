@@ -211,10 +211,19 @@ begin
     replace s_elements := multiset.eq_repeat_of_mem s_elements,
     rw s_elements at hs,
     rw multiset.prod_repeat at hs,
+    rw multiset.card_map at hs,
     rw hs at h_map_separable,
-    replace h_map_separable := polynomial.separable.of_mul_right h_map_separable,
-    sorry,
-    --polynomial.separable.of_pow
+    have hf : ¬is_unit (polynomial.X - polynomial.C (algebra_map F E β)) := sorry,
+    have hn : s.card ≠ 0 := sorry,
+    rw (polynomial.separable.of_pow hf hn (polynomial.separable.of_mul_right h_map_separable)).2 at hs,
+    rw pow_one at hs,
+    apply polynomial.map_injective (algebra_map F E) (algebra_map F E).injective,
+    rw hs,
+    rw polynomial.map_mul,
+    rw polynomial.map_C,
+    rw polynomial.map_sub,
+    rw polynomial.map_X,
+    rw polynomial.map_C,
 end
 
 lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) [F_sep : is_separable F E]
