@@ -177,7 +177,20 @@ begin
     end,
     rw polynomial.splits_iff_exists_multiset at h_splits,
     cases h_splits with s hs,
-    --have s_elements : ∀ x : ↑s, x = β,
+    have s_elements : ∀ x ∈ s, x = (algebra_map E E') β :=
+    begin
+        intros x hx,
+        have is_root : polynomial.eval₂ (algebra_map E E') x h = 0,
+        rw polynomial.eval₂_eq_eval_map,
+        rw hs,
+        rw polynomial.eval_mul,
+        cases multiset.exists_cons_of_mem hx with y hy,
+        rw hy,
+        rw multiset.map_cons,
+        simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
+        exact h_roots ⟨x,is_root⟩,
+    end,
+    replace s_elements : s = multiset.repeat ((algebra_map E E') β) (s.card) := multiset.eq_repeat_of_mem s_elements,
     sorry,
 end
 
