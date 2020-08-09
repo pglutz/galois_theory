@@ -244,23 +244,16 @@ begin
     have : fintype s := unique.fintype,
     have s_lin_ind : linear_independent F (coe : s → E) := linear_independent_singleton one_ne_zero,
     have s_card : s.to_finset.card = findim F E := by change s.to_finset.card with 1; rw E_dim,
-    have s_basis : is_basis F (coe : s → E) :=
+    obtain ⟨_, s_spans⟩ := set_is_basis_of_linear_independent_of_card_eq_findim s_lin_ind s_card,
+    have x_in_span_one : x ∈ submodule.span F s :=
     begin
-        exact set_is_basis_of_linear_independent_of_card_eq_findim s_lin_ind s_card,
+        rw subtype.range_coe at s_spans,
+        rw s_spans,
+        exact submodule.mem_top,
     end,
-    set f := is_basis.repr s_basis x with hf,
-    rw set.mem_range,
-    set y := f ⟨1, by simp *⟩ with hy,
-    use y,
-    unfold_coes,
-    have : x = y • 1 :=
-    begin
-        sorry,
-    end,
-    rw this,
-    rw algebra.smul_def,
-    rw mul_one,
-    refl,
+    obtain ⟨a, ha⟩ := submodule.mem_span_singleton.mp x_in_span_one,
+    use a,
+    rw [← ha, algebra.smul_def, mul_one],
 end
 
 /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/

@@ -50,8 +50,8 @@ def is_galois''' : Prop := ∃ H : subgroup (E ≃ₐ[F] E), ∃ is_fin : fintyp
 lemma is_galois'_implies_is_galois'' : is_galois' F E → is_galois'' F E := sorry
 lemma is_galois''_implies_is_galois''':is_galois'' F E → is_galois''' F E := sorry
 lemma is_galois'''_implies_fin_galois:is_galois''' F E → fin_galois F E := sorry
-lemma fin_galois_implies_is_galois':fin_galois F E → is_galois' F E:=sorry
+lemma fin_galois_implies_is_galois':fin_galois F E → is_galois' F E := sorry
 
 lemma is_galois_iff_is_galois' : fin_galois F E ↔ is_galois' F E := sorry
 lemma is_galois_iff_is_galois'' : fin_galois F E ↔ is_galois'' F E := sorry
-lemma is_galois_iff_is_galois''': fin_galois F E ↔ is_galois''' F E:=sorry
+lemma is_galois_iff_is_galois''': fin_galois F E ↔ is_galois''' F E := sorry
