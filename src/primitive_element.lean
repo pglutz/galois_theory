@@ -232,7 +232,8 @@ begin
     exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
 end
 
--- I'm abandoning the findim_lt approach in favor of working directly with a basis.
+/-- If the field extension E has an element not in the base field F then the degree of E over F is
+    greater than 1. -/
 lemma algebra_findim_lt [hF : finite_dimensional F E] : (∃ x : E, x ∉ set.range (algebra_map F E)) →
     1 < findim F E :=
 begin
@@ -252,27 +253,23 @@ begin
         exact submodule.mem_top,
     end,
     obtain ⟨a, ha⟩ := submodule.mem_span_singleton.mp x_in_span_one,
-    use a,
-    rw [← ha, algebra.smul_def, mul_one],
+    exact ⟨a, by rw [← ha, algebra.smul_def, mul_one]⟩,
 end
 
-/-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
-lemma adjoin_dim_lt (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
+/-- Adjoining an element from outside of F strictly decreases the degree of a finite extension. -/
+lemma adjoin_dim_lt [hF : finite_dimensional F E] {α : E} (hα : α ∉ set.range (algebra_map F E)) :
     findim F[α] E < findim F E :=
-begin 
+begin
     rw ← findim_mul_findim F F[α] E,
     have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
-    have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) :=
-    begin
-        revert hα,
-        contrapose!,
-        rintros ⟨⟨x, hx⟩, hx'⟩,
-        injections_and_clear,
-        finish,
-    end,
+    have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) := adjoin_simple_gen_nontrivial F hα,
     have : findim F F[α] > 1 := algebra_findim_lt F F[α] (by tauto),
     nlinarith,
 end
+
+/-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
+lemma adjoin_dim_lt_subfield (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
+    findim F[α] E < findim F E := by apply adjoin_dim_lt; finish
 
 /-- Primitive element theorem for infinite fields when F is actually a subset of E . -/
 theorem primitive_element_inf_aux (F : set E) [hF : is_subfield F] (F_sep : is_separable F E)
@@ -296,7 +293,7 @@ begin
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F E α,
-            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt E F α hα,
+            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield E F α hα,
             have Fα_inf : F[α].infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
             have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,

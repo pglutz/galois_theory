@@ -266,6 +266,18 @@ def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_el
 
 lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_simple.gen F α) = α := rfl
 
+/-- If the generator is not in the inclusion of F in E then it's also not in the inclusion of
+    F in F[α]. -/
+lemma adjoin_simple_gen_nontrivial {α : E} (hα : α ∉ set.range (algebra_map F E)) :
+    adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) :=
+begin
+    revert hα,
+    contrapose!,
+    rintros ⟨x, hx⟩,
+    injections_and_clear,
+    use x, assumption,
+end
+
 lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
 begin
     dsimp [adjoin_simple],
