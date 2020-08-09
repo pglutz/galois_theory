@@ -110,6 +110,7 @@ begin
     let g_E := g.map (algebra_map F E),
     let E' := polynomial.splitting_field g_E,
     let ι := algebra_map E E',
+    have composition : (algebra_map E E').comp (algebra_map F E) = algebra_map F E':= by ext;refl,
     have key : ∃ c : F, ∀ α' : roots F E' f, ∀ β' : roots F E' g, ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) := sorry,
     cases key with c hc,
     use c,
@@ -128,6 +129,34 @@ begin
     simp only [polynomial.eval_add,polynomial.eval_sub,polynomial.eval_mul,polynomial.eval_C,polynomial.eval_X,
     polynomial.eval_comp,polynomial.eval_map,←polynomial.aeval_def,minimal_polynomial.aeval,
     add_sub_cancel,zero_mul,add_zero],
+    have h_splits : polynomial.splits (algebra_map E E') h :=
+    polynomial.splits_of_splits_of_dvd (algebra_map E E') (polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ))
+    (polynomial.splitting_field.splits g_E) (euclidean_domain.gcd_dvd_right f' g_E),
+    have h_roots : ∀ x : roots E E' h, ↑x = algebra_map E E' β,
+    intro x,
+    cases x with x hx,
+    dsimp[roots] at hx,
+    have f_root : f'.eval₂ (algebra_map E E') x = 0,
+    cases euclidean_domain.gcd_dvd_left f' g_E with p hp,
+    rw [hp,polynomial.eval₂_mul,hx,zero_mul],
+    simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X,composition] at f_root,
+    change _ ∈ roots F E' f at f_root,
+    specialize hc ⟨_,f_root⟩,
+    have g_root : g_E.eval₂ (algebra_map E E') x = 0,
+    cases euclidean_domain.gcd_dvd_right f' g_E with p hp,
+    --rw [hp,polynomial.eval₂_mul,hx,zero_mul], --why doesn't this work?
+    sorry,
+    simp only [polynomial.eval₂_map,composition] at g_root,
+    change _ ∈ roots F E' g at g_root,
+    specialize hc ⟨_,g_root⟩,
+    by_contradiction,
+    specialize hc a,
+    apply hc,
+    dsimp[ι],
+    --apply mul_left_cancel' (show x - (algebra_map E E') β ≠ 0, by sorry),--proved from assumption
+    sorry,
+
+
 
     /-let f_E := f.map(algebra_map F E),
     let g_E := g.map(algebra_map F E),
@@ -170,7 +199,7 @@ end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
 lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
-    (F_inf : F.infinite) : ∃ γ : E, F[α, β] = F[γ] :=
+    (F_inf : F.infinite) :  ∃ γ : E, F[α, β] = F[γ] :=
 begin
     obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key E F α β F_sep F_inf,
     let γ := α + c*β,
