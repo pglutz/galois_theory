@@ -49,6 +49,26 @@ open finite_dimensional
 def roots {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E]  :=
 {α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
 
+/-- The definition of roots agrees with the mathlib definition. -/
+lemma roots_eq_map_roots {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E]
+    (hf : f ≠ 0) (f_monic : polynomial.monic f) : roots f E = ↑(polynomial.map (algebra_map F E) f).roots :=
+begin
+    set f' := polynomial.map (algebra_map F E) f with hf',
+    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
+    ext,
+    change x ∈ roots f E ↔ x ∈ f'.roots,
+    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
+    refl,
+end
+
+/-- The set of roots in E of a nonzero polynomial f over F is a finite set. -/
+lemma roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] 
+    (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (roots f E) :=
+begin
+    rw roots_eq_map_roots f E hf f_monic,
+    exact finset_coe.fintype (polynomial.map (algebra_map F E) f).roots,
+end
+
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
 /- Trivial case of the primitive element theorem. -/
@@ -97,15 +117,61 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 
 /- Primitive element theorem for infinite fields. -/
 
--- For now, I'm working on the proof of this at the bottom of the file to avoid having to recompile
--- all the theorems below each time I change something. Also, as stated, this lemma is false. It should
--- have another hypothesis asserting that f and g are nonzero.
-lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) :
+lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
 begin
-    -- let ι := algebra_map F E,
-    -- let s := {c : F | ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → ι c ≠ -(α' - α)/(β' - β)},
-    sorry,
+    let ι := algebra_map F E,
+    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), β ≠ β' ∧ ι c = -(α' - α)/(β' - β)},
+    have s_fin : fintype s :=
+    begin
+        by_cases s_nonempty : nonempty s,
+        let x := s_nonempty.some,
+        let r : (roots f E) × (roots g E) → s :=
+        begin
+            rintros ⟨α', β'⟩,
+            by_cases hβ : β = β',
+            use x,
+            let c' : E := -(α' - α)/(β' - β),
+            by_cases hc' : c' ∈ set.range ι,
+            set c := reverse_inclusion_ring_hom F E ⟨c', hc'⟩ with h,
+            have hc : c ∈ s :=
+            begin
+                use [α', β', hβ],
+                rw h,
+                change ((inclusion_isomorphism F E).to_fun ((inclusion_isomorphism F E).inv_fun ⟨c', hc'⟩) : E) = -(↑α' - α)/(↑β' - β),
+                rw (inclusion_isomorphism F E).right_inv,
+                refl,
+            end,
+            use ⟨c, hc⟩,
+            use x,
+        end,
+        have r_surjective : function.surjective r :=
+        begin
+            rintros ⟨c, ⟨α', β', hβ', hc⟩⟩,
+            use ⟨α', β'⟩,
+            dsimp only [r],
+            split_ifs with hβ h,
+            {   exfalso, exact hβ' hβ, },
+            {   ext,
+                dsimp,
+                rw ← reverse_inclusion_of_field F E c,
+                unfold_coes,
+                funext,
+                simp only [*, ring_hom.to_fun_eq_coe, subtype.val_eq_coe],
+            },
+            { exfalso, exact h ⟨c, hc⟩, },
+        end,
+        have roots_prod_fin : fintype ((roots f E) × (roots g E)) := @prod.fintype (roots f E) (roots g E)
+            (roots_is_fintype f E hf f_monic) (roots_is_fintype g E hg g_monic),
+        exact @fintype.of_surjective _ _ _ roots_prod_fin r r_surjective,
+        exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
+    end,
+    let s' := set.finite.to_finset (nonempty.intro s_fin),
+    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s',
+    rw set.finite.mem_to_finset at hc,
+    dsimp at hc,
+    push_neg at hc,
+    exact ⟨c, hc⟩,
 end
 
 lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_sep : h.separable)
@@ -396,70 +462,4 @@ begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
-end
-
-
--- The statement should now be true. Now just need to deal with the finsets :(
-lemma roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] 
-    (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (roots f E) :=
-begin
-    sorry,
-end
-
--- Done! :)
-lemma primitive_element_two_aux' (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
-    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
-begin
-    let ι := algebra_map F E,
-    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), β ≠ β' ∧ ι c = -(α' - α)/(β' - β)},
-    have s_fin : fintype s :=
-    begin
-        by_cases s_nonempty : nonempty s,
-        let x := s_nonempty.some,
-        let r : (roots f E) × (roots g E) → s :=
-        begin
-            rintros ⟨α', β'⟩,
-            by_cases hβ : β = β',
-            use x,
-            let c' : E := -(α' - α)/(β' - β),
-            by_cases hc' : c' ∈ set.range ι,
-            set c := reverse_inclusion_ring_hom F E ⟨c', hc'⟩ with h,
-            have hc : c ∈ s :=
-            begin
-                use [α', β', hβ],
-                rw h,
-                change ((inclusion_isomorphism F E).to_fun ((inclusion_isomorphism F E).inv_fun ⟨c', hc'⟩) : E) = -(↑α' - α)/(↑β' - β),
-                rw (inclusion_isomorphism F E).right_inv,
-                refl,
-            end,
-            use ⟨c, hc⟩,
-            use x,
-        end,
-        have r_surjective : function.surjective r :=
-        begin
-            rintros ⟨c, ⟨α', β', hβ', hc⟩⟩,
-            use ⟨α', β'⟩,
-            dsimp only [r],
-            split_ifs with hβ h,
-            {   exfalso, exact hβ' hβ, },
-            {   ext,
-                dsimp,
-                rw ← reverse_inclusion_of_field F E c,
-                unfold_coes,
-                funext,
-                simp only [*, ring_hom.to_fun_eq_coe, subtype.val_eq_coe],
-            },
-            { exfalso, exact h ⟨c, hc⟩, },
-        end,
-        have roots_prod_fin : fintype ((roots f E) × (roots g E)) := @prod.fintype (roots f E) (roots g E)
-            (roots_is_fintype f E hf f_monic) (roots_is_fintype g E hg g_monic),
-        exact @fintype.of_surjective _ _ _ roots_prod_fin r r_surjective,
-        exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
-    end,
-    let s' := set.finite.to_finset (nonempty.intro s_fin),
-    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s',
-    rw set.finite.mem_to_finset at hc,
-    dsimp at hc,
-    push_neg at hc,
-    exact ⟨c, hc⟩,
 end
