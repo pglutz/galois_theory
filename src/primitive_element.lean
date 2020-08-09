@@ -122,8 +122,12 @@ begin
     apply polynomial.separable.of_mul_left,
     rw ←mul,
     exact polynomial.separable.map hg,
-    have h_root : h.eval β = 0 := sorry,
-
+    have h_root : h.eval β = 0,
+    dsimp[h],
+    rw euclidean_domain.gcd_eq_gcd_ab f' g_E,
+    simp only [polynomial.eval_add,polynomial.eval_sub,polynomial.eval_mul,polynomial.eval_C,polynomial.eval_X,
+    polynomial.eval_comp,polynomial.eval_map,←polynomial.aeval_def,minimal_polynomial.aeval,
+    add_sub_cancel,zero_mul,add_zero],
 
     /-let f_E := f.map(algebra_map F E),
     let g_E := g.map(algebra_map F E),
