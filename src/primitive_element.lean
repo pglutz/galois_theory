@@ -97,9 +97,14 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 
 /- Primitive element theorem for infinite fields. -/
 
+-- For now, I'm working on the proof of this at the bottom of the file to avoid having to recompile
+-- all the theorems below each time I change something. Also, as stated, this lemma is false. It should
+-- have another hypothesis asserting that f and g are nonzero.
 lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) :
-    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(↑α' - α)/(β' - β) :=
+    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
 begin
+    -- let ι := algebra_map F E,
+    -- let s := {c : F | ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → ι c ≠ -(α' - α)/(β' - β)},
     sorry,
 end
 
@@ -225,6 +230,7 @@ begin
     end,
     replace key := primitive_element_two_inf_key_aux E β h h_sep h_root h_splits h_roots,
     --do some gcd shenanigans
+    sorry
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
@@ -390,4 +396,55 @@ begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
+end
+
+
+-- This is false but I'll figure out how to modify it to make it true later.
+instance roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] :
+    fintype (roots f E) := sorry
+
+-- So close... :/
+lemma primitive_element_two_aux' (α β : E) (f g : polynomial F) (F_inf : infinite F) :
+    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
+begin
+    let ι := algebra_map F E,
+    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), β ≠ β' ∧ ι c = -(α' - α)/(β' - β)},
+    have s_fin : fintype s :=
+    begin
+        by_cases s_nonempty : nonempty s,
+        let x := s_nonempty.some,
+        let r : (roots f E) × (roots g E) → s :=
+        begin
+            rintros ⟨α', β'⟩,
+            by_cases hβ : β = β',
+            use x,
+            let c' : E := -(α' - α)/(β' - β),
+            by_cases hc' : c' ∈ set.range ι,
+            let c := reverse_inclusion_ring_hom F E ⟨c', hc'⟩,
+            have hc : c ∈ s :=
+            begin
+                use [α', β', hβ],
+                sorry,
+            end,
+            use ⟨c, hc⟩,
+            use x,
+        end,
+        have r_surjective : function.surjective r :=
+        begin
+            rintros ⟨c, ⟨α', β', hβ', hc⟩⟩,
+            use ⟨α', β'⟩,
+            have : ∃ (a : F), ι a = (α - ↑α') / (↑β' - β) := sorry,
+            simp *,
+            sorry,
+            -- change (reverse_inclusion_ring_hom F E) ↑(ι c) = c,
+        end,
+        exact fintype.of_surjective r r_surjective,
+        exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
+    end,
+    let s' := set.finite.to_finset (nonempty.intro s_fin),
+    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s',
+    rw set.finite.mem_to_finset at hc,
+    dsimp at hc,
+    push_neg at hc,
+    exact ⟨c, hc⟩,
 end
