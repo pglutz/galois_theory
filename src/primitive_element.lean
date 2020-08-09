@@ -103,6 +103,49 @@ begin
     sorry,
 end
 
+lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_sep : h.separable)
+(h_root : h.eval β = 0) (h_splits : polynomial.splits (algebra_map F E) h)
+(h_roots : ∀ x : roots h E, ↑x = algebra_map F E β) :
+h = (polynomial.C (polynomial.leading_coeff h)) * (polynomial.X - polynomial.C β) :=
+begin
+    have h_map_separable : (h.map(algebra_map F E)).separable :=
+    begin
+        apply polynomial.separable.map,
+        exact h_sep,
+    end,
+    rw polynomial.splits_iff_exists_multiset at h_splits,
+    cases h_splits with s hs,
+    have s_elements : ∀ x ∈ s, x = algebra_map F E β :=
+    begin
+        intros x hx,
+        have is_root : polynomial.eval₂ (algebra_map F E) x h = 0,
+        rw polynomial.eval₂_eq_eval_map,
+        rw hs,
+        rw polynomial.eval_mul,
+        cases multiset.exists_cons_of_mem hx with y hy,
+        rw hy,
+        rw multiset.map_cons,
+        simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
+        exact h_roots ⟨x,is_root⟩,
+    end,
+    replace s_elements : ∀ x ∈ multiset.map (λ (a : E), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (algebra_map F E β) :=
+    begin
+        intros x hx,
+        rw multiset.mem_map at hx,
+        cases hx with a ha,
+        specialize s_elements a ha.1,
+        rw s_elements at ha,
+        exact ha.2.symm,
+    end,
+    replace s_elements := multiset.eq_repeat_of_mem s_elements,
+    rw s_elements at hs,
+    rw multiset.prod_repeat at hs,
+    rw hs at h_map_separable,
+    replace h_map_separable := polynomial.separable.of_mul_right h_map_separable,
+    sorry,
+    --polynomial.separable.of_pow
+end
+
 lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) [F_sep : is_separable F E]
     (F_inf : F.infinite) : ∃ c : F, β ∈ F[α + c*β] :=
 begin
@@ -180,45 +223,8 @@ begin
         rw sub_eq_zero at hyp,
         exact hyp,
     end,
-    rw polynomial.splits_iff_exists_multiset at h_splits,
-    cases h_splits with s hs,
-    have s_elements : ∀ x ∈ s, x = algebra_map E E' β :=
-    begin
-        intros x hx,
-        have is_root : polynomial.eval₂ (algebra_map E E') x h = 0,
-        rw polynomial.eval₂_eq_eval_map,
-        rw hs,
-        rw polynomial.eval_mul,
-        cases multiset.exists_cons_of_mem hx with y hy,
-        rw hy,
-        rw multiset.map_cons,
-        simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
-        exact h_roots ⟨x,is_root⟩,
-    end,
-    replace s_elements : ∀ x ∈ multiset.map (λ (a : E'), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (algebra_map E E' β) :=
-    begin
-        intros x hx,
-        rw multiset.mem_map at hx,
-        cases hx with a ha,
-        specialize s_elements a ha.1,
-        rw s_elements at ha,
-        exact ha.2.symm,
-    end,
-    replace s_elements := multiset.eq_repeat_of_mem s_elements,
-    rw s_elements at hs,
-    rw multiset.prod_repeat at hs,
-    rw hs at h_map_separable,
-    replace h_map_separable := polynomial.separable.of_mul_right h_map_separable,
-    cases polynomial.separable.of_pow' h_map_separable with hyp hyp,
-    exfalso,
-    --show that X - C is not a unit in the ring of polynomials
-    sorry,
-    cases hyp with hyp hyp,
-    --key step!
-    sorry,
-    exfalso,
-    --show that h is not a constant (use the fact that β is a root of h)
-    sorry,
+    replace key := primitive_element_two_inf_key_aux E β h h_sep h_root h_splits h_roots,
+    --do some gcd shenanigans
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
