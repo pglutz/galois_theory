@@ -45,15 +45,16 @@ end
 
 open finite_dimensional
 
-variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
-
 /-- The set of roots of a polynomial f in a field E where f is a polynomial in F and F ⊆ E. -/
-def roots (f : polynomial F) := {α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
+def roots {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E]  :=
+{α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
+
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
 /- Trivial case of the primitive element theorem. -/
 
 /-- Primitive element theorem when F = E. -/
-lemma primitive_element_trivial (F : set E) (hF : is_subfield F) (F_eq_E : F = (⊤ : set E)) :
+lemma primitive_element_trivial (F : set E) [hF : is_subfield F] (F_eq_E : F = (⊤ : set E)) :
     ∃ α : E, F[α] = (⊤ : set E) :=
 begin
     use 0,
@@ -71,7 +72,7 @@ end
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
 /-- A finite dimensional vector space over a finite field is finite. -/
-def finite_of_findim_over_finite [fintype F] (hE : finite_dimensional F E) : fintype E :=
+def finite_of_findim_over_finite [fintype F] [hE : finite_dimensional F E] : fintype E :=
     module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
 /-- Primitive element theorem for F ⊂ E assuming E is finite. -/
@@ -92,14 +93,17 @@ end
 
 /-- Primitive element theorem for finite dimensional extension of a finite field. -/
 theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
-    ∃ α : E, F[α] = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F E hfd)
+    ∃ α : E, F[α] = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F)
 
 /- Primitive element theorem for infinite fields. -/
 
-lemma primitive_element_two_aux (F : set E) [is_subfield F] (α β : E) (f g : polynomial F) (F_inf : F.infinite) :
-    ∃ c : F, c ≠ 0 ∧ ∀ (β' : roots F E g) (α' : roots F E f), β ≠ β' → α + c*β ≠ α' + c*β' := sorry
+lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) :
+    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(↑α' - α)/(β' - β) :=
+begin
+    sorry,
+end
 
-lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
+lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) [F_sep : is_separable F E]
     (F_inf : F.infinite) : ∃ c : F, β ∈ F[α + c*β] :=
 begin
     rcases F_sep α with ⟨hα, hf⟩,
@@ -111,7 +115,7 @@ begin
     let E' := polynomial.splitting_field g_E,
     let ι := algebra_map E E',
     have composition : (algebra_map E E').comp (algebra_map F E) = algebra_map F E':= by ext;refl,
-    have key : ∃ c : F, ∀ α' : roots F E' f, ∀ β' : roots F E' g, ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) := sorry,
+    have key : ∃ c : F, ∀ α' : roots f E', ∀ β' : roots g E', ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) := sorry,
     cases key with c hc,
     use c,
     let f' := f_E.comp(polynomial.C (α+c*β)-(polynomial.C ↑c) * (polynomial.X)),
@@ -132,7 +136,7 @@ begin
     have h_splits : polynomial.splits (algebra_map E E') h :=
     polynomial.splits_of_splits_of_dvd (algebra_map E E') (polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ))
     (polynomial.splitting_field.splits g_E) (euclidean_domain.gcd_dvd_right f' g_E),
-    have h_roots : ∀ x : roots E E' h, ↑x = algebra_map E E' β,
+    have h_roots : ∀ x : roots h E', ↑x = algebra_map E E' β,
     intro x,
     cases x with x hx,
     dsimp[roots] at hx,
@@ -140,14 +144,14 @@ begin
     cases euclidean_domain.gcd_dvd_left f' g_E with p hp,
     rw [hp,polynomial.eval₂_mul,hx,zero_mul],
     simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X,composition] at f_root,
-    change _ ∈ roots F E' f at f_root,
+    change _ ∈ roots f E' at f_root,
     specialize hc ⟨_,f_root⟩,
     have g_root : g_E.eval₂ (algebra_map E E') x = 0,
     cases euclidean_domain.gcd_dvd_right f' g_E with p hp,
     --rw [hp,polynomial.eval₂_mul,hx,zero_mul], --why doesn't this work?
     sorry,
     simp only [polynomial.eval₂_map,composition] at g_root,
-    change _ ∈ roots F E' g at g_root,
+    change _ ∈ roots g E' at g_root,
     specialize hc ⟨_,g_root⟩,
     by_contradiction,
     specialize hc a,
@@ -201,7 +205,7 @@ end
 lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
     (F_inf : F.infinite) :  ∃ γ : E, F[α, β] = F[γ] :=
 begin
-    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key E F α β F_sep F_inf,
+    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key F α β F_inf,
     let γ := α + c*β,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
@@ -251,7 +255,7 @@ begin
     rw submodule.mem_span,
     intros p hp,
     rw submodule.mem_span at hx,
-    apply hx (submodule_restrict_field F E α p),
+    apply hx (submodule_restrict_field F α p),
     rw subtype.range_coe,
     exact hp,
     rw ←key,
@@ -296,7 +300,7 @@ begin
     rw ← findim_mul_findim F F[α] E,
     have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) := adjoin_simple_gen_nontrivial F hα,
-    have : findim F F[α] > 1 := algebra_findim_lt F F[α] (by tauto),
+    have : findim F F[α] > 1 := algebra_findim_lt F (by tauto),
     nlinarith,
 end
 
@@ -315,7 +319,7 @@ begin
     clear n,
     intros n ih F hF F_sep F_findim F_inf hn,
     by_cases F_neq_E : F = (⊤ : set E),
-    {   exact primitive_element_trivial E F hF F_neq_E, },
+    {   exact primitive_element_trivial F F_neq_E, },
     {   have : ∃ α : E, α ∉ F :=
         begin
             revert F_neq_E,
@@ -325,14 +329,14 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F E α,
-            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield E F α hα,
+        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
+            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield F α hα,
             have Fα_inf : F[α].infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
             have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
-            obtain ⟨γ, hγ⟩ := primitive_element_two_inf E F α β F_sep F_inf,
+            obtain ⟨γ, hγ⟩ := primitive_element_two_inf F α β F_sep F_inf,
             rw [adjoin_simple_twice, hγ] at hβ,
             exact ⟨γ, hβ⟩,
         },
@@ -347,7 +351,7 @@ begin
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
     have F'_inf : F'.infinite := inclusion.infinite F_inf,
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux E F' F'_sep F'_findim F'_inf (findim F' E) rfl,
+    obtain ⟨α, hα⟩ := primitive_element_inf_aux F' F'_sep F'_findim F'_inf (findim F' E) rfl,
     exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end
 
@@ -359,5 +363,5 @@ theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E
 begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
-    exact primitive_element_inf F E hs hfd (not_nonempty_fintype.mp F_finite),
+    exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
 end
