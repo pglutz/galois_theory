@@ -2,6 +2,7 @@ import field_theory.subfield
 import field_theory.separable
 import field_theory.tower
 import data.set.finite
+import algebra.gcd_domain
 
 section
 
@@ -238,6 +239,15 @@ begin
     apply set.infinite_coe_iff.mp,
     apply infinite.of_injective (set.range_factorization (algebra_map F E)),
     exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
+end
+
+noncomputable theory
+local attribute [instance, priority 100] classical.prop_decidable
+
+lemma gcd_compatible (f g : polynomial F) :
+euclidean_domain.gcd (f.map(algebra_map F E)) (g.map(algebra_map F E)) = (euclidean_domain.gcd f g).map(algebra_map F E) :=
+begin
+    sorry,
 end
 
 -- def base_field_as_submodule (F : set E) [is_subfield F] : submodule F E := {

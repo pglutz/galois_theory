@@ -118,10 +118,10 @@ theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
 /- Primitive element theorem for infinite fields. -/
 
 lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
-    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), β ≠ β' → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
+    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), ↑β' ≠ β → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
 begin
     let ι := algebra_map F E,
-    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), β ≠ β' ∧ ι c = -(α' - α)/(β' - β)},
+    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), ↑β' ≠ β ∧ ι c = -(α' - α)/(β' - β)},
     have s_fin : fintype s :=
     begin
         by_cases s_nonempty : nonempty s,
@@ -129,7 +129,7 @@ begin
         let r : (roots f E) × (roots g E) → s :=
         begin
             rintros ⟨α', β'⟩,
-            by_cases hβ : β = β',
+            by_cases hβ : ↑β' = β,
             use x,
             let c' : E := -(α' - α)/(β' - β),
             by_cases hc' : c' ∈ set.range ι,
@@ -256,7 +256,8 @@ begin
     let E' := polynomial.splitting_field g_E,
     let ι := algebra_map E E',
     have composition : (algebra_map E E').comp (algebra_map F E) = algebra_map F E':= by ext;refl,
-    have key : ∃ c : F, ∀ α' : roots f E', ∀ β' : roots g E', ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) := sorry,
+    have key : ∃ c : F, ∀ α' : roots f E', ∀ β' : roots g E', ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) :=
+    primitive_element_two_aux F (ι α) (ι β) f g (set.infinite_coe_iff.mpr F_inf) (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
     cases key with c hc,
     use c,
     let f' := f_E.comp(polynomial.C (α+c*β)-(polynomial.C ↑c) * (polynomial.X)),
@@ -334,6 +335,8 @@ begin
         exact hyp,
     end,
     replace key := primitive_element_two_inf_key_aux E β h h_ne_zero h_sep h_root h_splits h_roots,
+    let γ := α+c*β,
+    
     --do some gcd shenanigans
     sorry
 end
