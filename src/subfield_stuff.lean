@@ -240,31 +240,3 @@ begin
     apply infinite.of_injective (set.range_factorization (algebra_map F E)),
     exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
 end
-
-lemma comp_map_lem (f g : polynomial F) (E : Type*) [field E] [algebra F E] : (f.comp(g)).map(algebra_map F E) = (f.map(algebra_map F E)).comp(g.map(algebra_map F E)) :=
-begin
-    sorry,
-end
-
-#check comp_map_lem
-
--- def base_field_as_submodule (F : set E) [is_subfield F] : submodule F E := {
---     carrier := F,
---     zero_mem' := is_add_submonoid.zero_mem,
---     add_mem' := λ a b, is_add_submonoid.add_mem,
---     smul_mem' :=
---     begin
---         rintros ⟨a, ha⟩ b hb,
---         exact is_submonoid.mul_mem ha hb,
---     end
--- }
-
--- def base_field_linear_equiv (F : set E) [is_subfield F] : F ≃ₗ[F] base_field_as_submodule F :=
--- {
---     to_fun := λ x, x,
---     map_add' := λ x y, rfl,
---     inv_fun := λ x, x,
---     left_inv := λ x, rfl,
---     right_inv := λ x, rfl,
---     map_smul' := λ x y, rfl,
--- }
