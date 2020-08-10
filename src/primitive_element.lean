@@ -604,7 +604,19 @@ open finset finsupp
 open_locale big_operators
 
 lemma sum_subset_zero_on_diff {R : Type*} [add_comm_monoid R] {X : Type*} (f g : X → R) (s₁ s₂ : finset X) 
-    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂ → x ∉ s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i := sorry
+    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂ → x ∉ s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i :=
+begin
+    rw ← sum_sdiff hs,
+    have : ∑ (x : X) in s₂ \ s₁, g x = 0 :=
+    begin
+        apply sum_eq_zero,
+        finish,
+    end,
+    rw [this, zero_add],
+    apply sum_congr,
+    refl,
+    exact hfg,
+end
 
 lemma support_shrinks {R S : Type*} [semiring R] [semiring S] (ι : R →+* S) (f : polynomial R) :
     (map ι f).support ⊆ f.support :=
