@@ -350,7 +350,14 @@ begin
         rw ←polynomial.map_map,
         set p := f.map(algebra_map F F[γ]),
         dsimp[←p],
-        sorry,
+        rw comp_map_lem p (polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)) E,
+        rw polynomial.map_sub,
+        rw polynomial.map_C,
+        rw adjoin_simple.gen_eq_alpha,
+        rw polynomial.map_mul,
+        rw polynomial.map_C,
+        rw polynomial.map_X,
+        refl,
     end,
     have g_map : g_Fγ.map(algebra_map F[γ] E) = g_E :=
     begin

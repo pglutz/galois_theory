@@ -241,10 +241,12 @@ begin
     exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
 end
 
-lemma comp_map (f g : polynomial F) : (f.comp(g)).map(algebra_map F E) = (f.map(algebra_map F E)).comp(g.map(algebra_map F E)) :=
+lemma comp_map_lem (f g : polynomial F) (E : Type*) [field E] [algebra F E] : (f.comp(g)).map(algebra_map F E) = (f.map(algebra_map F E)).comp(g.map(algebra_map F E)) :=
 begin
     sorry,
 end
+
+#check comp_map_lem
 
 -- def base_field_as_submodule (F : set E) [is_subfield F] : submodule F E := {
 --     carrier := F,
