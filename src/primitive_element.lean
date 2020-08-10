@@ -260,7 +260,8 @@ begin
     primitive_element_two_aux F (ι α) (ι β) f g (set.infinite_coe_iff.mpr F_inf) (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
     cases key with c hc,
     use c,
-    let f' := f_E.comp(polynomial.C (α+c*β)-(polynomial.C ↑c) * (polynomial.X)),
+    let γ := α+c*β,
+    let f' := f_E.comp(polynomial.C γ-(polynomial.C ↑c) * (polynomial.X)),
     let h := euclidean_domain.gcd f' g_E,
     have h_sep : h.separable :=
     begin
@@ -335,10 +336,78 @@ begin
         exact hyp,
     end,
     replace key := primitive_element_two_inf_key_aux E β h h_ne_zero h_sep h_root h_splits h_roots,
-    let γ := α+c*β,
-    
-    --do some gcd shenanigans
-    sorry
+    let f_Fγ := (f.map(algebra_map F F[γ])).comp(polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
+    let g_Fγ := g.map(algebra_map F F[γ]),
+    have composition : (algebra_map F[γ] E).comp(algebra_map F F[γ]) = algebra_map F E :=
+    begin
+        ext,
+        refl,
+    end,
+    have f_map : f_Fγ.map(algebra_map F[γ] E) = f' :=
+    begin
+        dsimp[f_Fγ,f',f_E],
+        sorry,
+    end,
+    have g_map : g_Fγ.map(algebra_map F[γ] E) = g_E :=
+    begin
+        rw polynomial.map_map,
+        rw composition,
+    end,
+    dsimp[h] at key,
+    rw ←f_map at key,
+    rw ←g_map at key,
+    have swap : euclidean_domain.gcd (f_Fγ.map(algebra_map F[γ] E)) (g_Fγ.map(algebra_map F[γ] E)) = (euclidean_domain.gcd f_Fγ g_Fγ).map(algebra_map F[γ] E),
+    convert polynomial.gcd_map (algebra_map F[γ] E),
+    rw swap at key,
+    set p := euclidean_domain.gcd f_Fγ g_Fγ,
+    set k := (p.map(algebra_map F[γ] E)).leading_coeff,
+    dsimp[←k] at key,
+    rw mul_sub at key,
+    rw ←polynomial.C_mul at key,
+    have coeff0 : algebra_map F[γ] E (p.coeff 0) = -(k*β) :=
+    begin
+        rw ←polynomial.coeff_map,
+        rw key,
+        simp only [polynomial.coeff_sub, polynomial.coeff_C_zero, zero_sub, polynomial.coeff_X_zero, polynomial.coeff_C_mul, mul_zero],
+    end,
+    have coeff1 : algebra_map F[γ] E (p.coeff 1) = k :=
+    begin
+        rw ←polynomial.coeff_map,
+        rw key,
+        rw polynomial.coeff_sub,
+        rw polynomial.coeff_mul_X,
+        rw polynomial.coeff_C_zero,
+        rw polynomial.coeff_C,
+        change k - 0 = k,
+        rw sub_zero,
+    end,
+    have k_ne_zero : k≠0 :=
+    begin
+        intro k_eq_zero,
+        rw polynomial.leading_coeff_eq_zero at k_eq_zero,
+        rw ←polynomial.map_zero (algebra_map F[γ] E) at k_eq_zero,
+        replace k_eq_zero := polynomial.map_injective (algebra_map F[γ] E) (algebra_map F[γ] E).injective k_eq_zero,
+        rw euclidean_domain.gcd_eq_zero_iff at k_eq_zero,
+        apply polynomial.map_monic_ne_zero (minimal_polynomial.monic hβ) k_eq_zero.2,
+    end,
+    have last_step : β = algebra_map F[γ] E (-p.coeff 0 / p.coeff 1) :=
+    begin
+        rw division_def,
+        rw ring_hom.map_mul,
+        rw ring_hom.map_neg,
+        rw ring_hom.map_inv,
+        rw coeff0,
+        rw coeff1,
+        rw neg_neg,
+        rw mul_comm,
+        rw ←mul_assoc,
+        rw inv_mul_cancel k_ne_zero,
+        rw one_mul,
+    end,
+    change β = ↑(-p.coeff 0 / p.coeff 1) at last_step,
+    have h := subtype.mem (-p.coeff 0 / p.coeff 1),
+    rw ←last_step at h,
+    exact h,
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
