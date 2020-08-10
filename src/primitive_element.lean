@@ -41,10 +41,19 @@ begin
 end
 
 namespace polynomial
+
+variables (F : Type*) [field F]
+
+lemma gcd_eval_zero (f g : polynomial F) (α : F) (hf : f.eval α = 0) (hg : g.eval α = 0) : (euclidean_domain.gcd f g).eval α = 0 :=
+begin
+    rw euclidean_domain.gcd_eq_gcd_ab f g,
+    rw [polynomial.eval_add,polynomial.eval_mul,polynomial.eval_mul,hf,hg,zero_mul,zero_mul,zero_add],
+end
+
 open finsupp finset add_monoid_algebra
 open_locale big_operators
 
-variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
+variables {E : Type*} [field E] [algebra F E]
 
 lemma map_sum {R : Type*} [semiring R] {S : Type*} [semiring S] (f : R →+* S) {ι : Type*} (g : ι → polynomial R) (s : finset ι) :
 (∑ i in s, g i).map f = ∑ i in s, (g i).map f := eq.symm $ sum_hom _ _
@@ -326,9 +335,10 @@ begin
     end,
     have h_root : h.eval β = 0 :=
     begin
-        dsimp[h],
-        rw euclidean_domain.gcd_eq_gcd_ab f' g_E,
-        simp only [polynomial.eval_add,polynomial.eval_sub,polynomial.eval_mul,polynomial.eval_C,polynomial.eval_X,polynomial.eval_comp,polynomial.eval_map,←polynomial.aeval_def,minimal_polynomial.aeval,add_sub_cancel,zero_mul,add_zero],
+        apply polynomial.gcd_eval_zero,
+        rw [polynomial.eval_comp,polynomial.eval_sub,polynomial.eval_mul,polynomial.eval_C,polynomial.eval_C,polynomial.eval_X,add_sub_cancel],
+        rw [polynomial.eval_map,←polynomial.aeval_def,minimal_polynomial.aeval],
+        rw [polynomial.eval_map,←polynomial.aeval_def,minimal_polynomial.aeval],
     end,
     have h_splits : polynomial.splits (algebra_map E E') h :=
         polynomial.splits_of_splits_of_dvd (algebra_map E E') (polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ)) (polynomial.splitting_field.splits g_E) (euclidean_domain.gcd_dvd_right f' g_E),
