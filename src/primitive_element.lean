@@ -174,7 +174,7 @@ begin
     exact ⟨c, hc⟩,
 end
 
-lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_sep : h.separable)
+lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_ne_zero : h ≠ 0) (h_sep : h.separable)
 (h_root : h.eval β = 0) (h_splits : polynomial.splits (algebra_map F E) h)
 (h_roots : ∀ x : roots h E, ↑x = algebra_map F E β) :
 h = (polynomial.C (polynomial.leading_coeff h)) * (polynomial.X - polynomial.C β) :=
@@ -219,17 +219,23 @@ begin
         rw polynomial.degree_X_sub_C,
         exact dec_trivial,
     end,
+    have map_injective := polynomial.map_injective (algebra_map F E) (algebra_map F E).injective,
     have hn : s.card ≠ 0 :=
     begin
         intro hs_card,
         rw hs_card at hs,
         rw pow_zero at hs,
         rw mul_one at hs,
-        sorry,
+        rw ←polynomial.map_C at hs,
+        replace hs := map_injective hs,
+        rw hs at h_root,
+        rw polynomial.eval_C at h_root,
+        rw polynomial.leading_coeff_eq_zero at h_root,
+        exact h_ne_zero h_root,
     end,
     rw (polynomial.separable.of_pow hf hn (polynomial.separable.of_mul_right h_map_separable)).2 at hs,
     rw pow_one at hs,
-    apply polynomial.map_injective (algebra_map F E) (algebra_map F E).injective,
+    apply map_injective,
     rw hs,
     rw polynomial.map_mul,
     rw polynomial.map_C,
@@ -263,6 +269,12 @@ begin
         apply polynomial.separable.of_mul_left,
         rw ←mul,
         exact polynomial.separable.map hg,
+    end,
+    have h_ne_zero : h ≠ 0 :=
+    begin
+        intro h_eq_zero,
+        rw euclidean_domain.gcd_eq_zero_iff at h_eq_zero,
+        apply polynomial.map_monic_ne_zero (minimal_polynomial.monic hβ) h_eq_zero.2,
     end,
     have h_map_separable : (h.map(algebra_map E E')).separable :=
     begin
@@ -321,7 +333,7 @@ begin
         rw sub_eq_zero at hyp,
         exact hyp,
     end,
-    replace key := primitive_element_two_inf_key_aux E β h h_sep h_root h_splits h_roots,
+    replace key := primitive_element_two_inf_key_aux E β h h_ne_zero h_sep h_root h_splits h_roots,
     --do some gcd shenanigans
     sorry
 end
