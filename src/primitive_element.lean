@@ -40,6 +40,47 @@ begin
     exact (algebra_map F M).injective h,
 end
 
+namespace polynomial
+open finsupp finset add_monoid_algebra
+open_locale big_operators
+
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
+
+lemma map_sum {R : Type*} [semiring R] {S : Type*} [semiring S] (f : R →+* S) {ι : Type*} (g : ι → polynomial R) (s : finset ι) :
+(∑ i in s, g i).map f = ∑ i in s, (g i).map f := eq.symm $ sum_hom _ _
+
+lemma map_of_comp (f g : polynomial F) : (f.comp(g)).map(algebra_map F E)
+    = (f.map(algebra_map F E)).comp(g.map(algebra_map F E)) :=
+begin
+    rw polynomial.comp_eq_sum_left,
+    rw polynomial.comp_eq_sum_left,
+    dsimp [finsupp.sum],
+    rw map_sum,
+    apply sum_congr,
+    {   ext x,
+        simp [support],
+        change f.coeff x ≠ 0 ↔ (map (algebra_map F E) f).coeff x ≠ 0,
+        rw coeff_map,
+        split,
+        {   intro hx,
+            exact ne_zero_of_ne_zero F E hx,
+        },
+        {   contrapose!,
+            intro hx,
+            rw hx,
+            exact (algebra_map F E).map_zero,
+        },
+    },
+    {   intros x hx,
+        rw [map_mul, map_C, map_pow],
+        change C ((algebra_map F E) (f.coeff x)) * map (algebra_map F E) g ^ x
+            = C ((map (algebra_map F E) f).coeff x) * map (algebra_map F E) g ^ x,
+        rw coeff_map,
+    },
+end
+
+end polynomial
+
 
 /- Proof of the primitive element theorem. -/
 
@@ -350,7 +391,7 @@ begin
         rw ←polynomial.map_map,
         set p := f.map(algebra_map F F[γ]),
         dsimp[←p],
-        rw comp_map_lem p (polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)) E,
+        rw polynomial.map_of_comp F[γ] p (polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
         rw polynomial.map_sub,
         rw polynomial.map_C,
         rw adjoin_simple.gen_eq_alpha,
@@ -585,42 +626,3 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
 end
-
-namespace polynomial
-open finsupp finset add_monoid_algebra
-open_locale big_operators
-
-lemma map_sum {R : Type*} [semiring R] {S : Type*} [semiring S] (f : R →+* S) {ι : Type*} (g : ι → polynomial R) (s : finset ι) :
-(∑ i in s, g i).map f = ∑ i in s, (g i).map f := eq.symm $ sum_hom _ _
-
-lemma map_of_comp (f g : polynomial F) : (f.comp(g)).map(algebra_map F E)
-    = (f.map(algebra_map F E)).comp(g.map(algebra_map F E)) :=
-begin
-    rw polynomial.comp_eq_sum_left,
-    rw polynomial.comp_eq_sum_left,
-    dsimp [finsupp.sum],
-    rw map_sum,
-    apply sum_congr,
-    {   ext x,
-        simp [support],
-        change f.coeff x ≠ 0 ↔ (map (algebra_map F E) f).coeff x ≠ 0,
-        rw coeff_map,
-        split,
-        {   intro hx,
-            exact ne_zero_of_ne_zero F E hx,
-        },
-        {   contrapose!,
-            intro hx,
-            rw hx,
-            exact (algebra_map F E).map_zero,
-        },
-    },
-    {   intros x hx,
-        rw [map_mul, map_C, map_pow],
-        change C ((algebra_map F E) (f.coeff x)) * map (algebra_map F E) g ^ x
-            = C ((map (algebra_map F E) f).coeff x) * map (algebra_map F E) g ^ x,
-        rw coeff_map,
-    },
-end
-
-end polynomial
