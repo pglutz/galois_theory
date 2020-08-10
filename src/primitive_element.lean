@@ -255,7 +255,7 @@ begin
     let g_E := g.map (algebra_map F E),
     let E' := polynomial.splitting_field g_E,
     let ι := algebra_map E E',
-    have composition : (algebra_map E E').comp (algebra_map F E) = algebra_map F E':= by ext;refl,
+    have composition1 : (algebra_map E E').comp (algebra_map F E) = algebra_map F E':= by ext;refl,
     have key : ∃ c : F, ∀ α' : roots f E', ∀ β' : roots g E', ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) :=
     primitive_element_two_aux F (ι α) (ι β) f g (set.infinite_coe_iff.mpr F_inf) (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
     cases key with c hc,
@@ -300,7 +300,7 @@ begin
         {   cases euclidean_domain.gcd_dvd_left f' g_E with p hp,
             rw [hp,polynomial.eval₂_mul,hx,zero_mul],
         },
-        simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X,composition] at f_root,
+        simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X,composition1] at f_root,
         change _ ∈ roots f E' at f_root,
         specialize hc ⟨_,f_root⟩,
         have g_root : g_E.eval₂ (algebra_map E E') x = 0,
@@ -312,7 +312,7 @@ begin
             rw hx,
             rw zero_mul,
         },
-        simp only [polynomial.eval₂_map,composition] at g_root,
+        simp only [polynomial.eval₂_map,composition1] at g_root,
         change _ ∈ roots g E' at g_root,
         specialize hc ⟨_,g_root⟩,
         by_contradiction,
@@ -338,7 +338,7 @@ begin
     replace key := primitive_element_two_inf_key_aux E β h h_ne_zero h_sep h_root h_splits h_roots,
     let f_Fγ := (f.map(algebra_map F F[γ])).comp(polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
     let g_Fγ := g.map(algebra_map F F[γ]),
-    have composition : (algebra_map F[γ] E).comp(algebra_map F F[γ]) = algebra_map F E :=
+    have composition2 : (algebra_map F[γ] E).comp(algebra_map F F[γ]) = algebra_map F E :=
     begin
         ext,
         refl,
@@ -346,12 +346,16 @@ begin
     have f_map : f_Fγ.map(algebra_map F[γ] E) = f' :=
     begin
         dsimp[f_Fγ,f',f_E],
+        rw ←composition2,
+        rw ←polynomial.map_map,
+        set p := f.map(algebra_map F F[γ]),
+        dsimp[←p],
         sorry,
     end,
     have g_map : g_Fγ.map(algebra_map F[γ] E) = g_E :=
     begin
         rw polynomial.map_map,
-        rw composition,
+        rw composition2,
     end,
     dsimp[h] at key,
     rw ←f_map at key,
