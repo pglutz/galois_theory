@@ -597,3 +597,53 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
 end
+
+
+namespace polynomial
+open finset finsupp
+open_locale big_operators
+
+lemma sum_subset_zero_on_diff {R : Type*} [add_comm_monoid R] {X : Type*} (f g : X → R) (s₁ s₂ : finset X) 
+    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂ → x ∉ s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i := sorry
+
+lemma support_shrinks {R S : Type*} [semiring R] [semiring S] (ι : R →+* S) (f : polynomial R) :
+    (map ι f).support ⊆ f.support :=
+begin
+    intros x,
+    simp only [mem_support_iff, classical.not_not] at *,
+    contrapose!,
+    change f.coeff x = 0 → (map ι f).coeff x = 0,
+    rw coeff_map,
+    intro hx,
+    rw hx,
+    exact ring_hom.map_zero ι,
+end
+
+lemma map_of_comp' {R S : Type*} [semiring R] [semiring S] (ι : R →+* S) (f g : polynomial R) :
+    map ι (f.comp(g)) = (map ι f).comp(map ι g) :=
+begin
+    rw polynomial.comp_eq_sum_left,
+    rw polynomial.comp_eq_sum_left,
+    dsimp only [finsupp.sum],
+    rw map_sum,
+    apply eq.symm,
+    apply sum_subset_zero_on_diff,
+    {   exact support_shrinks ι f, },
+    {   intros x _ hx,
+        rw [map_mul, map_C, map_pow],
+        simp only [mem_support_iff, classical.not_not] at hx,
+        change (map ι f).coeff x = 0 at hx,
+        rw coeff_map at hx,
+        change ι.to_fun (f.coeff x) = 0 at hx,
+        change C (ι.to_fun (f.coeff x)) * map ι g ^ x = 0,
+        rw [hx, C_0, zero_mul],
+    },
+    {   intros x hx,
+        rw [map_mul, map_C, map_pow],
+        change C ((map ι f).coeff x) * map ι g ^ x =  C (ι.to_fun (f.coeff x)) * map ι g ^ x,
+        rw coeff_map,
+        refl,
+    }
+end
+
+end polynomial
