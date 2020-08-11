@@ -79,7 +79,7 @@ begin
     have : ∑ (x : X) in s₂ \ s₁, g x = 0 :=
     begin
         apply sum_eq_zero,
-        finish,
+        intros x H, simp only [mem_sdiff] at *, cases H, solve_by_elim,
     end,
     rw [this, zero_add],
     apply sum_congr,
