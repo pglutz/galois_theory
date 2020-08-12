@@ -73,13 +73,14 @@ lemma map_sum {R : Type*} [semiring R] {S : Type*} [semiring S] (f : R →+* S) 
 (∑ i in s, g i).map f = ∑ i in s, (g i).map f := eq.symm $ sum_hom _ _
 
 lemma sum_subset_zero_on_diff {R : Type*} [add_comm_monoid R] {X : Type*} (f g : X → R) (s₁ s₂ : finset X) 
-    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂ → x ∉ s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i :=
+    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂\s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i :=
 begin
     rw ← sum_sdiff hs,
     have : ∑ (x : X) in s₂ \ s₁, g x = 0 :=
     begin
         apply sum_eq_zero,
-        intros x H, simp only [mem_sdiff] at *, cases H, solve_by_elim,
+        exact h,
+        -- intros x H, simp only [mem_sdiff] at *, cases H, solve_by_elim,
     end,
     rw [this, zero_add],
     apply sum_congr,
@@ -110,9 +111,10 @@ begin
     apply eq.symm,
     apply sum_subset_zero_on_diff,
     {   exact support_shrinks ι f, },
-    {   intros x _ hx,
+    {   intros x hx,
         rw [map_mul, map_C, map_pow],
-        simp only [mem_support_iff, classical.not_not] at hx,
+        simp only [mem_sdiff, mem_support_iff, ne.def, classical.not_not] at hx,
+        replace hx := hx.right,
         change (map ι f).coeff x = 0 at hx,
         rw coeff_map at hx,
         change ι.to_fun (f.coeff x) = 0 at hx,
