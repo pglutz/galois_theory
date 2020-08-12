@@ -8,6 +8,8 @@ section
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
+def base_field_image := set.range (algebra_map F E)
+
 instance : has_coe_t F (set.range (algebra_map F E)) :=
 {coe := λ x, ⟨algebra_map F E x, ⟨x,rfl⟩⟩}
 

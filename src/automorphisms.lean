@@ -21,8 +21,6 @@ instance aut_action : mul_action (E ≃ₐ[F] E) E := {
 instance aut_subgroup_action (H : subgroup (E ≃ₐ[F] E)) : mul_action H E :=
 mul_action.comp_hom E (subgroup.subtype H)
 
-definition base_field_image := set.range (algebra_map F E)
-
 lemma base_field_is_fixed : base_field_image F E ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
 begin
     intros x hx ϕ,

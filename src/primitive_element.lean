@@ -624,3 +624,50 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
 end
+
+-- lemma primitive_element_trivial' (F_eq_E : base_field_image F E = (⊤ : set E)) :
+--     ∃ α : E, F[α] = (⊤ : set E) :=
+-- begin
+--     use 0,
+--     ext,
+--     split,
+--     intro _,
+--     exact dec_trivial,
+--     rw ← F_eq_E,
+--     rintros ⟨x, rfl⟩,
+--     apply adjoin_contains_field,
+-- end
+
+
+-- theorem primitive_element_inf_aux' (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
+--     (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : (∃ α : E, F[α] = (⊤ : set E)) :=
+-- begin
+--     tactic.unfreeze_local_instances,
+--     revert F,
+--     apply n.strong_induction_on,
+--     clear n,
+--     intros n ih F hF hFE F_sep F_findim F_inf hn,
+--     by_cases F_neq_E : base_field_image F E = (⊤ : set E),
+--     -- {   exact primitive_element_trivial' F F_neq_E, },
+--     -- {   have : ∃ α : E, α ∉ base_field_image F E :=
+--     --     begin
+--     --         revert F_neq_E,
+--     --         contrapose!,
+--     --         exact λ h, set.ext (λ x, ⟨λ _, dec_trivial, λ _, h x⟩),
+--     --     end,
+--     --     rcases this with ⟨α, hα⟩,
+--     --     by_cases h : F[α] = (⊤ : set E),
+--     --     {   exact ⟨α, h⟩,   },
+--     --     {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
+--     --         have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield F α hα,
+--     --         have Fα_inf : F[α].infinite :=
+--     --             inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
+--     --         have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
+--     --         obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
+--     --             Fα_sep Fα_findim Fα_inf rfl,
+--     --         obtain ⟨γ, hγ⟩ := primitive_element_two_inf F α β F_sep F_inf,
+--     --         rw [adjoin_simple_twice, hγ] at hβ,
+--     --         exact ⟨γ, hβ⟩,
+--     --     },
+--     -- },
+-- end
