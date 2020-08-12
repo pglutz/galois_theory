@@ -15,11 +15,7 @@ lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
 field.closure_mono (set.union_subset (set.subset_union_left _ _) (set.subset_union_of_subset_right h _))
 
 lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F S) :=
-begin
-    apply field.mem_closure,
-    left,
-    exact set.mem_range_self x,
-end
+field.mem_closure (or.inl (set.mem_range_self x))
 
 instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩}
