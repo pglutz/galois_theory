@@ -12,7 +12,7 @@ variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 @[class] def fin_galois : Prop := finite_dimensional F E ∧ is_galois F E
 
 --splitting field of separable polynomial
-def fin_galois' : Prop := ∃ f: polynomial F, f.separable ∧  polynomial.is_splitting_field F E f
+def fin_galois' : Prop := ∃ f : polynomial F, f.separable ∧  polynomial.is_splitting_field F E f
 
 --fixed field of aut
 def fin_galois'' : Prop := finite_dimensional F E ∧ base_field_image F E = mul_action.fixed_points (E ≃ₐ[F] E) E

@@ -12,13 +12,7 @@ def adjoin : set E :=
 field.closure (set.range (algebra_map F E) ∪ S)
 
 lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
-begin
-    apply field.closure_mono,
-    apply set.union_subset,
-    apply set.subset_union_left,
-    apply set.subset_union_of_subset_right,
-    exact h,
-end 
+field.closure_mono (set.union_subset (set.subset_union_left _ _) (set.subset_union_of_subset_right h _))
 
 lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F S) :=
 begin
