@@ -36,9 +36,9 @@ begin
     sorry,
 end
 
-lemma is_galois'''_implies_fin_galois : fin_galois''' F E → fin_galois F E := sorry
+lemma fis_galois'''_implies_fin_galois : fin_galois''' F E → fin_galois F E := sorry
 
-lemma fin_galois_implies_is_galois' : fin_galois F E → fin_galois' F E :=
+lemma fin_galois_implies_fin_galois' : fin_galois F E → fin_galois' F E :=
 begin
     intro h,
     cases primitive_element F h.2.1 h.1 with α hE,

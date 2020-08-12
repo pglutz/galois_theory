@@ -127,6 +127,12 @@ begin
     },
 end
 
+lemma map_comp {R S : Type*} [semiring R] [semiring S] (f : R →+* S) (p q : polynomial R) : map f (p.comp q) = (map f p).comp (map f q) :=
+polynomial.induction_on p 
+  (by simp)
+  (by simp {contextual := tt})
+  (by simp [pow_succ', ← mul_assoc] {contextual := tt})
+
 end polynomial
 
 
