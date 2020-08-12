@@ -8,8 +8,6 @@ import data.zmod.basic
 
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E)
 
-instance algebra_map_coe : has_coe_t F E := {coe := algebra_map F E}
-
 def adjoin : set E := field.closure (set.range (algebra_map F E) ∪ S)
 
 instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
@@ -31,41 +29,22 @@ field.mem_closure (or.inr (subtype.mem x))
 lemma set_subset_adjoin : S ⊆ adjoin F S :=
 λ x hx, set_mem_adjoin F S ⟨x,hx⟩
 
-lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
+lemma adjoin_mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
 field.closure_mono (set.union_subset (set.subset_union_left _ _) (set.subset_union_of_subset_right h _))
 
 instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
 {coe := λ x, ⟨algebra_map F E x, field_mem_adjoin F S x⟩}
 
-lemma adjoin_contains_field_subset {F : set E} {HF : is_subfield F} {T : set E} {HT : T ⊆ F} : T ⊆ adjoin F S :=
-begin
-    intros x hx,
-    exact field_mem_adjoin F S ⟨x,HT hx⟩,
-end
-
 lemma adjoin_contains_field_as_subfield (F : set E) {HF : is_subfield F} : F ⊆ adjoin F S :=
 λ x hx, field_mem_adjoin F S ⟨x, hx⟩
 
-lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
-begin
-    apply field.mem_closure,
-    right,
-    exact subtype.mem x,
-end
-
 instance adjoin.set_coe : has_coe_t S (adjoin F S) :=
-{coe := λ x, ⟨↑x, adjoin_contains_element F S x⟩}
-
-lemma adjoin_contains_set : S ⊆ adjoin F S :=
-begin
-    intros x hx,
-    exact adjoin_contains_element F S ⟨x,hx⟩,
-end
+{coe := λ x, ⟨↑x, set_mem_adjoin F S x⟩}
 
 lemma adjoin_contains_subset {T : set E} {H : T ⊆ S} : T ⊆ adjoin F S :=
 begin
     intros x hx,
-    exact adjoin_contains_element F S ⟨x,H hx⟩,
+    exact set_mem_adjoin F S ⟨x,H hx⟩,
 end
 
 instance adjoin.is_algebra : algebra F (adjoin F S) := {
@@ -170,6 +149,9 @@ end
 lemma adjoin_equals_adjoin_range : adjoin F S = adjoin (set.range (algebra_map F E)) S :=
 by simp only [adjoin, algebra_map_twice]
 
+lemma adjoin_contains_field_subset {F : set E} {HF : is_subfield F} {T : set E} {HT : T ⊆ F} : T ⊆ adjoin F S :=
+λ x hx, field_mem_adjoin F S ⟨x,HT hx⟩
+
 lemma adjoin_twice (T : set E) : adjoin (adjoin F S) T = adjoin F (S ∪ T) :=
 begin
     apply set.eq_of_subset_of_subset,
@@ -188,11 +170,11 @@ begin
     apply adjoin_contains_field_subset,
     apply field_subset_adjoin,
     apply adjoin_contains_field_subset,
-    apply adjoin_contains_set,
+    apply set_subset_adjoin,
     apply set.union_subset,
     apply adjoin_contains_field_subset,
-    apply adjoin_contains_set,
-    apply adjoin_contains_set,
+    apply set_subset_adjoin,
+    apply set_subset_adjoin,
 end
 
 lemma adjoin.composition : (algebra_map F E) = (algebra_map (adjoin F S) E).comp (algebra_map F (adjoin F S)) :=
@@ -232,7 +214,7 @@ instance : has_coe_t F (adjoin_simple F α) :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_simple_contains_field F α x⟩}
 
 lemma adjoin_simple_contains_element : α ∈ adjoin_simple F α :=
-adjoin_contains_element F {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
+set_mem_adjoin F {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
 
 instance adjoin_simple.is_subfield : is_subfield (adjoin_simple F α) :=
 adjoin.is_subfield F {α}
@@ -507,7 +489,7 @@ begin
     cases hx with y hy,
     exact ⟨↑y,⟨hF y,hy⟩⟩,
     intros x hx,
-    exact ⟨⟨x,adjoin_contains_element F S ⟨x,hx⟩⟩,⟨hS ⟨x,hx⟩,rfl⟩⟩,
+    exact ⟨⟨x,set_mem_adjoin F S ⟨x,hx⟩⟩,⟨hS ⟨x,hx⟩,rfl⟩⟩,
 end
 
 variable (ι : (adjoin_simple F α) →ₐ[F] E') 
