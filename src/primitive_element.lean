@@ -174,7 +174,7 @@ begin
     rw ← F_eq_E,
     intro hx,
     rw (show x = algebra_map F E ⟨x, hx⟩, from rfl),
-    apply adjoin_contains_field,
+    apply field_mem_adjoin,
 end
 
 /- Primitive element theorem for finite fields. -/
@@ -473,7 +473,7 @@ begin
     have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
     have α_in_Fαβ : α ∈ F[α, β] := adjoin_contains_element F {α, β} ⟨α, set.mem_insert α {β}⟩,
     have β_in_Fαβ : β ∈ F[α, β] := adjoin_contains_element F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
-    have c_in_Fαβ : ↑c ∈ (F[α, β] : set E) := adjoin_contains_field F {α, β} c,
+    have c_in_Fαβ : ↑c ∈ (F[α, β] : set E) := field_mem_adjoin F {α, β} c,
     have cβ_in_Fαβ : ↑c*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
     have γ_in_Fαβ : γ ∈ F[α, β] := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
     have Fγ_sub_Fαβ : F[γ] ⊆ F[α, β] := adjoin_simple_subset' F γ γ_in_Fαβ,

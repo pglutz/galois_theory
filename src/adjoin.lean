@@ -8,34 +8,43 @@ import data.zmod.basic
 
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E)
 
-def adjoin : set E :=
-field.closure (set.range (algebra_map F E) ∪ S)
+instance algebra_map_coe : has_coe_t F E := {coe := algebra_map F E}
 
-lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
-field.closure_mono (set.union_subset (set.subset_union_left _ _) (set.subset_union_of_subset_right h _))
+def adjoin : set E := field.closure (set.range (algebra_map F E) ∪ S)
 
-lemma adjoin_contains_field (x : F) : algebra_map F E x ∈ (adjoin F S) :=
+instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
+
+lemma field_mem_adjoin (x : F) : algebra_map F E x ∈ adjoin F S :=
 field.mem_closure (or.inl (set.mem_range_self x))
 
-instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
-{coe := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩}
-
-lemma adjoin_contains_field_set : set.range (algebra_map F E) ⊆ adjoin F S :=
+lemma field_subset_adjoin : set.range (algebra_map F E) ⊆ adjoin F S :=
 begin
     intros x hx,
     cases hx with f hf,
     rw ←hf,
-    exact adjoin_contains_field F S f,
+    exact field_mem_adjoin F S f,
 end
+
+lemma set_mem_adjoin (x : S) : ↑x ∈ adjoin F S :=
+field.mem_closure (or.inr (subtype.mem x))
+
+lemma set_subset_adjoin : S ⊆ adjoin F S :=
+λ x hx, set_mem_adjoin F S ⟨x,hx⟩
+
+lemma adjoin.mono (T : set E) (h : S ⊆ T) : adjoin F S ⊆ adjoin F T :=
+field.closure_mono (set.union_subset (set.subset_union_left _ _) (set.subset_union_of_subset_right h _))
+
+instance adjoin.field_coe : has_coe_t F (adjoin F S) :=
+{coe := λ x, ⟨algebra_map F E x, field_mem_adjoin F S x⟩}
 
 lemma adjoin_contains_field_subset {F : set E} {HF : is_subfield F} {T : set E} {HT : T ⊆ F} : T ⊆ adjoin F S :=
 begin
     intros x hx,
-    exact adjoin_contains_field F S ⟨x,HT hx⟩,
+    exact field_mem_adjoin F S ⟨x,HT hx⟩,
 end
 
 lemma adjoin_contains_field_as_subfield (F : set E) {HF : is_subfield F} : F ⊆ adjoin F S :=
-λ x hx, adjoin_contains_field F S ⟨x, hx⟩
+λ x hx, field_mem_adjoin F S ⟨x, hx⟩
 
 lemma adjoin_contains_element (x : S) : ↑x ∈ (adjoin F S) :=
 begin
@@ -59,11 +68,9 @@ begin
     exact adjoin_contains_element F S ⟨x,H hx⟩,
 end
 
-instance adjoin.is_subfield : is_subfield (adjoin F S) := field.closure.is_subfield
-
 instance adjoin.is_algebra : algebra F (adjoin F S) := {
-    smul := λ x y, ⟨algebra_map F E x, adjoin_contains_field F S x⟩ * y,
-    to_fun := λ x, ⟨algebra_map F E x, adjoin_contains_field F S x⟩,
+    smul := λ x y, ⟨algebra_map F E x, field_mem_adjoin F S x⟩ * y,
+    to_fun := λ x, ⟨algebra_map F E x, field_mem_adjoin F S x⟩,
     map_one' :=
     begin
         simp only [ring_hom.map_one],
@@ -106,7 +113,7 @@ def adjoin_as_submodule : submodule F E := {
     begin
         intros a b hb,
         rw algebra.smul_def,
-        exact is_submonoid.mul_mem (adjoin_contains_field F S a) hb,
+        exact is_submonoid.mul_mem (field_mem_adjoin F S a) hb,
     end
 }
 
@@ -136,7 +143,7 @@ end
 
 /-- If S ⊆ T then F[S] ⊆ F[T] -/
 lemma adjoin_subset' {T : set E} (HT : S ⊆ adjoin F T) : adjoin F S ⊆ adjoin F T :=
-adjoin_subset F S (adjoin_contains_field_set F T) HT
+adjoin_subset F S (field_subset_adjoin F T) HT
 
 lemma set_range_subset {T₁ T₂ : set E} [is_subfield T₁] [is_subfield T₂] {hyp : T₁ ⊆ T₂} :
 set.range (algebra_map T₁ E) ⊆ T₂ :=
@@ -169,17 +176,17 @@ begin
     apply adjoin_subset,
     apply set_range_subset,
     apply adjoin_subset,
-    apply adjoin_contains_field_set,
+    apply field_subset_adjoin,
     apply adjoin_contains_subset,
     apply set.subset_union_left,
     apply adjoin_contains_subset,
     apply set.subset_union_right,
     apply adjoin_subset,
     transitivity adjoin F S,
-    apply adjoin_contains_field_set,
+    apply field_subset_adjoin,
     apply adjoin_subset,
     apply adjoin_contains_field_subset,
-    apply adjoin_contains_field_set,
+    apply field_subset_adjoin,
     apply adjoin_contains_field_subset,
     apply adjoin_contains_set,
     apply set.union_subset,
@@ -219,7 +226,7 @@ notation K`[`:std.prec.max_plus β `,` γ`]` := adjoin K {β, γ}
 -- notation K`[[` binders `]]`s:(scoped β, set.insert β) := adjoin K s
 
 lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
-adjoin_contains_field F {α} x
+field_mem_adjoin F {α} x
 
 instance : has_coe_t F (adjoin_simple F α) :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_simple_contains_field F α x⟩}
