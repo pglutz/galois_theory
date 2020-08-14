@@ -1,4 +1,5 @@
 import primitive_element
+import field_theory.fixed
 
 variables (F : Type*) [field F] (E : Type*) [field E] [algebra F E]
 
@@ -12,16 +13,28 @@ instance aut : group (E ≃ₐ[F] E) := {
     mul_left_inv := λ ϕ, by {ext,exact alg_equiv.symm_apply_apply ϕ a},
 }
 
-instance aut_action : mul_action (E ≃ₐ[F] E) E := {
+instance aut_action : mul_semiring_action (E ≃ₐ[F] E) E := {
     smul := alg_equiv.to_fun,
-    one_smul := λ x, rfl,
-    mul_smul := λ ϕ ψ x, rfl,
+    smul_zero := alg_equiv.map_zero,
+    smul_one := alg_equiv.map_one,
+    one_smul := λ _, rfl,
+    smul_add := alg_equiv.map_add,
+    smul_mul := alg_equiv.map_mul,
+    mul_smul := λ _ _ _, rfl,
 }
 
-instance aut_subgroup_action (H : subgroup (E ≃ₐ[F] E)) : mul_action H E :=
-mul_action.comp_hom E (subgroup.subtype H)
+instance subgroup_action (G : Type*) [group G] [mul_semiring_action G E] (H : subgroup G) :
+mul_semiring_action H E := {
+    smul := λ h e, (↑h : G) • e,
+    smul_zero := λ _, smul_zero _,
+    smul_one := λ _, smul_one _,
+    one_smul := one_smul G,
+    smul_add := λ _, smul_add _,
+    smul_mul := λ _, mul_semiring_action.smul_mul _,
+    mul_smul := λ x y _, mul_action.mul_smul ↑x ↑y _,
+}
 
-lemma base_field_is_fixed : base_field_image F E ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
+lemma base_field_is_fixed : set.range (algebra_map F E) ⊆ mul_action.fixed_points (E ≃ₐ[F] E) E :=
 begin
     intros x hx ϕ,
     cases hx with f hf,
