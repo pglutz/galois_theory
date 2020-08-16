@@ -42,6 +42,16 @@ begin
     exact alg_equiv.commutes ϕ f,
 end
 
+theorem artin_inequality (G : Type*) [group G] [fintype G] [mul_semiring_action G E] :
+vector_space.dim (mul_action.fixed_points G E) E ≤ fintype.card G :=
+begin
+    set F := mul_action.fixed_points G E,
+    cases exists_is_basis F E with b hb,
+    rw ← is_basis.mk_range_eq_dim hb,
+    apply le_trans cardinal.mk_range_le,
+    replace hb := hb.left,
+end
+
 --things to do:
 --  give notation for aut
 --  define fixed field and show that it is indeed a field
