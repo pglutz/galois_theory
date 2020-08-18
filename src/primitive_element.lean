@@ -1,8 +1,6 @@
 import adjoin
-import separable
 import linear_algebra.finite_dimensional
 import linear_algebra.basic
-import subfield_stuff
 import data.set.finite
 import field_theory.tower
 import algebra.gcd_monoid
@@ -306,7 +304,7 @@ begin
         rw euclidean_domain.gcd_eq_zero_iff at h_eq_zero,
         apply polynomial.map_monic_ne_zero (minimal_polynomial.monic hβ) h_eq_zero.2,
     end,
-    have h_map_separable : (h.map(algebra_map E E')).separable :=
+    have h_map_separable : (h.map ι).separable :=
     begin
         apply polynomial.separable.map,
         exact h_sep,
@@ -529,7 +527,22 @@ begin
             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield F α hα,
             have Fα_inf : F[α].infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
-            have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
+            have Fα_sep : is_separable F[α] E := begin
+                intro x,
+                cases F_sep x with hx hs,
+                have hx' : is_integral F[α] x := is_integral_of_is_scalar_tower x hx,
+                use hx',
+                have key : (minimal_polynomial hx') ∣ (minimal_polynomial hx).map(algebra_map F F[α]),
+                apply minimal_polynomial.dvd,
+                dsimp[polynomial.aeval],
+                rw polynomial.eval₂_map,
+                rw ←adjoin_simple.composition,
+                apply minimal_polynomial.aeval,
+                cases key with q hq,
+                apply polynomial.separable.of_mul_left,
+                rw ←hq,
+                exact polynomial.separable.map hs,
+            end,
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf F α β F_sep F_inf,
@@ -545,8 +558,8 @@ theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dime
 begin
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    have F'_inf : F'.infinite := inclusion.infinite F_inf,
+    have F'_findim : finite_dimensional F' E := finite_dimensional.trans (set.range (algebra_map F E)) F E,
+    have F'_inf : F'.infinite := set.infinite_coe_iff.mp (infinite.of_injective (set.range_factorization (algebra_map F E)) (subtype.coind_injective set.mem_range_self (algebra_map F E).injective)),
     obtain ⟨α, hα⟩ := primitive_element_inf_aux F' F'_sep F'_findim F'_inf (findim F' E) rfl,
     exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end

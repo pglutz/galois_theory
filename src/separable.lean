@@ -3,8 +3,6 @@ import field_theory.minimal_polynomial
 import field_theory.separable
 import adjoin
 
-/- Separable extension -/
-
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
 instance subfield_subset_subfield_algebra (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) : algebra J K := {
@@ -23,8 +21,6 @@ instance subfield_subset_subfield_algebra (J K : set E) [is_subfield J] [is_subf
     commutes' := λ x y, mul_comm _ _,
     smul_def' := λ x y, rfl,
 }
-
-#check is_scalar_tower
 
 instance subfield_subset_subfield_scalar (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
 has_scalar J K := {

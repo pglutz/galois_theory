@@ -61,7 +61,7 @@ begin
     have hB : vector_space.dim E (B →₀ E) = cardinal.mk B := dim_finsupp E B,
     have hG : vector_space.dim E (G → E) = fintype.card G := dim_fun',
     rw ←hB,
-    suffices : vector_space.dim E (B →₀ E) ≤ vector_space.dim E (G → E),
+    --suffices : vector_space.dim E (B →₀ E) ≤ vector_space.dim E (G → E),
     rw ←hG, --(doesn't work for some reason)
 
 
