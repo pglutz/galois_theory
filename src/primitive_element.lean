@@ -577,6 +577,13 @@ end
 -- lemma adjoin_dim_lt_subfield (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
 --     findim F[α] E < findim F E := by apply adjoin_dim_lt; tidy
 
+lemma adjoin_inf_of_inf (S : set E) (hF : infinite F) : infinite (adjoin F S) :=
+begin
+    rw adjoin_equals_adjoin_range,
+    apply set.infinite_coe_iff.mpr,
+    exact inf_of_subset_inf (adjoin_contains_field_as_subfield S (set.range (algebra_map F E))) (inclusion.infinite hF),
+end
+
 theorem primitive_element_inf_aux (F E : Type u) [field F] [field E] [algebra F E] (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
     (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : (∃ α : E, F[α] = (⊤ : set E)) :=
 begin
@@ -598,8 +605,7 @@ begin
         {   exact ⟨α, h⟩,   },
         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt F hα,
-            have Fα_inf : infinite F[α] := sorry,
-            --     inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
+            have Fα_inf : infinite F[α] := adjoin_inf_of_inf F {α} F_inf,
             have Fα_sep : is_separable F[α] E := adjoin_simple_is_separable F F_sep α,
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
@@ -614,12 +620,13 @@ end
 theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
     ∃ α, F[α] = (⊤ : set E) :=
 begin
-    set F' := set.range (algebra_map F E) with hF',
-    have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
-    exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
+    sorry,
+    -- set F' := set.range (algebra_map F E) with hF',
+    -- have F'_sep : is_separable F' E := inclusion.separable F_sep,
+    -- have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
+    -- have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
+    -- obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
+    -- exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end
 
 /- Actual primitive element theorem. -/
@@ -632,5 +639,3 @@ begin
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
     exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
 end
-
-lemma adjoin_inf_of_inf (S : set E) (hF : infinite F) : infinite (adjoin F S) := sorry
