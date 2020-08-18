@@ -53,3 +53,5 @@ lemma quotient_degree : (finite_dimensional.findim F (adjoin_root (minimal_polyn
 
 begin
     sorry
+
+end
