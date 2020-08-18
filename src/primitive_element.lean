@@ -5,7 +5,7 @@ import linear_algebra.basic
 import subfield_stuff
 import data.set.finite
 import field_theory.tower
-import algebra.gcd_domain
+import algebra.gcd_monoid
 import field_theory.splitting_field
 
 noncomputable theory
@@ -64,69 +64,6 @@ g.eval₂ (algebra_map F E) α = 0 :=
 begin
     cases euclidean_domain.gcd_dvd_right f g with p hp,
     rw [hp,polynomial.eval₂_mul,hα,zero_mul],
-end
-
-open finsupp finset add_monoid_algebra
-open_locale big_operators
-
-lemma map_sum {R : Type*} [semiring R] {S : Type*} [semiring S] (f : R →+* S) {ι : Type*} (g : ι → polynomial R) (s : finset ι) :
-(∑ i in s, g i).map f = ∑ i in s, (g i).map f := eq.symm $ sum_hom _ _
-
-lemma sum_subset_zero_on_diff {R : Type*} [add_comm_monoid R] {X : Type*} (f g : X → R) (s₁ s₂ : finset X) 
-    (hs : s₁ ⊆ s₂) (h : ∀ x : X, x ∈ s₂\s₁ → g x = 0) (hfg : ∀ x : X, x ∈ s₁ → f x = g x) : ∑ i in s₁, f i = ∑ i in s₂, g i :=
-begin
-    rw ← sum_sdiff hs,
-    have : ∑ (x : X) in s₂ \ s₁, g x = 0 :=
-    begin
-        apply sum_eq_zero,
-        exact h,
-        -- intros x H, simp only [mem_sdiff] at *, cases H, solve_by_elim,
-    end,
-    rw [this, zero_add],
-    apply sum_congr,
-    refl,
-    exact hfg,
-end
-
-lemma support_shrinks {R S : Type*} [semiring R] [semiring S] (ι : R →+* S) (f : polynomial R) :
-    (map ι f).support ⊆ f.support :=
-begin
-    intros x,
-    simp only [mem_support_iff, classical.not_not] at *,
-    contrapose!,
-    change f.coeff x = 0 → (map ι f).coeff x = 0,
-    rw coeff_map,
-    intro hx,
-    rw hx,
-    exact ring_hom.map_zero ι,
-end
-
-lemma map_of_comp {R S : Type*} [semiring R] [semiring S] (ι : R →+* S) (f g : polynomial R) :
-    map ι (f.comp(g)) = (map ι f).comp(map ι g) :=
-begin
-    rw polynomial.comp_eq_sum_left,
-    rw polynomial.comp_eq_sum_left,
-    dsimp only [finsupp.sum],
-    rw map_sum,
-    apply eq.symm,
-    apply sum_subset_zero_on_diff,
-    {   exact support_shrinks ι f, },
-    {   intros x hx,
-        rw [map_mul, map_C, map_pow],
-        simp only [mem_sdiff, mem_support_iff, ne.def, classical.not_not] at hx,
-        replace hx := hx.right,
-        change (map ι f).coeff x = 0 at hx,
-        rw coeff_map at hx,
-        change ι.to_fun (f.coeff x) = 0 at hx,
-        change C (ι.to_fun (f.coeff x)) * map ι g ^ x = 0,
-        rw [hx, C_0, zero_mul],
-    },
-    {   intros x hx,
-        rw [map_mul, map_C, map_pow],
-        change C ((map ι f).coeff x) * map ι g ^ x =  C (ι.to_fun (f.coeff x)) * map ι g ^ x,
-        rw coeff_map,
-        refl,
-    },
 end
 
 end polynomial
@@ -417,7 +354,7 @@ begin
         rw ←polynomial.map_map,
         set p := f.map(algebra_map F F[γ]),
         dsimp[←p],
-        rw polynomial.map_of_comp (algebra_map F[γ] E) p (polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
+        rw polynomial.map_comp (algebra_map F[γ] E) p (polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
         rw [polynomial.map_sub,polynomial.map_C,adjoin_simple.gen_eq_alpha,polynomial.map_mul,polynomial.map_C,polynomial.map_X],
         refl,
     end,

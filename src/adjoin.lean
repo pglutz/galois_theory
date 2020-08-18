@@ -183,7 +183,7 @@ begin
     refl,
 end
 
-instance adjoin_algebra_tower : is_algebra_tower F (adjoin F S) E := {
+instance adjoin_algebra_tower : is_scalar_tower F (adjoin F S) E := {
     smul_assoc :=
     begin
         intros x y z,
@@ -267,7 +267,7 @@ end
 lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
 adjoin.composition F {α}
 
-instance adjoin_simple_algebra_tower : is_algebra_tower F (F[α]) E :=
+instance adjoin_simple_algebra_tower : is_scalar_tower F (F[α]) E :=
 adjoin_algebra_tower F {α}
 
 variables {E' : Type*} [field E'] [algebra F E'] (α' : E') (hα' : (minimal_polynomial h).eval₂ (algebra_map F E') α' = 0)

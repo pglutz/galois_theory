@@ -29,7 +29,7 @@ instance subfield_subset_subfield_algebra (J K : set E) [is_subfield J] [is_subf
 }
 
 instance subfield_subset_subfield_algebra_tower (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
-@is_algebra_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ := {
+@is_scalar_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ := {
     smul_assoc :=
     begin
         intros x y z,
@@ -50,7 +50,7 @@ lemma separable.subfield_aux (J K : set E) [is_subfield J] [is_subfield K] (h : 
 begin
     intro x,
     cases h_sep x with hx hs,
-    have key := @is_integral_of_is_algebra_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ (subfield_subset_subfield_algebra_tower J K h) x hx,
+    have key := @is_integral_of_is_scalar_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ (subfield_subset_subfield_algebra_tower J K h) x hx,
     use key,
     set f := @algebra_map J K _ _ (subfield_subset_subfield_algebra J K h),
     set p := (minimal_polynomial hx).map f,

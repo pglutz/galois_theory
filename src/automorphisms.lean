@@ -43,10 +43,11 @@ begin
     exact alg_equiv.commutes ϕ f,
 end
 
-noncomputable theory
-local attribute [instance, priority 100] classical.prop_decidable
-
-open_locale direct_sum
+lemma dim_finsupp (B : set E) : vector_space.dim E (B →₀ E) = cardinal.mk B :=
+begin
+    --this might be in mathlib but I can't find it
+    sorry,
+end
 
 theorem artin_inequality (G : Type*) [group G] [fintype G] [mul_semiring_action G E] :
 vector_space.dim (mul_action.fixed_points G E) E ≤ fintype.card G :=
@@ -56,7 +57,14 @@ begin
     rw ← is_basis.mk_range_eq_dim hB,
     apply le_trans cardinal.mk_range_le,
     replace hB := hB.left,
-    have map : (B →₀ E) →ₗ[E] (G → E) := finsupp.lsum (λ b, (linear_map.pi (λ g, algebra_map E (E →ₗ[E] E) (g • ↑b)))),
+    set map : (B →₀ E) →ₗ[E] (G → E) := finsupp.lsum (λ b, (linear_map.pi (λ g, algebra_map E (E →ₗ[E] E) (g • ↑b)))),
+    have hB : vector_space.dim E (B →₀ E) = cardinal.mk B := dim_finsupp E B,
+    have hG : vector_space.dim E (G → E) = fintype.card G := dim_fun',
+    rw ←hB,
+    suffices : vector_space.dim E (B →₀ E) ≤ vector_space.dim E (G → E),
+    rw ←hG, --(doesn't work for some reason)
+
+
     --choose c in ker(map) with fewest nonzero entries
     --if c is nonzero the play a produce a nonzero element with fewer nonzero entries
     --thus, kernel is zero
@@ -65,8 +73,6 @@ begin
     --more work needed for dimension of B →₀ E (first show finite_dimensional and deduce that B is finite?)
     sorry,
 end
-
-#print direct_sum.semimodule
 
 --things to do:
 --  give notation for aut
