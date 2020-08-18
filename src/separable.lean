@@ -7,10 +7,6 @@ import adjoin
 
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
-def element_is_separable (α : E) : Prop := ∃ h : is_integral F α, (minimal_polynomial h).separable
-
---lemma is_separable_iff_element_is_separable : is_separable F E ↔ ∀ α : E, element_is_separable F α := sorry
-
 instance subfield_subset_subfield_algebra (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) : algebra J K := {
     to_fun := λ x, ⟨↑x,begin
         cases x with x hx,
@@ -28,15 +24,25 @@ instance subfield_subset_subfield_algebra (J K : set E) [is_subfield J] [is_subf
     smul_def' := λ x y, rfl,
 }
 
-instance subfield_subset_subfield_algebra_tower (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
-@is_scalar_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ := {
+#check is_scalar_tower
+
+instance subfield_subset_subfield_scalar (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
+has_scalar J K := {
+    smul := λ x y, ⟨↑x,begin
+        cases x with x hx,
+        exact h hx,
+    end⟩ * y,
+}
+
+instance subfield_subset_subfield_scalar_tower (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
+@is_scalar_tower J K E (subfield_subset_subfield_scalar J K h) _ _ := {
     smul_assoc :=
     begin
         intros x y z,
         change ↑(_ * y) * z = x * (y * z),
         rw ←mul_assoc,
         refl,
-    end
+    end,
 }
 
 lemma subfield_composition (J K : set E) [is_subfield J] [is_subfield K] (h : J ⊆ K) :
@@ -50,7 +56,7 @@ lemma separable.subfield_aux (J K : set E) [is_subfield J] [is_subfield K] (h : 
 begin
     intro x,
     cases h_sep x with hx hs,
-    have key := @is_integral_of_is_scalar_tower J K E _ _ _ (subfield_subset_subfield_algebra J K h) _ _ (subfield_subset_subfield_algebra_tower J K h) x hx,
+    have key := @is_integral_of_is_scalar_tower J K E _ _ _ (subfield_subset_subfield_algebra _ _ h) _ _ _ x hx,
     use key,
     set f := @algebra_map J K _ _ (subfield_subset_subfield_algebra J K h),
     set p := (minimal_polynomial hx).map f,
