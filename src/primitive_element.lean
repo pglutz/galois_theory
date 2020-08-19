@@ -154,8 +154,6 @@ begin
     exact finset_coe.fintype (polynomial.map ϕ f).roots,
 end
 
-def map_roots (f : polynomial F) := (polynomial.map ϕ f).roots
-
 lemma primitive_element_two_aux' (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
@@ -175,8 +173,8 @@ begin
         refine (set.finite.image (λ z : E × E, r z.1 z.2) (set.finite_mem_finset (sf.product sg))).subset _,
         simpa only [set.subset_def, set.mem_image, prod.exists, finset.mem_product] using hr,
     end,
-    have s'_fin : s'.finite := set.finite.preimage ((ring_hom.injective ϕ).inj_on (⇑ϕ ⁻¹' s)) (s_fin),
-    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset (set.finite.to_finset s'_fin),
+    have s'_fin : s'.finite := s_fin.preimage ((ring_hom.injective ϕ).inj_on (⇑ϕ ⁻¹' s)),
+    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s'_fin.to_finset,
     rw [set.finite.mem_to_finset, set.mem_preimage, set.mem_set_of_eq] at hc,
     push_neg at hc,
     exact ⟨c, hc⟩,
