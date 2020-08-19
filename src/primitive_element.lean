@@ -134,7 +134,31 @@ end
 section
 variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
 
+<<<<<<< HEAD
 lemma primitive_element_two_aux (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+=======
+def my_roots (f : polynomial F) :=
+{α : E | polynomial.eval₂ ϕ α f = 0}
+
+/-- The definition of roots agrees with the mathlib definition. -/
+lemma my_roots_eq_map_roots (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : my_roots ϕ f = ↑(polynomial.map ϕ f).roots :=
+begin
+    set f' := polynomial.map ϕ f with hf',
+    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
+    ext,
+    change x ∈ my_roots ϕ f ↔ x ∈ f'.roots,
+    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
+    refl,
+end
+
+lemma my_roots_is_fintype (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (my_roots ϕ f) :=
+begin
+    rw my_roots_eq_map_roots ϕ f hf f_monic,
+    exact finset_coe.fintype (polynomial.map ϕ f).roots,
+end
+
+lemma primitive_element_two_aux' (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+>>>>>>> a31297f79e8ded0cf44d4a4864a6ff28928fc578
     ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
     let sf := (f.map ϕ).roots,
@@ -153,8 +177,8 @@ begin
         refine (set.finite.image (λ z : E × E, r z.1 z.2) (set.finite_mem_finset (sf.product sg))).subset _,
         simpa only [set.subset_def, set.mem_image, prod.exists, finset.mem_product] using hr,
     end,
-    have s'_fin : s'.finite := set.finite.preimage ((ring_hom.injective ϕ).inj_on (⇑ϕ ⁻¹' s)) (s_fin),
-    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset (set.finite.to_finset s'_fin),
+    have s'_fin : s'.finite := s_fin.preimage ((ring_hom.injective ϕ).inj_on (⇑ϕ ⁻¹' s)),
+    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s'_fin.to_finset,
     rw [set.finite.mem_to_finset, set.mem_preimage, set.mem_set_of_eq] at hc,
     push_neg at hc,
     exact ⟨c, hc⟩,
