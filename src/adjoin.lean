@@ -289,8 +289,104 @@ end
 lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
 adjoin.composition F {α}
 
+def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E := {
+    carrier := p.carrier,
+    zero_mem' := p.zero_mem',
+    add_mem' := p.add_mem',
+    smul_mem' :=
+    begin
+        intros c x hx,
+        rw algebra.smul_def,
+        rw adjoin_simple.composition F α,
+        rw ring_hom.comp_apply,
+        rw ←algebra.smul_def,
+        exact p.smul_mem' _ hx,
+    end
+}
+
 instance adjoin_simple_algebra_tower : is_scalar_tower F (F[α]) E :=
 adjoin_algebra_tower F {α}
+
+section
+open finite_dimensional
+
+/-- If a subset of a set is infinite then the set is infinite. -/
+lemma inf_of_subset_inf {X : Type*} {s : set X} {t : set X} (hst : s ⊆ t) (hs : s.infinite) : t.infinite :=
+mt (λ ht, ht.subset hst) hs
+
+/-- If E is a finite extension of F then it is also a finite extension of F adjoin alpha. -/
+instance adjoin_findim_of_findim [F_findim : finite_dimensional F E] (α : E) :
+    finite_dimensional F[α] E :=
+begin
+    rw iff_fg,
+    rw submodule.fg_iff_finite_dimensional,
+    cases (finite_dimensional.exists_is_basis_finite F E) with B hB,
+    have key : submodule.span F[α] B = ⊤,
+    {   ext,
+        simp only [submodule.mem_top, iff_true],
+        have hx : x ∈ submodule.span F (set.range coe),
+        {   rw hB.1.2,
+            exact submodule.mem_top, },
+        rw submodule.mem_span,
+        intros p hp,
+        rw submodule.mem_span at hx,
+        apply hx (submodule_restrict_field F α p),
+        rw subtype.range_coe,
+        exact hp, },
+    rw ← key,
+    apply finite_dimensional.span_of_finite F[α] hB.2,
+end
+
+instance adjoin_findim_of_findim_base [F_findim : finite_dimensional F E] (α : E) :
+    finite_dimensional F F[α] :=
+begin
+    have h := finite_dimensional.finite_dimensional_submodule (adjoin_simple_as_submodule F α),
+    exact linear_equiv.finite_dimensional (adjoin_simple_as_submodule_equiv F α).symm,
+end
+
+/-- If the field extension E has an element not in the base field F then the degree of E over F is
+    greater than 1. -/
+lemma algebra_findim_lt [hF : finite_dimensional F E] : (∃ x : E, x ∉ set.range (algebra_map F E)) →
+    1 < findim F E :=
+begin
+    contrapose!,
+    intros E_dim x,
+    have : 0 < findim F E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    replace E_dim : findim F E = 1 := by omega,
+    set s : set E := {1} with hs,
+    have : fintype s := unique.fintype,
+    have s_lin_ind : linear_independent F (coe : s → E) := linear_independent_singleton one_ne_zero,
+    have s_card : s.to_finset.card = findim F E := by change s.to_finset.card with 1; rw E_dim,
+    obtain ⟨_, s_spans⟩ := set_is_basis_of_linear_independent_of_card_eq_findim s_lin_ind s_card,
+    have x_in_span_one : x ∈ submodule.span F s :=
+    begin
+        rw subtype.range_coe at s_spans,
+        rw s_spans,
+        exact submodule.mem_top,
+    end,
+    obtain ⟨a, ha⟩ := submodule.mem_span_singleton.mp x_in_span_one,
+    exact ⟨a, by rw [← ha, algebra.smul_def, mul_one]⟩,
+end
+
+/-- Adjoining an element from outside of F strictly decreases the degree of a finite extension. -/
+lemma adjoin_dim_lt [hF : finite_dimensional F E] {α : E} (hα : α ∉ set.range (algebra_map F E)) :
+    findim F[α] E < findim F E :=
+begin
+    rw ← findim_mul_findim F F[α] E,
+    have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
+    have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) := adjoin_simple_gen_nontrivial F hα,
+    have : findim F F[α] > 1 := algebra_findim_lt F (by tauto),
+    nlinarith,
+end
+
+lemma adjoin_inf_of_inf (S : set E) (hF : infinite F) : infinite (adjoin F S) :=
+begin
+    rw adjoin_equals_adjoin_range,
+    apply set.infinite_coe_iff.mpr,
+    exact inf_of_subset_inf (adjoin_contains_field_as_subfield S (set.range (algebra_map F E))) (inclusion.infinite hF),
+end
+
+end
 
 variables {E' : Type*} [field E'] [algebra F E'] (α' : E') (hα' : (minimal_polynomial h).eval₂ (algebra_map F E') α' = 0)
 
