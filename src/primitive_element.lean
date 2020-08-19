@@ -134,31 +134,7 @@ end
 section
 variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
 
-<<<<<<< HEAD
 lemma primitive_element_two_aux (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
-=======
-def my_roots (f : polynomial F) :=
-{α : E | polynomial.eval₂ ϕ α f = 0}
-
-/-- The definition of roots agrees with the mathlib definition. -/
-lemma my_roots_eq_map_roots (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : my_roots ϕ f = ↑(polynomial.map ϕ f).roots :=
-begin
-    set f' := polynomial.map ϕ f with hf',
-    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
-    ext,
-    change x ∈ my_roots ϕ f ↔ x ∈ f'.roots,
-    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
-    refl,
-end
-
-lemma my_roots_is_fintype (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (my_roots ϕ f) :=
-begin
-    rw my_roots_eq_map_roots ϕ f hf f_monic,
-    exact finset_coe.fintype (polynomial.map ϕ f).roots,
-end
-
-lemma primitive_element_two_aux' (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
->>>>>>> a31297f79e8ded0cf44d4a4864a6ff28928fc578
     ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
     let sf := (f.map ϕ).roots,
