@@ -2,7 +2,7 @@ import field_theory.subfield
 import field_theory.separable
 import field_theory.tower
 import data.set.finite
-import algebra.gcd_domain
+import algebra.gcd_monoid
 
 section
 
@@ -192,7 +192,7 @@ noncomputable instance why_does_this_need_a_name : algebra (set.range (algebra_m
     commutes' := λ e f, mul_comm _ _,
 }
 
-instance why_does_this_also_need_a_name : is_algebra_tower (set.range (algebra_map F E)) F E := {
+instance why_does_this_also_need_a_name : is_scalar_tower (set.range (algebra_map F E)) F E := {
     smul_assoc :=
     begin
         intros x y z,
