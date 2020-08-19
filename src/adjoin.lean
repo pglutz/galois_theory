@@ -1,4 +1,5 @@
 import subfield_stuff
+import field_theory.subfield
 import group_theory.subgroup
 import field_theory.minimal_polynomial
 import linear_algebra.dimension

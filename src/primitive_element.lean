@@ -5,6 +5,7 @@ import data.set.finite
 import field_theory.tower
 import algebra.gcd_monoid
 import field_theory.splitting_field
+import field_theory.separable
 
 noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
@@ -71,29 +72,7 @@ end polynomial
 
 open finite_dimensional
 
-/-- The set of roots of a polynomial f in a field E where f is a polynomial in F and F ⊆ E. -/
-def roots {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E]  :=
-{α : E | polynomial.eval₂ (algebra_map F E) α f = 0}
-
-/-- The definition of roots agrees with the mathlib definition. -/
-lemma roots_eq_map_roots {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E]
-    (hf : f ≠ 0) (f_monic : polynomial.monic f) : roots f E = ↑(polynomial.map (algebra_map F E) f).roots :=
-begin
-    set f' := polynomial.map (algebra_map F E) f with hf',
-    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
-    ext,
-    change x ∈ roots f E ↔ x ∈ f'.roots,
-    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
-    refl,
-end
-
-/-- The set of roots in E of a nonzero polynomial f over F is a finite set. -/
-lemma roots_is_fintype {F : Type*} [field F] (f : polynomial F) (E : Type*) [field E] [algebra F E] 
-    (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (roots f E) :=
-begin
-    rw roots_eq_map_roots f E hf f_monic,
-    exact finset_coe.fintype (polynomial.map (algebra_map F E) f).roots,
-end
+section
 
 variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
@@ -141,32 +120,55 @@ end
 theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
     ∃ α : E, F[α] = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F)
 
+end
+
 /- Primitive element theorem for infinite fields. -/
 
-lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
-    ∃ c : F, ∀ (α' : roots f E) (β' : roots g E), ↑β' ≠ β → (algebra_map F E c) ≠ -(α' - α)/(β' - β) :=
+section
+
+variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
+
+def my_roots (f : polynomial F) :=
+{α : E | polynomial.eval₂ ϕ α f = 0}
+
+/-- The definition of roots agrees with the mathlib definition. -/
+lemma my_roots_eq_map_roots (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : my_roots ϕ f = ↑(polynomial.map ϕ f).roots :=
 begin
-    let ι := algebra_map F E,
-    let s := {c : F | ∃ (α' : roots f E) (β' : roots g E), ↑β' ≠ β ∧ ι c = -(α' - α)/(β' - β)},
+    set f' := polynomial.map ϕ f with hf',
+    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
+    ext,
+    change x ∈ my_roots ϕ f ↔ x ∈ f'.roots,
+    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
+    refl,
+end
+
+lemma my_roots_is_fintype (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (my_roots ϕ f) :=
+begin
+    rw my_roots_eq_map_roots ϕ f hf f_monic,
+    exact finset_coe.fintype (polynomial.map ϕ f).roots,
+end
+
+lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+    ∃ c : F, ∀ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
+begin
+    let s := {c : F | ∃ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β ∧ ϕ c = -(α' - α)/(β' - β)},
     have s_fin : fintype s :=
     begin
         by_cases s_nonempty : nonempty s,
         let x := s_nonempty.some,
-        let r : (roots f E) × (roots g E) → s :=
+        let r : (my_roots ϕ f) × (my_roots ϕ g) → s :=
         begin
             rintros ⟨α', β'⟩,
             by_cases hβ : ↑β' = β,
             use x,
             let c' : E := -(α' - α)/(β' - β),
-            by_cases hc' : c' ∈ set.range ι,
-            set c := reverse_inclusion_ring_hom F E ⟨c', hc'⟩ with h,
+            by_cases hc' : c' ∈ set.range ϕ,
+            set c := Exists.some (set.mem_range.mp hc'),
             have hc : c ∈ s :=
             begin
                 use [α', β', hβ],
-                rw h,
-                change ((inclusion_isomorphism F E).to_fun ((inclusion_isomorphism F E).inv_fun ⟨c', hc'⟩) : E) = -(↑α' - α)/(↑β' - β),
-                rw (inclusion_isomorphism F E).right_inv,
-                refl,
+                dsimp[←c'],
+                exact Exists.some_spec (set.mem_range.mp hc'),
             end,
             use ⟨c, hc⟩,
             use x,
@@ -180,15 +182,14 @@ begin
             {   exfalso, exact hβ' hβ, },
             {   ext,
                 dsimp,
-                rw ← reverse_inclusion_of_field F E c,
-                unfold_coes,
-                funext,
-                simp only [*, ring_hom.to_fun_eq_coe, subtype.val_eq_coe],
+                apply ϕ.injective,
+                rw hc,
+                exact Exists.some_spec (set.mem_range.mp h),
             },
             { exfalso, exact h ⟨c, hc⟩, },
         end,
-        have roots_prod_fin : fintype ((roots f E) × (roots g E)) := @prod.fintype (roots f E) (roots g E)
-            (roots_is_fintype f E hf f_monic) (roots_is_fintype g E hg g_monic),
+        have roots_prod_fin : fintype ((my_roots ϕ f) × (my_roots ϕ g)) := @prod.fintype (my_roots ϕ f) (my_roots ϕ g)
+            (my_roots_is_fintype ϕ f hf f_monic) (my_roots_is_fintype ϕ g hg g_monic),
         exact @fintype.of_surjective _ _ _ roots_prod_fin r r_surjective,
         exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
     end,
@@ -201,21 +202,20 @@ begin
 end
 
 lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_ne_zero : h ≠ 0) (h_sep : h.separable)
-(h_root : h.eval β = 0) (h_splits : polynomial.splits (algebra_map F E) h)
-(h_roots : ∀ x : roots h E, ↑x = algebra_map F E β) :
+(h_root : h.eval β = 0) (h_splits : polynomial.splits ϕ h) (h_roots : ∀ x : my_roots ϕ h, ↑x = ϕ β) :
 h = (polynomial.C (polynomial.leading_coeff h)) * (polynomial.X - polynomial.C β) :=
 begin
-    have h_map_separable : (h.map(algebra_map F E)).separable :=
+    have h_map_separable : (h.map ϕ).separable :=
     begin
         apply polynomial.separable.map,
         exact h_sep,
     end,
     rw polynomial.splits_iff_exists_multiset at h_splits,
     cases h_splits with s hs,
-    have s_elements : ∀ x ∈ s, x = algebra_map F E β :=
+    have s_elements : ∀ x ∈ s, x = ϕ β :=
     begin
         intros x hx,
-        have is_root : polynomial.eval₂ (algebra_map F E) x h = 0,
+        have is_root : polynomial.eval₂ ϕ x h = 0,
         rw polynomial.eval₂_eq_eval_map,
         rw hs,
         rw polynomial.eval_mul,
@@ -225,7 +225,7 @@ begin
         simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
         exact h_roots ⟨x,is_root⟩,
     end,
-    replace s_elements : ∀ x ∈ multiset.map (λ (a : E), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (algebra_map F E β) :=
+    replace s_elements : ∀ x ∈ multiset.map (λ (a : E), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (ϕ β) :=
     begin
         intros x hx,
         rw multiset.mem_map at hx,
@@ -239,13 +239,13 @@ begin
     rw multiset.prod_repeat at hs,
     rw multiset.card_map at hs,
     rw hs at h_map_separable,
-    have hf : ¬is_unit (polynomial.X - polynomial.C (algebra_map F E β)) :=
+    have hf : ¬is_unit (polynomial.X - polynomial.C (ϕ β)) :=
     begin
         rw polynomial.is_unit_iff_degree_eq_zero,
         rw polynomial.degree_X_sub_C,
         exact dec_trivial,
     end,
-    have map_injective := polynomial.map_injective (algebra_map F E) (algebra_map F E).injective,
+    have map_injective := polynomial.map_injective ϕ ϕ.injective,
     have hn : s.card ≠ 0 :=
     begin
         intro hs_card,
@@ -270,8 +270,12 @@ begin
     rw polynomial.map_C,
 end
 
-lemma primitive_element_two_inf_key (F : set E) [is_subfield F] (α β : E) [F_sep : is_separable F E]
-    (F_inf : F.infinite) : ∃ c : F, β ∈ F[α + c*β] :=
+end
+
+variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E]
+
+lemma primitive_element_two_inf_key (α β : E) [F_sep : is_separable F E]
+    (F_inf : infinite F) : ∃ c : F, β ∈ F[α + (algebra_map F E) c * β] :=
 begin
     rcases F_sep α with ⟨hα, hf⟩,
     rcases F_sep β with ⟨hβ, hg⟩,
@@ -280,14 +284,14 @@ begin
     let f_E := f.map (algebra_map F E),
     let g_E := g.map (algebra_map F E),
     let E' := polynomial.splitting_field g_E,
-    let ι := algebra_map E E',
-    have composition1 : (algebra_map E E').comp (algebra_map F E) = algebra_map F E' := by ext;refl,
-    have key : ∃ c : F, ∀ α' : roots f E', ∀ β' : roots g E', ↑β' ≠ ι β → ι c ≠ -(α'-ι α)/(β'-ι β) :=
-    primitive_element_two_aux F (ι α) (ι β) f g (set.infinite_coe_iff.mpr F_inf) (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
+    let ιFE := algebra_map F E,
+    let ιEE' := algebra_map E E',
+    let ιFE' := ιEE'.comp(ιFE),
+    have key := @primitive_element_two_aux F _ E' _ ιFE' (ιEE' α) (ιEE' β) f g F_inf (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
     cases key with c hc,
     use c,
-    let γ := α+c*β,
-    let f' := f_E.comp(polynomial.C γ-(polynomial.C ↑c) * (polynomial.X)),
+    let γ := α+(ιFE c)*β,
+    let f' := f_E.comp(polynomial.C γ-(polynomial.C (ιFE c)) * (polynomial.X)),
     let h := euclidean_domain.gcd f' g_E,
     have h_sep : h.separable :=
     begin
@@ -304,7 +308,7 @@ begin
         rw euclidean_domain.gcd_eq_zero_iff at h_eq_zero,
         apply polynomial.map_monic_ne_zero (minimal_polynomial.monic hβ) h_eq_zero.2,
     end,
-    have h_map_separable : (h.map ι).separable :=
+    have h_map_separable : (h.map ιEE').separable :=
     begin
         apply polynomial.separable.map,
         exact h_sep,
@@ -318,30 +322,30 @@ begin
     end,
     have h_splits : polynomial.splits (algebra_map E E') h :=
         polynomial.splits_of_splits_of_dvd (algebra_map E E') (polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ)) (polynomial.splitting_field.splits g_E) (euclidean_domain.gcd_dvd_right f' g_E),
-    have h_roots : ∀ x : roots h E', ↑x = algebra_map E E' β :=
+    have h_roots : ∀ x : my_roots ιEE' h, ↑x = algebra_map E E' β :=
     begin
         intro x,
         cases x with x hx,
-        dsimp[roots] at hx,
+        dsimp[my_roots] at hx,
         have f_root : f'.eval₂ (algebra_map E E') x = 0 := polynomial.gcd_root_left E f' g_E x hx,
-        simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X,composition1] at f_root,
-        change _ ∈ roots f E' at f_root,
+        simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X] at f_root,
+        change _ ∈ my_roots ιFE' f at f_root,
         specialize hc ⟨_,f_root⟩,
         have g_root : g_E.eval₂ (algebra_map E E') x = 0 := polynomial.gcd_root_right E f' g_E x hx,
-        simp only [polynomial.eval₂_map,composition1] at g_root,
-        change _ ∈ roots g E' at g_root,
+        simp only [polynomial.eval₂_map] at g_root,
+        change _ ∈ my_roots ιFE' g at g_root,
         specialize hc ⟨_,g_root⟩,
         by_contradiction,
         specialize hc a,
         apply hc,
-        dsimp[ι],
+        dsimp[ιEE'],
         rw[neg_sub,ring_hom.map_add,←sub_add,←sub_sub,sub_self,zero_sub,neg_add_eq_sub,ring_hom.map_mul,←mul_sub],
         symmetry,
         apply mul_div_cancel,
         rw sub_ne_zero,
         exact a,
     end,
-    replace key := primitive_element_two_inf_key_aux E β h h_ne_zero h_sep h_root h_splits h_roots,
+    replace key := primitive_element_two_inf_key_aux ιEE' β h h_ne_zero h_sep h_root h_splits h_roots,
     let f_Fγ := (f.map(algebra_map F F[γ])).comp(polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
     let g_Fγ := g.map(algebra_map F F[γ]),
     have composition2 : (algebra_map F[γ] E).comp(algebra_map F F[γ]) = algebra_map F E := by ext;refl,
@@ -399,7 +403,7 @@ end
 lemma primitive_element_two_inf (F : set E) [is_subfield F] (α β : E) (F_sep : is_separable F E)
     (F_inf : F.infinite) :  ∃ γ : E, F[α, β] = F[γ] :=
 begin
-    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key F α β F_inf,
+    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β (set.infinite_coe_iff.mpr F_inf),
     let γ := α + c*β,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
     have c_in_Fγ : ↑c ∈ F[γ] := adjoin_simple_contains_field F γ c,
@@ -449,7 +453,7 @@ begin
     rw submodule.mem_span,
     intros p hp,
     rw submodule.mem_span at hx,
-    apply hx (submodule_restrict_field F α p),
+    apply hx (submodule_restrict_field α p),
     rw subtype.range_coe,
     exact hp,
     rw ←key,
@@ -494,7 +498,7 @@ begin
     rw ← findim_mul_findim F F[α] E,
     have : 0 < findim F[α] E := findim_pos_iff_exists_ne_zero.mpr ⟨1, one_ne_zero⟩,
     have : adjoin_simple.gen F α ∉ set.range (algebra_map F F[α]) := adjoin_simple_gen_nontrivial F hα,
-    have : findim F F[α] > 1 := algebra_findim_lt F (by tauto),
+    have : findim F F[α] > 1 := algebra_findim_lt (by tauto),
     nlinarith,
 end
 
@@ -523,7 +527,7 @@ begin
         rcases this with ⟨α, hα⟩,
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
+        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim α,
             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield F α hα,
             have Fα_inf : F[α].infinite :=
                 inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
@@ -572,7 +576,7 @@ theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E
 begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
-    exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
+    exact primitive_element_inf hs hfd (not_nonempty_fintype.mp F_finite),
 end
 
 -- lemma primitive_element_trivial' (F_eq_E : base_field_image F E = (⊤ : set E)) :
