@@ -84,12 +84,12 @@ begin
     use 0,
     ext,
     split,
-    intro _,
-    exact dec_trivial,
+    exact λ _, trivial,
     rw ← F_eq_E,
     rintros ⟨x, rfl⟩,
     apply field_mem_adjoin,
 end
+
 
 end
 
@@ -134,29 +134,7 @@ end
 section
 variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
 
-def my_roots (f : polynomial F) :=
-{α : E | polynomial.eval₂ ϕ α f = 0}
-
-/-- The definition of roots agrees with the mathlib definition. -/
-lemma my_roots_eq_map_roots (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : my_roots ϕ f = ↑(polynomial.map ϕ f).roots :=
-begin
-    set f' := polynomial.map ϕ f with hf',
-    have f'_ne_zero : f' ≠ 0 := polynomial.map_monic_ne_zero f_monic,
-    ext,
-    change x ∈ my_roots ϕ f ↔ x ∈ f'.roots,
-    rw [polynomial.mem_roots f'_ne_zero, polynomial.is_root, ← polynomial.eval₂_eq_eval_map],
-    refl,
-end
-
-lemma my_roots_is_fintype (f : polynomial F) (hf : f ≠ 0) (f_monic : polynomial.monic f) : fintype (my_roots ϕ f) :=
-begin
-    rw my_roots_eq_map_roots ϕ f hf f_monic,
-    exact finset_coe.fintype (polynomial.map ϕ f).roots,
-end
-
-def map_roots (f : polynomial F) := (polynomial.map ϕ f).roots
-
-lemma primitive_element_two_aux' (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+lemma primitive_element_two_aux (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
     let sf := (f.map ϕ).roots,
@@ -182,61 +160,8 @@ begin
     exact ⟨c, hc⟩,
 end
 
-lemma primitive_element_two_aux (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
-    ∃ c : F, ∀ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
-begin
-    let s := {c : F | ∃ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β ∧ ϕ c = -(α' - α)/(β' - β)},
-    have s_fin : fintype s :=
-    begin
-        by_cases s_nonempty : nonempty s,
-        let x := s_nonempty.some,
-        let r : (my_roots ϕ f) × (my_roots ϕ g) → s :=
-        begin
-            rintros ⟨α', β'⟩,
-            by_cases hβ : ↑β' = β,
-            use x,
-            let c' : E := -(α' - α)/(β' - β),
-            by_cases hc' : c' ∈ set.range ϕ,
-            set c := Exists.some (set.mem_range.mp hc'),
-            have hc : c ∈ s :=
-            begin
-                use [α', β', hβ],
-                dsimp[←c'],
-                exact Exists.some_spec (set.mem_range.mp hc'),
-            end,
-            use ⟨c, hc⟩,
-            use x,
-        end,
-        have r_surjective : function.surjective r :=
-        begin
-            rintros ⟨c, ⟨α', β', hβ', hc⟩⟩,
-            use ⟨α', β'⟩,
-            dsimp only [r],
-            split_ifs with hβ h,
-            {   exfalso, exact hβ' hβ, },
-            {   ext,
-                dsimp,
-                apply ϕ.injective,
-                rw hc,
-                exact Exists.some_spec (set.mem_range.mp h),
-            },
-            { exfalso, exact h ⟨c, hc⟩, },
-        end,
-        have roots_prod_fin : fintype ((my_roots ϕ f) × (my_roots ϕ g)) := @prod.fintype (my_roots ϕ f) (my_roots ϕ g)
-            (my_roots_is_fintype ϕ f hf f_monic) (my_roots_is_fintype ϕ g hg g_monic),
-        exact @fintype.of_surjective _ _ _ roots_prod_fin r r_surjective,
-        exact ⟨∅, λ x, false.rec _ (not_nonempty_iff_imp_false.mp s_nonempty x)⟩,
-    end,
-    let s' := set.finite.to_finset (nonempty.intro s_fin),
-    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset s',
-    rw set.finite.mem_to_finset at hc,
-    dsimp at hc,
-    push_neg at hc,
-    exact ⟨c, hc⟩,
-end
-
 lemma primitive_element_two_inf_key_aux {β : F} {h : polynomial F} (h_ne_zero : h ≠ 0) (h_sep : h.separable)
-(h_root : h.eval β = 0) (h_splits : polynomial.splits ϕ h) (h_roots : ∀ x : my_roots ϕ h, ↑x = ϕ β) :
+(h_root : h.eval β = 0) (h_splits : polynomial.splits ϕ h) (h_roots : ∀ x ∈ (h.map ϕ).roots, x = ϕ β) :
 h = (polynomial.C (polynomial.leading_coeff h)) * (polynomial.X - polynomial.C β) :=
 begin
     have h_map_separable : (h.map ϕ).separable :=
@@ -249,7 +174,10 @@ begin
     have s_elements : ∀ x ∈ s, x = ϕ β :=
     begin
         intros x hx,
-        have is_root : polynomial.eval₂ ϕ x h = 0,
+        have is_root : x ∈ (h.map ϕ).roots,
+        rw polynomial.mem_roots,
+        dsimp[polynomial.is_root],
+        rw polynomial.eval_map,
         rw polynomial.eval₂_eq_eval_map,
         rw hs,
         rw polynomial.eval_mul,
@@ -257,7 +185,8 @@ begin
         rw hy,
         rw multiset.map_cons,
         simp only [polynomial.eval_X, multiset.prod_cons, polynomial.eval_C, zero_mul, polynomial.eval_mul, polynomial.eval_sub, mul_zero, sub_self],
-        exact h_roots ⟨x,is_root⟩,
+        exact polynomial.map_ne_zero h_ne_zero,
+        exact h_roots x is_root,
     end,
     replace s_elements : ∀ x ∈ multiset.map (λ (a : E), polynomial.X - polynomial.C a) s, x = polynomial.X - polynomial.C (ϕ β) :=
     begin
@@ -356,19 +285,30 @@ begin
     end,
     have h_splits : polynomial.splits (algebra_map E E') h :=
         polynomial.splits_of_splits_of_dvd (algebra_map E E') (polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ)) (polynomial.splitting_field.splits g_E) (euclidean_domain.gcd_dvd_right f' g_E),
-    have h_roots : ∀ x : my_roots ιEE' h, ↑x = algebra_map E E' β :=
+    have h_roots : ∀ x ∈ (h.map ιEE').roots, x = algebra_map E E' β :=
     begin
-        intro x,
-        cases x with x hx,
-        dsimp[my_roots] at hx,
+        intros x hx,
+        rw polynomial.mem_roots at hx,
+        dsimp[polynomial.is_root] at hx,
+        rw polynomial.eval_map at hx,
         have f_root : f'.eval₂ (algebra_map E E') x = 0 := polynomial.gcd_root_left E f' g_E x hx,
         simp only [polynomial.eval₂_comp,polynomial.eval₂_map,polynomial.eval₂_sub,polynomial.eval₂_mul,polynomial.eval₂_C,polynomial.eval₂_X] at f_root,
-        change _ ∈ my_roots ιFE' f at f_root,
-        specialize hc ⟨_,f_root⟩,
+        replace f_root : _ ∈ (f.map ιFE').roots,
+        rw polynomial.mem_roots,
+        dsimp[polynomial.is_root],
+        rw polynomial.eval_map,
+        exact f_root,
+        exact polynomial.map_ne_zero (minimal_polynomial.ne_zero hα),
+        specialize hc _ f_root,
         have g_root : g_E.eval₂ (algebra_map E E') x = 0 := polynomial.gcd_root_right E f' g_E x hx,
         simp only [polynomial.eval₂_map] at g_root,
-        change _ ∈ my_roots ιFE' g at g_root,
-        specialize hc ⟨_,g_root⟩,
+        replace g_root : _ ∈ (g.map ιFE').roots,
+        rw polynomial.mem_roots,
+        dsimp[polynomial.is_root],
+        rw polynomial.eval_map,
+        exact g_root,
+        exact polynomial.map_ne_zero (minimal_polynomial.ne_zero hβ),
+        specialize hc _ g_root,
         by_contradiction,
         specialize hc a,
         apply hc,
@@ -378,6 +318,7 @@ begin
         apply mul_div_cancel,
         rw sub_ne_zero,
         exact a,
+        exact polynomial.map_ne_zero h_ne_zero,
     end,
     replace key := primitive_element_two_inf_key_aux ιEE' h_ne_zero h_sep h_root h_splits h_roots,
     let f_Fγ := (f.map(algebra_map F F[γ])).comp(polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
