@@ -72,12 +72,10 @@ end polynomial
 
 open finite_dimensional
 
-section
-
-universes u v
-variables (F : Type u) [field F] {E : Type v} [field E] [algebra F E]
-
 /- Trivial case of the primitive element theorem. -/
+
+section
+variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E]
 
 /-- Primitive element theorem when F = E. -/
 lemma primitive_element_trivial (F_eq_E : base_field_image F E = (⊤ : set E)) :
@@ -93,7 +91,12 @@ begin
     apply field_mem_adjoin,
 end
 
+end
+
 /- Primitive element theorem for finite fields. -/
+
+section
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
 /-- A finite dimensional vector space over a finite field is finite. -/
@@ -117,15 +120,18 @@ begin
 end
 
 /-- Primitive element theorem for finite dimensional extension of a finite field. -/
-theorem primitive_element_fin [fintype F] (hfd : finite_dimensional F E) :
-    ∃ α : E, F[α] = (⊤ : set E) := @primitive_element_fin_aux F _ E _ _ (finite_of_findim_over_finite F)
+theorem primitive_element_fin [fintype F] [hfd : finite_dimensional F E] :
+    ∃ α : E, F[α] = (⊤ : set E) := 
+begin
+    haveI : fintype E := finite_of_findim_over_finite F,
+    exact primitive_element_fin_aux F,
+end 
 
 end
 
 /- Primitive element theorem for infinite fields. -/
 
 section
-
 variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
 
 def my_roots (f : polynomial F) :=
@@ -148,7 +154,7 @@ begin
     exact finset_coe.fintype (polynomial.map ϕ f).roots,
 end
 
-lemma primitive_element_two_aux (α β : E) (f g : polynomial F) (F_inf : infinite F) (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+lemma primitive_element_two_aux (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
     let s := {c : F | ∃ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β ∧ ϕ c = -(α' - α)/(β' - β)},
@@ -201,7 +207,7 @@ begin
     exact ⟨c, hc⟩,
 end
 
-lemma primitive_element_two_inf_key_aux (β : F) (h : polynomial F) (h_ne_zero : h ≠ 0) (h_sep : h.separable)
+lemma primitive_element_two_inf_key_aux {β : F} {h : polynomial F} (h_ne_zero : h ≠ 0) (h_sep : h.separable)
 (h_root : h.eval β = 0) (h_splits : polynomial.splits ϕ h) (h_roots : ∀ x : my_roots ϕ h, ↑x = ϕ β) :
 h = (polynomial.C (polynomial.leading_coeff h)) * (polynomial.X - polynomial.C β) :=
 begin
@@ -288,7 +294,7 @@ begin
     let ιFE := algebra_map F E,
     let ιEE' := algebra_map E E',
     let ιFE' := ιEE'.comp(ιFE),
-    have key := @primitive_element_two_aux F _ E' _ ιFE' (ιEE' α) (ιEE' β) f g F_inf (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
+    have key := primitive_element_two_aux ιFE' (ιEE' α) (ιEE' β) (minimal_polynomial.ne_zero hα) (minimal_polynomial.ne_zero hβ) (minimal_polynomial.monic hα) (minimal_polynomial.monic hβ),
     cases key with c hc,
     use c,
     let γ := α+(ιFE c)*β,
@@ -346,7 +352,7 @@ begin
         rw sub_ne_zero,
         exact a,
     end,
-    replace key := primitive_element_two_inf_key_aux ιEE' β h h_ne_zero h_sep h_root h_splits h_roots,
+    replace key := primitive_element_two_inf_key_aux ιEE' h_ne_zero h_sep h_root h_splits h_roots,
     let f_Fγ := (f.map(algebra_map F F[γ])).comp(polynomial.C (adjoin_simple.gen F γ)-(polynomial.C ↑c) * (polynomial.X)),
     let g_Fγ := g.map(algebra_map F F[γ]),
     have composition2 : (algebra_map F[γ] E).comp(algebra_map F F[γ]) = algebra_map F E := by ext;refl,
@@ -506,10 +512,6 @@ begin
     nlinarith,
 end
 
--- /-- Adjoining an element from outside of F strictly decreases the degree of the extension if it's finite. -/
--- lemma adjoin_dim_lt_subfield (F : set E) [hF : is_subfield F] [F_findim : finite_dimensional F E] (α : E) (hα : α ∉ F) :
---     findim F[α] E < findim F E := by apply adjoin_dim_lt; tidy
-
 lemma adjoin_inf_of_inf (S : set E) (hF : infinite F) : infinite (adjoin F S) :=
 begin
     rw adjoin_equals_adjoin_range,
@@ -526,7 +528,7 @@ begin
     clear n,
     intros n ih F hF hFE F_sep F_findim F_inf hn,
     by_cases F_neq_E : base_field_image F E = (⊤ : set E),
-    {   exact primitive_element_trivial F F_neq_E, },
+    {   exact primitive_element_trivial F_neq_E, },
     {   have : ∃ α : E, α ∉ base_field_image F E :=
         begin
             revert F_neq_E,
@@ -568,7 +570,6 @@ end
 theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
     ∃ α, F[α] = (⊤ : set E) :=
 begin
-    -- sorry,
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
