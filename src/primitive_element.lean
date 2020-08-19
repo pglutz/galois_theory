@@ -154,6 +154,8 @@ begin
     exact finset_coe.fintype (polynomial.map ϕ f).roots,
 end
 
+def map_roots (f : polynomial F) := (polynomial.map ϕ f).roots
+
 lemma primitive_element_two_aux (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
@@ -278,7 +280,6 @@ end
 
 end
 
-universe u
 variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E]
 
 lemma primitive_element_two_inf_key (α β : E) [F_sep : is_separable F E]
@@ -412,7 +413,6 @@ lemma primitive_element_two_inf (α β : E) (F_sep : is_separable F E)
 begin
     haveI := inclusion.separable F_sep,
     obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β F_inf,
-    -- rw ← adjoin_simple_equals_adjoin_simple_range at β_in_Fγ,
     let c' := algebra_map F E c,
     let γ := α + c'*β,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
@@ -519,6 +519,8 @@ begin
     exact inf_of_subset_inf (adjoin_contains_field_as_subfield S (set.range (algebra_map F E))) (inclusion.infinite hF),
 end
 
+universe u
+
 theorem primitive_element_inf_aux (F E : Type u) [field F] [field E] [algebra F E] (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
     (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : (∃ α : E, F[α] = (⊤ : set E)) :=
 begin
@@ -541,22 +543,7 @@ begin
         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim α,
             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt hα,
             have Fα_inf : infinite F[α] := adjoin_inf_of_inf {α} F_inf,
-            have Fα_sep : is_separable F[α] E := begin
-                intro x,
-                cases F_sep x with hx hs,
-                have hx' : is_integral F[α] x := is_integral_of_is_scalar_tower x hx,
-                use hx',
-                have key : (minimal_polynomial hx') ∣ (minimal_polynomial hx).map(algebra_map F F[α]),
-                apply minimal_polynomial.dvd,
-                dsimp[polynomial.aeval],
-                rw polynomial.eval₂_map,
-                rw ←adjoin_simple.composition,
-                apply minimal_polynomial.aeval,
-                cases key with q hq,
-                apply polynomial.separable.of_mul_left,
-                rw ←hq,
-                exact polynomial.separable.map hs,
-            end,
+            have Fα_sep : is_separable F[α] E := adjoin_simple_separable F α,
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf α β F_sep F_inf,

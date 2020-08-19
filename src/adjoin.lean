@@ -197,6 +197,24 @@ instance adjoin_algebra_tower : is_scalar_tower F (adjoin F S) E := {
     end
 }
 
+lemma adjoin_separable [F_sep : is_separable F E] : is_separable (adjoin F S) E :=
+begin
+    intro x,
+    cases F_sep x with hx hs,
+    have hx' : is_integral (adjoin F S) x := is_integral_of_is_scalar_tower x hx,
+    use hx',
+    have key : (minimal_polynomial hx') ∣ (minimal_polynomial hx).map(algebra_map F (adjoin F S)),
+    apply minimal_polynomial.dvd,
+    dsimp[polynomial.aeval],
+    rw polynomial.eval₂_map,
+    rw ← adjoin.composition,
+    apply minimal_polynomial.aeval,
+    cases key with q hq,
+    apply polynomial.separable.of_mul_left,
+    rw ←hq,
+    exact polynomial.separable.map hs,
+end
+
 variables (α : E) (h : is_integral F α)
 
 def adjoin_simple : set E := adjoin F {α}
@@ -240,6 +258,9 @@ adjoin_subset F {α} HF (set.singleton_subset_iff.mpr Hα)
 /-- If α is in F[T] then F[α] ⊆ F[T] -/
 lemma adjoin_simple_subset' {T : set E} (HT : α ∈ adjoin F T) : adjoin_simple F α ⊆ adjoin F T :=
 adjoin_subset' F {α} (set.singleton_subset_iff.mpr HT)
+
+lemma adjoin_simple_separable [F_sep : is_separable F E] : is_separable F[α] E :=
+adjoin_separable F {α}
 
 --generator of F(α)
 def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩
