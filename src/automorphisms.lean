@@ -62,7 +62,7 @@ begin
     have hG : vector_space.dim E (G → E) = fintype.card G := dim_fun',
     rw ←hB,
     --suffices : vector_space.dim E (B →₀ E) ≤ vector_space.dim E (G → E),
-    rw ←hG, --(doesn't work for some reason)
+    --rw ← hG, --(doesn't work for some reason)
 
 
     --choose c in ker(map) with fewest nonzero entries

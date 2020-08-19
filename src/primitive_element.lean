@@ -272,6 +272,7 @@ end
 
 end
 
+universe u
 variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E]
 
 lemma primitive_element_two_inf_key (α β : E) [F_sep : is_separable F E]
@@ -404,28 +405,21 @@ lemma primitive_element_two_inf (α β : E) (F_sep : is_separable F E)
     (F_inf : infinite F) :  ∃ γ : E, F[α, β] = F[γ] :=
 begin
     haveI := inclusion.separable F_sep,
-    obtain ⟨⟨c, ⟨c', hc⟩⟩, β_in_Fγ⟩ := primitive_element_two_inf_key (set.range (algebra_map F E)) α β (inclusion.infinite F_inf),
-    rw ← adjoin_simple_equals_adjoin_simple_range at β_in_Fγ,
-    let γ := α + c*β,
+    obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β F_inf,
+    -- rw ← adjoin_simple_equals_adjoin_simple_range at β_in_Fγ,
+    let c' := algebra_map F E c,
+    let γ := α + c'*β,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
-    have c_in_Fγ : c ∈ F[γ] := 
-    begin
-        rw ← hc,
-        exact adjoin_simple_contains_field F γ c',
-    end,
-    have cβ_in_Fγ : c*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
-    have α_in_Fγ : α ∈ F[γ] := by rw (show α = γ - c*β, by simp *);
-        exact is_add_subgroup.sub_mem F[γ] γ (c*β) γ_in_Fγ cβ_in_Fγ,
+    have c_in_Fγ : c' ∈ F[γ] := adjoin_simple_contains_field F γ c,
+    have cβ_in_Fγ : c'*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
+    have α_in_Fγ : α ∈ F[γ] := by rw (show α = γ - c'*β, by simp *);
+        exact is_add_subgroup.sub_mem F[γ] γ (c'*β) γ_in_Fγ cβ_in_Fγ,
     have αβ_in_Fγ : {α, β} ⊆ F[γ] := λ x hx, by cases hx; cases hx; assumption,
     have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
     have α_in_Fαβ : α ∈ F[α, β] := set_mem_adjoin F {α, β} ⟨α, set.mem_insert α {β}⟩,
     have β_in_Fαβ : β ∈ F[α, β] := set_mem_adjoin F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
-    have c_in_Fαβ : c ∈ (F[α, β] : set E) :=
-    begin
-        rw ← hc,
-        exact field_mem_adjoin F {α, β} c',
-    end,
-    have cβ_in_Fαβ : c*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
+    have c_in_Fαβ : c' ∈ (F[α, β] : set E) := field_mem_adjoin F {α, β} c,
+    have cβ_in_Fαβ : c'*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
     have γ_in_Fαβ : γ ∈ F[α, β] := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
     have Fγ_sub_Fαβ : F[γ] ⊆ F[α, β] := adjoin_simple_subset' F γ γ_in_Fαβ,
     exact ⟨γ, set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ⟩,
@@ -543,9 +537,8 @@ begin
         by_cases h : F[α] = (⊤ : set E),
         {   exact ⟨α, h⟩,   },
         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim α,
-            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt_subfield F α hα,
-            have Fα_inf : F[α].infinite :=
-                inf_of_subset_inf (adjoin_contains_field_as_subfield {α} F) F_inf,
+            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt hα,
+            have Fα_inf : infinite F[α] := adjoin_inf_of_inf {α} F_inf,
             have Fα_sep : is_separable F[α] E := begin
                 intro x,
                 cases F_sep x with hx hs,
@@ -564,7 +557,7 @@ begin
             end,
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
-            obtain ⟨γ, hγ⟩ := primitive_element_two_inf F α β F_sep F_inf,
+            obtain ⟨γ, hγ⟩ := primitive_element_two_inf α β F_sep F_inf,
             rw [adjoin_simple_twice, hγ] at hβ,
             exact ⟨γ, hβ⟩,
         },
@@ -576,17 +569,11 @@ theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dime
     ∃ α, F[α] = (⊤ : set E) :=
 begin
     -- sorry,
-    -- set F' := set.range (algebra_map F E) with hF',
-    -- have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    -- have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    -- have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
-    -- obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
-    -- exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := finite_dimensional.trans (set.range (algebra_map F E)) F E,
-    have F'_inf : F'.infinite := set.infinite_coe_iff.mp (infinite.of_injective (set.range_factorization (algebra_map F E)) (subtype.coind_injective set.mem_range_self (algebra_map F E).injective)),
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux F' F'_sep F'_findim F'_inf (findim F' E) rfl,
+    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
+    have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
+    obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
     exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
 end
 
@@ -598,5 +585,5 @@ theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E
 begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
-    exact primitive_element_inf F hs hfd (not_nonempty_fintype.mp F_finite),
+    exact primitive_element_inf hs hfd (not_nonempty_fintype.mp F_finite),
 end
