@@ -156,6 +156,32 @@ end
 
 def map_roots (f : polynomial F) := (polynomial.map ϕ f).roots
 
+lemma primitive_element_two_aux' (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+    ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
+begin
+    let sf := (f.map ϕ).roots,
+    let sg := (g.map ϕ).roots,
+    let s := {c : E | ∃ (α' ∈ sf) (β' ∈ sg), β' ≠ β ∧ c = -(α' - α)/(β' - β)},
+    let s' := ϕ⁻¹' s,
+    let r : E → E → E := λ α' β', -(α' - α)/(β' - β),
+    have hr : ∀ c ∈ s, ∃ α' β', ((α' ∈ sf) ∧ (β' ∈ sg)) ∧ r α' β' = c :=
+    begin
+        intros c hc,
+        rw set.mem_set_of_eq at hc,
+        tauto,
+    end,
+    have s_fin : s.finite :=
+    begin
+        refine (set.finite.image (λ z : E × E, r z.1 z.2) (set.finite_mem_finset (sf.product sg))).subset _,
+        simpa only [set.subset_def, set.mem_image, prod.exists, finset.mem_product] using hr,
+    end,
+    have s'_fin : s'.finite := set.finite.preimage ((ring_hom.injective ϕ).inj_on (⇑ϕ ⁻¹' s)) (s_fin),
+    obtain ⟨c, hc⟩ := infinite.exists_not_mem_finset (set.finite.to_finset s'_fin),
+    rw [set.finite.mem_to_finset, set.mem_preimage, set.mem_set_of_eq] at hc,
+    push_neg at hc,
+    exact ⟨c, hc⟩,
+end
+
 lemma primitive_element_two_aux (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' : my_roots ϕ f) (β' : my_roots ϕ g), ↑β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
