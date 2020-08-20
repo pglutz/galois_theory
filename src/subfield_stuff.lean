@@ -175,7 +175,7 @@ begin
     exact polynomial.separable.map hs,
 end
 
-noncomputable instance why_does_this_need_a_name : algebra (set.range (algebra_map F E)) F := {
+noncomputable instance algebra_of_range : algebra (set.range (algebra_map F E)) F := {
     smul := λ e f, reverse_inclusion_ring_hom F E (e * f),
     to_fun := (reverse_inclusion_ring_hom F E),
     map_zero' := (reverse_inclusion_ring_hom F E).map_zero',
@@ -229,7 +229,7 @@ begin
     exact cardinal.nat_lt_omega 1,
 end
 
-instance wow_this_also_needs_a_name : finite_dimensional (set.range (algebra_map F E)) F :=
+instance finite_dimensional_of_range : finite_dimensional (set.range (algebra_map F E)) F :=
 linear_equiv.finite_dimensional ((@inclusion_linear_equiv F _ E _ _).symm)
 
 lemma inclusion.finite_dimensional : finite_dimensional F E → finite_dimensional (set.range (algebra_map F E)) E :=
