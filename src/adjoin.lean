@@ -53,38 +53,12 @@ end
 instance adjoin.is_algebra : algebra F (adjoin F S) := {
     smul := λ x y, ⟨algebra_map F E x, field_mem_adjoin F S x⟩ * y,
     to_fun := λ x, ⟨algebra_map F E x, field_mem_adjoin F S x⟩,
-    map_one' :=
-    begin
-        simp only [ring_hom.map_one],
-        refl,
-    end,
-    map_mul' :=
-    begin
-        intros x y,
-        simp only [ring_hom.map_mul],
-        refl,
-    end,
-    map_zero' :=
-    begin
-        simp only [ring_hom.map_zero],
-        refl,
-    end,
-    map_add' :=
-    begin
-        intros x y,
-        simp only [ring_hom.map_add],
-        refl,
-    end,
-    commutes' :=
-    begin
-        intros x y,
-        rw mul_comm,
-    end,
-    smul_def' :=
-    begin
-        intros x y,
-        refl,
-    end
+    map_one' := by simp only [ring_hom.map_one];refl,
+    map_mul' := λ x y, by simp only [ring_hom.map_mul];refl,
+    map_zero' := by simp only [ring_hom.map_zero];refl,
+    map_add' := λ x y, by simp only [ring_hom.map_add];refl,
+    commutes' := λ x y, by rw mul_comm,
+    smul_def' := λ x y, rfl,
 }
 
 def adjoin_as_submodule : submodule F E := {
@@ -123,7 +97,7 @@ begin
     exact ⟨HF,HS⟩,
 end
 
-/-- If S ⊆ T then F[S] ⊆ F[T] -/
+/-- If S ⊆ F[T] then F[S] ⊆ F[T] -/
 lemma adjoin_subset' {T : set E} (HT : S ⊆ adjoin F T) : adjoin F S ⊆ adjoin F T :=
 adjoin_subset F S (field_subset_adjoin F T) HT
 
@@ -264,10 +238,7 @@ begin
 end
 
 lemma adjoin_simple_twice (β : E) : F[α][β] = adjoin F {α,β} :=
-begin
-    rw adjoin_twice,
-    refl,
-end
+adjoin_twice _ _ _
 
 def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E := {
     carrier := p.carrier,
