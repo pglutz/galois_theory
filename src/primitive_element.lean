@@ -418,7 +418,7 @@ begin
         {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
             have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt F hα,
             have Fα_inf : infinite F[α] := adjoin_inf_of_inf F {α} F_inf,
-            have Fα_sep : is_separable F[α] E := adjoin_simple_separable F α,
+            have Fα_sep : is_separable F[α] E := adjoin_separable F {α},
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf α β F_sep F_inf,
@@ -437,7 +437,7 @@ begin
     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
     have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
     obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
-    exact ⟨α, by simp only [*, adjoin_simple_equals_adjoin_simple_range]⟩,
+    exact ⟨α, by simp only [*, adjoin_equals_adjoin_range]⟩,
 end
 
 /- Actual primitive element theorem. -/

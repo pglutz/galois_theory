@@ -226,17 +226,8 @@ notation K`[`:std.prec.max_plus β `,` γ`]` := adjoin K {β,γ}
 -- notation K`⟨`L:(foldr `,` (x M, adjoin_simple M x) K `⟩`) := L 
 -- notation K`[[` binders `]]`s:(scoped β, set.insert β) := adjoin K s
 
-lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ F[α] :=
-field_mem_adjoin F {α} x
-
-instance : has_coe_t F F[α] :=
-{coe := λ x, ⟨algebra_map F E x, adjoin_simple_contains_field F α x⟩}
-
 lemma adjoin_simple_contains_element : α ∈ F[α] :=
 set_mem_adjoin F {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
-
-instance adjoin_simple.is_subfield : is_subfield F[α] :=
-adjoin.is_subfield F {α}
 
 instance adjoin_is_algebra : algebra F F[α] :=
 adjoin.is_algebra F {α}
@@ -247,10 +238,6 @@ adjoin_as_submodule F {α}
 definition adjoin_simple_as_submodule_equiv : F[α] ≃ₗ[F] (adjoin_simple_as_submodule F α) :=
 adjoin_as_submodule_equiv F {α}
 
-/-- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
-lemma adjoin_simple_equals_adjoin_simple_range (α : E) : F[α] = (set.range (algebra_map F E))[α] :=
-adjoin_equals_adjoin_range F {α}
-
 /-- A subfield of E that contains F and α also contains F[α] -/
 lemma adjoin_simple_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (Hα : α ∈ T) : F[α] ⊆ T :=
 adjoin_subset F {α} HF (set.singleton_subset_iff.mpr Hα)
@@ -258,9 +245,6 @@ adjoin_subset F {α} HF (set.singleton_subset_iff.mpr Hα)
 /-- If α is in F[T] then F[α] ⊆ F[T] -/
 lemma adjoin_simple_subset' {T : set E} (HT : α ∈ adjoin F T) : F[α] ⊆ adjoin F T :=
 adjoin_subset' F {α} (set.singleton_subset_iff.mpr HT)
-
-lemma adjoin_simple_separable [F_sep : is_separable F E] : is_separable F[α] E :=
-adjoin_separable F {α}
 
 --generator of F(α)
 def adjoin_simple.gen : F[α] := ⟨α, adjoin_simple_contains_element F α⟩
@@ -285,9 +269,6 @@ begin
     refl,
 end
 
-lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map F[α] E).comp (algebra_map F F[α]) :=
-adjoin.composition F {α}
-
 def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E := {
     carrier := p.carrier,
     zero_mem' := p.zero_mem',
@@ -296,7 +277,7 @@ def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E :=
     begin
         intros c x hx,
         rw algebra.smul_def,
-        rw adjoin_simple.composition F α,
+        rw adjoin.composition F {α},
         rw ring_hom.comp_apply,
         rw ←algebra.smul_def,
         exact p.smul_mem' _ hx,
@@ -427,7 +408,7 @@ begin
     ext,
     have eval := minimal_polynomial.aeval h,
     dsimp[polynomial.aeval] at eval,
-    rw adjoin_simple.composition F α at eval,
+    rw adjoin.composition F {α} at eval,
     have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F F[α]) (algebra_map F[α] E) (adjoin_simple.gen F α),
     rw adjoin_simple.gen_eq_alpha at h,
     rw ←h at eval,
