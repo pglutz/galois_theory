@@ -1,5 +1,7 @@
 import subfield_stuff
 import field_theory.subfield
+import field_theory.separable
+import field_theory.tower
 import group_theory.subgroup
 import field_theory.minimal_polynomial
 import linear_algebra.dimension
@@ -217,55 +219,53 @@ end
 
 variables (α : E) (h : is_integral F α)
 
-def adjoin_simple : set E := adjoin F {α}
-
 -- Let's try out this notation?
-notation K`[`:std.prec.max_plus β`]` := adjoin_simple K β
-notation K`[`:std.prec.max_plus β `,` γ`]` := adjoin K {β, γ}
+notation K`[`:std.prec.max_plus β`]` := adjoin K (@singleton _ _ set.has_singleton β)
+notation K`[`:std.prec.max_plus β `,` γ`]` := adjoin K {β,γ}
 -- This notation would allow us to write F[α, β] for adjoin_simple (adjoin_simple F α) β
 -- notation K`⟨`L:(foldr `,` (x M, adjoin_simple M x) K `⟩`) := L 
 -- notation K`[[` binders `]]`s:(scoped β, set.insert β) := adjoin K s
 
-lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ (adjoin_simple F α) :=
+lemma adjoin_simple_contains_field (x : F) : algebra_map F E x ∈ F[α] :=
 field_mem_adjoin F {α} x
 
-instance : has_coe_t F (adjoin_simple F α) :=
+instance : has_coe_t F F[α] :=
 {coe := λ x, ⟨algebra_map F E x, adjoin_simple_contains_field F α x⟩}
 
-lemma adjoin_simple_contains_element : α ∈ adjoin_simple F α :=
+lemma adjoin_simple_contains_element : α ∈ F[α] :=
 set_mem_adjoin F {α} (⟨α,set.mem_singleton α⟩ : ({α} : set E))
 
-instance adjoin_simple.is_subfield : is_subfield (adjoin_simple F α) :=
+instance adjoin_simple.is_subfield : is_subfield F[α] :=
 adjoin.is_subfield F {α}
 
-instance adjoin_is_algebra : algebra F (adjoin_simple F α) :=
+instance adjoin_is_algebra : algebra F F[α] :=
 adjoin.is_algebra F {α}
 
 def adjoin_simple_as_submodule : submodule F E :=
 adjoin_as_submodule F {α}
 
-definition adjoin_simple_as_submodule_equiv : (adjoin_simple F α) ≃ₗ[F] (adjoin_simple_as_submodule F α) :=
+definition adjoin_simple_as_submodule_equiv : F[α] ≃ₗ[F] (adjoin_simple_as_submodule F α) :=
 adjoin_as_submodule_equiv F {α}
 
 /-- Adjoining α to F is the same as adjoining α to the range of the embedding of F into E. -/
-lemma adjoin_simple_equals_adjoin_simple_range (α : E) : adjoin_simple F α = adjoin_simple (set.range (algebra_map F E)) α :=
+lemma adjoin_simple_equals_adjoin_simple_range (α : E) : F[α] = (set.range (algebra_map F E))[α] :=
 adjoin_equals_adjoin_range F {α}
 
 /-- A subfield of E that contains F and α also contains F[α] -/
-lemma adjoin_simple_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (Hα : α ∈ T) : adjoin_simple F α ⊆ T :=
+lemma adjoin_simple_subset {T : set E} [is_subfield T] (HF : set.range (algebra_map F E) ⊆ T) (Hα : α ∈ T) : F[α] ⊆ T :=
 adjoin_subset F {α} HF (set.singleton_subset_iff.mpr Hα)
 
 /-- If α is in F[T] then F[α] ⊆ F[T] -/
-lemma adjoin_simple_subset' {T : set E} (HT : α ∈ adjoin F T) : adjoin_simple F α ⊆ adjoin F T :=
+lemma adjoin_simple_subset' {T : set E} (HT : α ∈ adjoin F T) : F[α] ⊆ adjoin F T :=
 adjoin_subset' F {α} (set.singleton_subset_iff.mpr HT)
 
 lemma adjoin_simple_separable [F_sep : is_separable F E] : is_separable F[α] E :=
 adjoin_separable F {α}
 
 --generator of F(α)
-def adjoin_simple.gen : (adjoin_simple F α) := ⟨α, adjoin_simple_contains_element F α⟩
+def adjoin_simple.gen : F[α] := ⟨α, adjoin_simple_contains_element F α⟩
 
-lemma adjoin_simple.gen_eq_alpha : algebra_map (adjoin_simple F α) E (adjoin_simple.gen F α) = α := rfl
+lemma adjoin_simple.gen_eq_alpha : algebra_map F[α] E (adjoin_simple.gen F α) = α := rfl
 
 /-- If the generator is not in the inclusion of F in E then it's also not in the inclusion of
     F in F[α]. -/
@@ -279,14 +279,13 @@ begin
     use x, assumption,
 end
 
-lemma adjoin_simple_twice (β : E) : adjoin_simple (adjoin_simple F α) β = adjoin F {α,β} :=
+lemma adjoin_simple_twice (β : E) : F[α][β] = adjoin F {α,β} :=
 begin
-    dsimp [adjoin_simple],
     rw adjoin_twice,
     refl,
 end
 
-lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map (adjoin_simple F α) E).comp (algebra_map F (adjoin_simple F α)) :=
+lemma adjoin_simple.composition : (algebra_map F E) = (algebra_map F[α] E).comp (algebra_map F F[α]) :=
 adjoin.composition F {α}
 
 def submodule_restrict_field (α : E) (p : submodule F[α] E) : submodule F E := {
@@ -423,25 +422,25 @@ end
 noncomputable instance yes_its_a_field_but_lean_want_me_to_give_this_instance_a_name : field (adjoin_root (minimal_polynomial h)) :=
 @adjoin_root.field F _ (minimal_polynomial h) (minimal_polynomial.irreducible h)
 
-lemma adjoin_simple.eval_gen : polynomial.eval₂ (algebra_map F ↥(adjoin_simple F α)) (adjoin_simple.gen F α) (minimal_polynomial h) = 0 :=
+lemma adjoin_simple.eval_gen : polynomial.eval₂ (algebra_map F F[α]) (adjoin_simple.gen F α) (minimal_polynomial h) = 0 :=
 begin
     ext,
     have eval := minimal_polynomial.aeval h,
     dsimp[polynomial.aeval] at eval,
     rw adjoin_simple.composition F α at eval,
-    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F α)) (algebra_map (adjoin_simple F α) E) (adjoin_simple.gen F α),
+    have h := polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F F[α]) (algebra_map F[α] E) (adjoin_simple.gen F α),
     rw adjoin_simple.gen_eq_alpha at h,
     rw ←h at eval,
     exact eval,
 end
 
-noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] (adjoin_simple F α) :=
+noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] F[α] :=
 quotient_embedding F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
 
-noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] adjoin_simple F α :=
+noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] F[α] :=
 algebra_equiv_of_bij_hom F (quotient_to_adjunction_algebra_hom F α h)
 begin
-    set f := (algebra_map (adjoin_simple F α) E).comp((quotient_to_adjunction_algebra_hom F α h) : (adjoin_root (minimal_polynomial h)) →+* (adjoin_simple F α)),
+    set f := (algebra_map F[α] E).comp((quotient_to_adjunction_algebra_hom F α h) : (adjoin_root (minimal_polynomial h)) →+* F[α]),
     split,
     apply ring_hom.injective,
     have inclusion : (set.range (algebra_map F E) ∪ {α}) ⊆ set.range(f),
@@ -462,7 +461,7 @@ begin
     dsimp[f,quotient_to_adjunction_algebra_hom],
     rw quotient_embedding_of_root F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h),
     refl,
-    have key : (adjoin_simple F α) ⊆ set.range(f) := field.closure_subset inclusion,
+    have key : F[α] ⊆ set.range(f) := field.closure_subset inclusion,
     intro x,
     specialize key (subtype.mem x),
     cases key with a ah,
@@ -477,7 +476,7 @@ quotient_embedding_of_field F α h (adjoin_simple.gen F α) (adjoin_simple.eval_
 @[simp] lemma quotient_to_adjunction_of_root : quotient_to_adjunction F α h (adjoin_root.root (minimal_polynomial h)) = adjoin_simple.gen F α :=
 quotient_embedding_of_root F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
 
-noncomputable def adjunction_embedding : (adjoin_simple F α) →ₐ[F] E' :=
+noncomputable def adjunction_embedding : F[α] →ₐ[F] E' :=
 (quotient_embedding F α h α' hα').comp((quotient_to_adjunction F α h).symm)
 
 @[simp] lemma adjunction_embedding_of_field (f : F) : adjunction_embedding F α h α' hα' f = algebra_map F E' f :=
@@ -610,27 +609,27 @@ begin
     exact ⟨⟨x,set_mem_adjoin F S ⟨x,hx⟩⟩,⟨hS ⟨x,hx⟩,rfl⟩⟩,
 end
 
-variable (ι : (adjoin_simple F α) →ₐ[F] E') 
+variable (ι : F[α] →ₐ[F] E') 
 
 lemma adjunction_embedding_classification_aux : polynomial.eval₂ (algebra_map F E') (ι (adjoin_simple.gen F α)) (minimal_polynomial h) = 0 :=
 begin
-    have key2 : ((ι : adjoin_simple F α →+* E').comp(algebra_map F (adjoin_simple F α)) = algebra_map F E'),
+    have key2 : ((ι : F[α] →+* E').comp(algebra_map F F[α]) = algebra_map F E'),
     ext,
     simp only [alg_hom.coe_to_ring_hom, function.comp_app, ring_hom.coe_comp, alg_hom.commutes],
     rw ←key2,
-    change polynomial.eval₂ ((ι : adjoin_simple F α →+* E').comp(algebra_map F (adjoin_simple F α))) ((ι : adjoin_simple F α →+* E') (adjoin_simple.gen F α)) (minimal_polynomial h) = 0,
-    rw ←polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F (adjoin_simple F α)) (ι : adjoin_simple F α →+* E') (adjoin_simple.gen F α),
+    change polynomial.eval₂ ((ι : F[α] →+* E').comp(algebra_map F F[α])) ((ι : F[α] →+* E') (adjoin_simple.gen F α)) (minimal_polynomial h) = 0,
+    rw ←polynomial.hom_eval₂ (minimal_polynomial h) (algebra_map F F[α]) (ι : F[α] →+* E') (adjoin_simple.gen F α),
     rw adjoin_simple.eval_gen,
     simp only [alg_hom.coe_to_ring_hom, alg_hom.map_zero],
 end
 
-noncomputable def to_adjunction_embedding : (adjoin_simple F α →ₐ[F] E') :=
+noncomputable def to_adjunction_embedding : F[α] →ₐ[F] E' :=
 adjunction_embedding F α h (ι (adjoin_simple.gen F α)) (adjunction_embedding_classification_aux F α h ι)
 
 --proves that every map F(α) → E' is comes from adjunction_embedding
 lemma adjunction_embedding_classification : ι = to_adjunction_embedding F α h ι :=
 begin
-    have key := ring_hom_determined_by_generators F {α} (ι : adjoin_simple F α →+* E') (to_adjunction_embedding F α h ι : adjoin_simple F α →+* E'),
+    have key := ring_hom_determined_by_generators F {α} (ι : F[α] →+* E') (to_adjunction_embedding F α h ι : F[α] →+* E'),
     have hF : ∀ f : F, ι f = to_adjunction_embedding F α h ι f,
     intro f,
     dsimp[to_adjunction_embedding],
