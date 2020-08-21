@@ -83,7 +83,7 @@ begin
     exact λ _, trivial,
     rw ← F_eq_E,
     rintros ⟨x, rfl⟩,
-    apply field_mem_adjoin,
+    apply adjoin.field_mem,
 end
 
 
@@ -379,15 +379,15 @@ begin
     let c' := algebra_map F E c,
     let γ := α + c'*β,
     have γ_in_Fγ : γ ∈ F[γ] := adjoin_simple_contains_element F γ,
-    have c_in_Fγ : c' ∈ F[γ] := field_mem_adjoin F {γ} c,
+    have c_in_Fγ : c' ∈ F[γ] := adjoin.field_mem F {γ} c,
     have cβ_in_Fγ : c'*β ∈ F[γ] := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
     have α_in_Fγ : α ∈ F[γ] := by rw (show α = γ - c'*β, by simp *);
         exact is_add_subgroup.sub_mem F[γ] γ (c'*β) γ_in_Fγ cβ_in_Fγ,
     have αβ_in_Fγ : {α, β} ⊆ F[γ] := λ x hx, by cases hx; cases hx; assumption,
     have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
-    have α_in_Fαβ : α ∈ F[α, β] := set_mem_adjoin F {α, β} ⟨α, set.mem_insert α {β}⟩,
-    have β_in_Fαβ : β ∈ F[α, β] := set_mem_adjoin F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
-    have c_in_Fαβ : c' ∈ (F[α, β] : set E) := field_mem_adjoin F {α, β} c,
+    have α_in_Fαβ : α ∈ F[α, β] := adjoin.set_mem F {α, β} ⟨α, set.mem_insert α {β}⟩,
+    have β_in_Fαβ : β ∈ F[α, β] := adjoin.set_mem F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
+    have c_in_Fαβ : c' ∈ (F[α, β] : set E) := adjoin.field_mem F {α, β} c,
     have cβ_in_Fαβ : c'*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
     have γ_in_Fαβ : γ ∈ F[α, β] := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
     have Fγ_sub_Fαβ : F[γ] ⊆ F[α, β] := adjoin_simple_subset' F γ γ_in_Fαβ,
