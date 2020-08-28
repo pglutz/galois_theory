@@ -374,7 +374,6 @@ end
 lemma primitive_element_two_inf (α β : E) (F_sep : is_separable F E)
     (F_inf : infinite F) :  ∃ γ : E, F[α, β] = F[γ] :=
 begin
-    haveI := inclusion.separable F_sep,
     obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β F_inf,
     let c' := algebra_map F E c,
     let γ := α + c'*β,
