@@ -1,4 +1,4 @@
-import subfield_stuff
+--import subfield_stuff
 import field_theory.subfield
 import field_theory.separable
 import field_theory.tower
@@ -330,11 +330,19 @@ begin
     nlinarith,
 end
 
+/-- If F is infinite then its inclusion into E is infinite. -/
+lemma inclusion.infinite (hF : infinite F) : (set.range (algebra_map F E)).infinite :=
+begin
+    apply set.infinite_coe_iff.mp,
+    apply infinite.of_injective (set.range_factorization (algebra_map F E)),
+    exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
+end
+
 lemma adjoin_inf_of_inf (S : set E) (hF : infinite F) : infinite (adjoin F S) :=
 begin
     rw adjoin_equals_adjoin_range,
     apply set.infinite_coe_iff.mpr,
-    exact inf_of_subset_inf (adjoin_contains_field_as_subfield S (set.range (algebra_map F E))) (inclusion.infinite hF),
+    exact inf_of_subset_inf (adjoin_contains_field_as_subfield S (set.range (algebra_map F E))) (inclusion.infinite F hF),
 end
 
 end
@@ -389,8 +397,11 @@ end
 noncomputable def quotient_to_adjunction_algebra_hom : (adjoin_root (minimal_polynomial h)) →ₐ[F] F[α] :=
 quotient_embedding F α h (adjoin_simple.gen F α) (adjoin_simple.eval_gen F α h)
 
+noncomputable def algebra_equiv_of_bij_hom' {A : Type*} [ring A] [algebra F A] {B : Type*} [ring B] [algebra F B] (f : A →ₐ[F] B) (h : function.bijective f) : A ≃ₐ[F] B :=
+{ .. f, .. equiv.of_bijective _ h }
+
 noncomputable def quotient_to_adjunction : adjoin_root (minimal_polynomial h) ≃ₐ[F] F[α] :=
-algebra_equiv_of_bij_hom F (quotient_to_adjunction_algebra_hom F α h)
+algebra_equiv_of_bij_hom' F (quotient_to_adjunction_algebra_hom F α h)
 begin
     set f := (algebra_map F[α] E).comp((quotient_to_adjunction_algebra_hom F α h) : (adjoin_root (minimal_polynomial h)) →+* F[α]),
     split,

@@ -1,4 +1,5 @@
 import adjoin
+import subfield_stuff
 import linear_algebra.finite_dimensional
 import linear_algebra.basic
 import data.set.finite
@@ -68,13 +69,11 @@ end polynomial
 
 open finite_dimensional
 
-/- Trivial case of the primitive element theorem. -/
-
 section
-variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E]
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
-/-- Primitive element theorem when F = E. -/
-lemma primitive_element_trivial (F_eq_E : base_field_image F E = (⊤ : set E)) :
+/-- Trivial case of the primitive element theorem. -/
+lemma primitive_element_trivial (F_eq_E : set.range (algebra_map F E) = (⊤ : set E)) :
     ∃ α : E, F[α] = (⊤ : set E) :=
 begin
     use 0,
@@ -86,20 +85,14 @@ begin
     apply adjoin.field_mem,
 end
 
-
-end
-
 /- Primitive element theorem for finite fields. -/
-
-section
-variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E]
 
 -- Replaces earlier messy proof, courtesy of Aaron Anderson & Markus Himmel on zulip
 /-- A finite dimensional vector space over a finite field is finite. -/
 def finite_of_findim_over_finite [fintype F] [hE : finite_dimensional F E] : fintype E :=
     module.fintype_of_fintype (classical.some_spec (finite_dimensional.exists_is_basis_finset F E) : _)
 
-/-- Primitive element theorem for F ⊂ E assuming E is finite. -/
+/-- Primitive element theorem assuming E is finite. -/
 lemma primitive_element_fin_aux [fintype E] : ∃ α : E, F[α] = (⊤ : set E) :=
 begin
     obtain ⟨α, hα⟩ := is_cyclic.exists_generator (units E),
@@ -130,7 +123,7 @@ end
 section
 variables {F : Type*} [field F] {E : Type*} [field E] (ϕ : F →+* E)
 
-lemma primitive_element_two_aux (ϕ : F →+* E) (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
+lemma primitive_element_two_aux (α β : E) {f g : polynomial F} [F_inf : infinite F] (hf : f ≠ 0) (hg : g ≠ 0) (f_monic : polynomial.monic f) (g_monic : polynomial.monic g) :
     ∃ c : F, ∀ (α' ∈ (f.map ϕ).roots) (β' ∈ (g.map ϕ).roots), β' ≠ β → ϕ c ≠ -(α' - α)/(β' - β) :=
 begin
     let sf := (f.map ϕ).roots,
@@ -395,7 +388,8 @@ end
 
 universe u
 
-theorem primitive_element_inf_aux (F E : Type u) [field F] [field E] [algebra F E] (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
+/-- Primitive element theorem for infinite fields. -/
+theorem primitive_element_inf (F E : Type u) [field F] [field E] [algebra F E] (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
     (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : (∃ α : E, F[α] = (⊤ : set E)) :=
 begin
     tactic.unfreeze_local_instances,
@@ -403,9 +397,9 @@ begin
     apply n.strong_induction_on,
     clear n,
     intros n ih F hF hFE F_sep F_findim F_inf hn,
-    by_cases F_neq_E : base_field_image F E = (⊤ : set E),
-    {   exact primitive_element_trivial F_neq_E, },
-    {   have : ∃ α : E, α ∉ base_field_image F E :=
+    by_cases F_neq_E : set.range (algebra_map F E) = (⊤ : set E),
+    {   exact primitive_element_trivial F F_neq_E, },
+    {   have : ∃ α : E, α ∉ set.range (algebra_map F E) :=
         begin
             revert F_neq_E,
             contrapose!,
@@ -427,25 +421,25 @@ begin
     },
 end
 
-/-- Primitive element theorem for infinite fields. -/
-theorem primitive_element_inf (F_sep : is_separable F E) (F_findim : finite_dimensional F E) (F_inf : infinite F) :
-    ∃ α, F[α] = (⊤ : set E) :=
+/- Actual primitive element theorem. -/
+
+/-- Primitive element theorem in same universe. -/
+theorem primitive_element_aux (F E : Type u) [field F] [field E] [algebra F E]
+(F_sep : is_separable F E)  (F_findim : finite_dimensional F E) :
+    (∃ α : E, F[α] = (⊤ : set E)) :=
+begin
+    by_cases F_finite : nonempty (fintype F),
+    exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h F_findim),
+    exact primitive_element_inf F E F_sep F_findim (not_nonempty_fintype.mp F_finite) (findim F E) rfl,
+end
+
+/-- Primitive element theorem in different universes. -/
+theorem primitive_element (F_sep : is_separable F E)  (F_findim : finite_dimensional F E) :
+    (∃ α : E, F[α] = (⊤ : set E)) :=
 begin
     set F' := set.range (algebra_map F E) with hF',
     have F'_sep : is_separable F' E := inclusion.separable F_sep,
     have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
-    have F'_inf : infinite F' := set.infinite_coe_iff.mpr (inclusion.infinite F_inf),
-    obtain ⟨α, hα⟩ := primitive_element_inf_aux F' E F'_sep F'_findim F'_inf (findim F' E) rfl,
+    obtain ⟨α, hα⟩ := primitive_element_aux F' E F'_sep F'_findim,
     exact ⟨α, by simp only [*, adjoin_equals_adjoin_range]⟩,
-end
-
-/- Actual primitive element theorem. -/
-
-/-- Primitive element theorem. -/
-theorem primitive_element (hs : is_separable F E)  (hfd : finite_dimensional F E) :
-    (∃ α : E, F[α] = (⊤ : set E)) :=
-begin
-    by_cases F_finite : nonempty (fintype F),
-    exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h hfd),
-    exact primitive_element_inf hs hfd (not_nonempty_fintype.mp F_finite),
 end

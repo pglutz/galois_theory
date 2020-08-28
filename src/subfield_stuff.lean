@@ -124,16 +124,16 @@ variables {F : Type*} [field F] {E : Type*} [field E] [algebra F E] {x : E}
 
 lemma inclusion.integral (hx : is_integral F x) : is_integral (set.range (algebra_map F E)) x :=
 begin
-    set F' := set.range (algebra_map F E),
-    set f := inclusion_ring_hom F E,
+    let F' := set.range (algebra_map F E),
     cases hx with p hp,
-    use p.map f,
+    use p.map (algebra_map F F'),
     split,
     apply polynomial.monic_map,
     exact hp.1,
     dsimp[polynomial.aeval],
     rw polynomial.eval₂_map,
-    rw algebra_map_comp,
+    have h : (algebra_map F' E).comp(algebra_map F F') = algebra_map F E := by ext;refl,
+    rw h,
     exact hp.2,
 end
 
@@ -234,11 +234,3 @@ linear_equiv.finite_dimensional ((@inclusion_linear_equiv F _ E _ _).symm)
 
 lemma inclusion.finite_dimensional : finite_dimensional F E → finite_dimensional (set.range (algebra_map F E)) E :=
 λ h, @finite_dimensional.trans (set.range (algebra_map F E)) F E _ _ _ _ _ _ _ _ h
-
-/-- If F is infinite then its inclusion into E is infinite. -/
-lemma inclusion.infinite (hF : infinite F) : (set.range (algebra_map F E)).infinite :=
-begin
-    apply set.infinite_coe_iff.mp,
-    apply infinite.of_injective (set.range_factorization (algebra_map F E)),
-    exact subtype.coind_injective (λ (a : F), set.mem_range_self a) ((algebra_map F E).injective),
-end
