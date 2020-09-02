@@ -411,11 +411,10 @@ begin
             have Fα_le_n : findim F⟮α⟯ E < n := sorry, --by rw ← hn; exact adjoin_dim_lt F hα,
             have Fα_inf : infinite F⟮α⟯ := sorry, --adjoin_inf_of_inf F {α} F_inf,
             have Fα_sep : is_separable F⟮α⟯ E := sorry, --adjoin.separable F (set.insert α ∅),
-            obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
-                Fα_sep Fα_findim Fα_inf rfl,
+            obtain ⟨β, hβ⟩ := ih (findim F⟮α⟯ E) Fα_le_n F⟮α⟯ Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf α β F_sep F_inf,
-            rw [adjoin_simple_twice, hγ] at hβ,
-            exact ⟨γ, hβ⟩,
+            -- rw [field.adjoin_simple_adjoin_simple, hγ] at hβ,
+            sorry, --exact ⟨γ, hβ⟩,
         },
     },
 end
@@ -425,7 +424,7 @@ end
 /-- Primitive element theorem in same universe. -/
 theorem primitive_element_aux (F E : Type u) [field F] [field E] [algebra F E]
 (F_sep : is_separable F E)  (F_findim : finite_dimensional F E) :
-    (∃ α : E, F[α] = (⊤ : set E)) :=
+    (∃ α : E, F⟮α⟯ = ⊤) :=
 begin
     by_cases F_finite : nonempty (fintype F),
     exact nonempty.elim F_finite (λ h : fintype F, @primitive_element_fin F _ E _ _ h F_findim),
@@ -434,11 +433,12 @@ end
 
 /-- Primitive element theorem in different universes. -/
 theorem primitive_element (F_sep : is_separable F E)  (F_findim : finite_dimensional F E) :
-    (∃ α : E, F[α] = (⊤ : set E)) :=
+    (∃ α : E, F⟮α⟯ = ⊤) :=
 begin
     set F' := set.range (algebra_map F E) with hF',
-    have F'_sep : is_separable F' E := inclusion.separable F_sep,
-    have F'_findim : finite_dimensional F' E := inclusion.finite_dimensional F_findim,
+    have F'_sep : is_separable F' E := sorry,--inclusion.separable F_sep,
+    have F'_findim : finite_dimensional F' E := sorry, --inclusion.finite_dimensional F_findim,
     obtain ⟨α, hα⟩ := primitive_element_aux F' E F'_sep F'_findim,
-    exact ⟨α, by simp only [*, adjoin_equals_adjoin_range]⟩,
+    sorry,
+    -- exact ⟨α, by simp only [*, adjoin_equals_adjoin_range]⟩,
 end
