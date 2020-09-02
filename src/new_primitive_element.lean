@@ -356,10 +356,9 @@ begin
     have last_step : β = algebra_map F⟮γ⟯ E (-p.coeff 0 / p.coeff 1) :=
         by rw [division_def,ring_hom.map_mul,ring_hom.map_neg,ring_hom.map_inv,coeff0,coeff1,neg_neg,mul_comm,←mul_assoc,inv_mul_cancel k_ne_zero,one_mul],
     change β = ↑(-p.coeff 0 / p.coeff 1) at last_step,
-    -- Something is wrong here
-    have h := subtype.mem (-p.coeff 0 / p.coeff 1),
-    rw ←last_step at h,
-    exact h,
+    change β ∈ F⟮γ⟯,
+    rw last_step,
+    exact subtype.mem (-p.coeff 0 / p.coeff 1),
 end
 
 /-- Primitive element theorem for adjoining two elements to an infinite field. -/
