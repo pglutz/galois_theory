@@ -369,27 +369,28 @@ begin
     obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β F_inf,
     let c' := algebra_map F E c,
     let γ := α + c'*β,
-    have γ_in_Fγ : γ ∈ F⟮γ⟯ := field.mem_adjoin_simple_self F γ,
-    have c_in_Fγ : c' ∈ F⟮γ⟯ := field.adjoin.algebra_map_mem F (set.insert γ ∅) c,
-    have cβ_in_Fγ : c'*β ∈ F⟮γ⟯ := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
-    have α_in_Fγ : α ∈ F⟮γ⟯ := by rw (show α = γ - c'*β, by simp *);
+    have γ_in_Fγ : γ ∈ (F⟮γ⟯ : set E) := field.mem_adjoin_simple_self F γ,
+    have c_in_Fγ : c' ∈ (F⟮γ⟯ : set E) := field.adjoin.algebra_map_mem F (set.insert γ ∅) c,
+    have cβ_in_Fγ : c'*β ∈ (F⟮γ⟯ : set E) := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
+    have α_in_Fγ : α ∈ (F⟮γ⟯ : set E) := by rw (show α = γ - c'*β, by simp *);
         exact is_add_subgroup.sub_mem F⟮γ⟯ γ (c'*β) γ_in_Fγ cβ_in_Fγ,
-    have αβ_in_Fγ : {α, β} ⊆ F[γ] := λ x hx, by cases hx; cases hx; assumption,
-    have Fαβ_sub_Fγ : F[α, β] ⊆ F[γ] := adjoin_subset' F {α, β} αβ_in_Fγ,
-    have α_in_Fαβ : α ∈ F[α, β] := adjoin.set_mem F {α, β} ⟨α, set.mem_insert α {β}⟩,
-    have β_in_Fαβ : β ∈ F[α, β] := adjoin.set_mem F {α, β} ⟨β, set.mem_insert_of_mem α rfl⟩,
-    have c_in_Fαβ : c' ∈ (F[α, β] : set E) := adjoin.field_mem F {α, β} c,
-    have cβ_in_Fαβ : c'*β ∈ F[α, β] := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
-    have γ_in_Fαβ : γ ∈ F[α, β] := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
-    have Fγ_sub_Fαβ : F[γ] ⊆ F[α, β] := adjoin_simple_subset' F γ γ_in_Fαβ,
-    exact ⟨γ, set.subset.antisymm Fαβ_sub_Fγ Fγ_sub_Fαβ⟩,
+    have αβ_in_Fγ : set.insert α (set.insert β ∅) ⊆ (F⟮γ⟯ : set E) := λ x hx, by cases hx; cases hx; cases hx; assumption,
+    have Fαβ_sub_Fγ : (F⟮α, β⟯ : set E) ⊆ (F⟮γ⟯ : set E) := (field.adjoin_subset_iff F (set.insert α (set.insert β ∅))).mp αβ_in_Fγ,
+    have α_in_Fαβ : α ∈ F⟮α, β⟯ := field.subset_adjoin F (set.insert α (set.insert β ∅)) (set.mem_insert α (set.insert β ∅)),
+    have β_in_Fαβ : β ∈ F⟮α, β⟯ := field.subset_adjoin F (set.insert α (set.insert β ∅)) (set.mem_insert_of_mem α (set.mem_insert β ∅)),
+    have c_in_Fαβ : c' ∈ (F⟮α, β⟯ : set E) := field.adjoin.algebra_map_mem F (set.insert α (set.insert β ∅)) c,
+    have cβ_in_Fαβ : c'*β ∈ (F⟮α, β⟯ : set E) := is_submonoid.mul_mem c_in_Fαβ β_in_Fαβ,
+    have γ_in_Fαβ : γ ∈ (F⟮α, β⟯ : set E) := is_add_submonoid.add_mem α_in_Fαβ cβ_in_Fαβ,
+    have : set.insert γ ∅ ⊆ F⟮α, β⟯ := λ x hx, by cases hx; cases hx; assumption,
+    have Fγ_sub_Fαβ : (F⟮γ⟯ : set E) ⊆ (F⟮α, β⟯ : set E) := (field.adjoin_subset_iff F (set.insert γ ∅)).mp this,
+    use γ, ext, exact ⟨λ hx, Fαβ_sub_Fγ hx, λ hx, Fγ_sub_Fαβ hx⟩,
 end
 
 universe u
 
 /-- Primitive element theorem for infinite fields. -/
 theorem primitive_element_inf (F E : Type u) [field F] [field E] [algebra F E] (F_sep : is_separable F E) (F_findim: finite_dimensional F E) 
-    (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : (∃ α : E, F[α] = (⊤ : set E)) :=
+    (F_inf : infinite F) (n : ℕ) (hn : findim F E = n) : ∃ α : E, F⟮α⟯ = ⊤ :=
 begin
     tactic.unfreeze_local_instances,
     revert F,
@@ -405,12 +406,12 @@ begin
             exact λ h, set.ext (λ x, ⟨λ _, dec_trivial, λ _, h x⟩),
         end,
         rcases this with ⟨α, hα⟩,
-        by_cases h : F[α] = (⊤ : set E),
+        by_cases h : F⟮α⟯ = ⊤,
         {   exact ⟨α, h⟩,   },
-        {   have Fα_findim : finite_dimensional F[α] E := adjoin_findim_of_findim F α,
-            have Fα_le_n : findim F[α] E < n := by rw ← hn; exact adjoin_dim_lt F hα,
-            have Fα_inf : infinite F[α] := adjoin_inf_of_inf F {α} F_inf,
-            have Fα_sep : is_separable F[α] E := adjoin_separable F {α},
+        {   have Fα_findim : finite_dimensional F⟮α⟯ E := sorry, --adjoin_findim_of_findim F α,
+            have Fα_le_n : findim F⟮α⟯ E < n := sorry, --by rw ← hn; exact adjoin_dim_lt F hα,
+            have Fα_inf : infinite F⟮α⟯ := sorry, --adjoin_inf_of_inf F {α} F_inf,
+            have Fα_sep : is_separable F⟮α⟯ E := sorry, --adjoin.separable F (set.insert α ∅),
             obtain ⟨β, hβ⟩ := ih (findim F[α] E) Fα_le_n F[α]
                 Fα_sep Fα_findim Fα_inf rfl,
             obtain ⟨γ, hγ⟩ := primitive_element_two_inf α β F_sep F_inf,
