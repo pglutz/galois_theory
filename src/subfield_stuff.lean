@@ -1,4 +1,4 @@
-import field_theory.subfield
+import deprecated.subfield
 import field_theory.separable
 import field_theory.tower
 import data.set.finite
