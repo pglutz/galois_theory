@@ -7,6 +7,10 @@ import algebra.gcd_monoid
 import field_theory.splitting_field
 import field_theory.separable
 
+notation K`⟮`:std.prec.max_plus α`⟯` := field.adjoin K (@singleton _ _ set.has_singleton α)
+notation K`⟮`:std.prec.max_plus α`,`l:(foldr `, ` (h t, set.insert h t) {α}) `⟯` := field.adjoin K l
+
+
 noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 
@@ -24,16 +28,16 @@ begin
 end
 
 -- Is this really not in mathlib?
-/-- If M is an algebra over a field F and x is a nonzero element of F then x as an element of M is also nonzero. -/
-lemma ne_zero_of_ne_zero (F M : Type*) [field F] [comm_semiring M] [nontrivial M] [algebra F M]
-    {x : F} (hx : x ≠ 0) : algebra_map F M x ≠ 0 :=
-begin
-    revert hx,
-    contrapose!,
-    intro h,
-    rw ← (algebra_map F M).map_zero at h,
-    exact (algebra_map F M).injective h,
-end
+-- If M is an algebra over a field F and x is a nonzero element of F then x as an element of M is also nonzero.
+-- lemma ne_zero_of_ne_zero (F M : Type*) [field F] [comm_semiring M] [nontrivial M] [algebra F M]
+--     {x : F} (hx : x ≠ 0) : algebra_map F M x ≠ 0 :=
+-- begin
+--     revert hx,
+--     contrapose!,
+--     intro h,
+--     rw ← (algebra_map F M).map_zero at h,
+--     exact (algebra_map F M).injective h,
+-- end
 
 namespace polynomial
 
@@ -368,8 +372,8 @@ begin
     obtain ⟨c, β_in_Fγ⟩ := primitive_element_two_inf_key α β F_inf,
     let c' := algebra_map F E c,
     let γ := α + c'*β,
-    have γ_in_Fγ : γ ∈ (F⟮γ⟯ : set E) := field.mem_adjoin_simple_self F γ,
-    have c_in_Fγ : c' ∈ (F⟮γ⟯ : set E) := field.adjoin.algebra_map_mem F (set.insert γ ∅) c,
+    have γ_in_Fγ : γ ∈ (F⟮γ⟯ : set E) := sorry, --field.mem_adjoin_simple_self F γ,
+    have c_in_Fγ : c' ∈ (F⟮γ⟯ : set E) := field.adjoin.algebra_map_mem F {γ} c,
     have cβ_in_Fγ : c'*β ∈ (F⟮γ⟯ : set E) := is_submonoid.mul_mem c_in_Fγ β_in_Fγ,
     have α_in_Fγ : α ∈ (F⟮γ⟯ : set E) := by rw (show α = γ - c'*β, by simp *);
         exact is_add_subgroup.sub_mem F⟮γ⟯ γ (c'*β) γ_in_Fγ cβ_in_Fγ,
