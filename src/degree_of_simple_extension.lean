@@ -17,28 +17,32 @@ noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 open vector_space polynomial finite_dimensional
 
-variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E) (α : E) (h : is_integral F α)
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E) (α : E) (p : polynomial F)(h:p ≠ 0)
 
 
 
-lemma smul3 (p : polynomial F) (c_1 : F) (f : polynomial F) :
+lemma smul3  (c_1 : F) (f : polynomial F) :
   (adjoin_root.mk p) (c_1 • f) = c_1 • ((adjoin_root.mk p) f):=
-by simpa [algebra.smul_def, ring_hom.map_mul]
+by {simpa [algebra.smul_def, ring_hom.map_mul]}
 
-noncomputable def module_quotient_map (p : polynomial F): polynomial F →ₗ[F] adjoin_root p :=
+
+def module_quotient_map : polynomial F →ₗ[F] adjoin_root p :=
 { to_fun:=(adjoin_root.mk p).to_fun, 
   map_add':=(adjoin_root.mk p).map_add,
   map_smul':=smul3 F p }
 
-lemma adjunction_degree_finite : finite_dimensional F (adjoin_root (minimal_polynomial h)) :=
+def canonical_basis: {n: ℕ| n<polynomial.nat_degree p }→ adjoin_root p:= λ (n:{n: ℕ| n<polynomial.nat_degree p }), adjoin_root.mk p (polynomial.X^(n:ℕ))
+  
+ 
+
+lemma adjunction_degree_finite : finite_dimensional F (adjoin_root p) :=
 begin
-  let minimal:=minimal_polynomial h,
-  let degree:=polynomial.nat_degree minimal,
+  let degree:=polynomial.nat_degree p,
   let x:polynomial F:= polynomial.X,
   let S:= {n: ℕ| n<degree},
-  let η := λ (n:S), adjoin_root.mk minimal (x^(n:ℕ)),
+  let η := λ (n:S), adjoin_root.mk p (x^(n:ℕ)),
   let ν:= λ (n:S), (x^(n:ℕ)),
-  have comp: η = (adjoin_root.mk minimal) ∘ ν := rfl,
+  have comp: η = (adjoin_root.mk p) ∘ ν := rfl,
 
   have is_fin:fintype S,
   exact set.fintype_lt_nat degree,
@@ -48,11 +52,11 @@ begin
     split,
     { apply linear_independent_iff.2,
       intros l eq_zero,
-      have decomp: (finsupp.total ↥S (adjoin_root minimal) F η) l=(adjoin_root.mk minimal) ((finsupp.total ↥S (polynomial F) F ν) l),
+      have decomp: (finsupp.total ↥S (adjoin_root p) F η) l=(adjoin_root.mk minimal) ((finsupp.total ↥S (polynomial F) F ν) l),
       { rw comp,
         have is_fin':finset ↥S := finset.univ,
         symmetry,
-        let algebra_1 :=algebra_map F (adjoin_root (minimal_polynomial h)),
+        let algebra_1 :=algebra_map F (adjoin_root p),
         let algebra_2 :=algebra_map F (polynomial F),
         have degree_is_positive: 0<degree := sorry,
         sorry,
@@ -66,7 +70,7 @@ end
 
 /-  apply finite_dimensional.of_finite_basis, -/
 
-lemma quotient_degree : (finite_dimensional.findim F (adjoin_root (minimal_polynomial h))) = (minimal_polynomial h).nat_degree :=
+lemma quotient_degree : (finite_dimensional.findim F (adjoin_root p)) = p.nat_degree :=
 
 begin
     sorry
@@ -103,7 +107,7 @@ linear_equiv.finite_dimensional (adjoin_root_equiv_fin_fun_degree F p h)
 
 lemma adjoin_root_findim_eq_degree (p : polynomial F) (h : p ≠ 0) :
   findim F (adjoin_root p) = nat_degree p :=
-by rw [← linear_equiv.findim_eq (adjoin_root_equiv_fin_fun_degree F p h), findim_fin_fun]
+by {rw [← linear_equiv.findim_eq (adjoin_root_equiv_fin_fun_degree F p h), findim_fin_fun]}
 
 lemma adjoin_root_dim_eq_degree (p : polynomial F) (h : p ≠ 0) :
   dim F (adjoin_root p) = nat_degree p :=
