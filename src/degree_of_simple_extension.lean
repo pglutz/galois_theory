@@ -17,19 +17,15 @@ noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 open vector_space polynomial finite_dimensional
 
-variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (S : set E) (α : E) (p : polynomial F)(h:p ≠ 0)
+variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (p : polynomial F) (h : p ≠ 0)
 
-
-
-lemma smul3  (c_1 : F) (f : polynomial F) :
-  (adjoin_root.mk p) (c_1 • f) = c_1 • ((adjoin_root.mk p) f):=
-by {simpa [algebra.smul_def, ring_hom.map_mul]}
-
-
-def module_quotient_map : polynomial F →ₗ[F] adjoin_root p :=
-{ to_fun:=(adjoin_root.mk p).to_fun, 
-  map_add':=(adjoin_root.mk p).map_add,
-  map_smul':=smul3 F p }
+def module_quotient_map : polynomial F →ₐ[F] adjoin_root p :=
+{ to_fun := (adjoin_root.mk p).to_fun,
+  map_zero' := (adjoin_root.mk p).map_zero,
+  map_add' := (adjoin_root.mk p).map_add,
+  map_one' := (adjoin_root.mk p).map_one,
+  map_mul' := (adjoin_root.mk p).map_mul,
+  commutes' := λ _, rfl, }
 
 def canonical_basis: {n: ℕ| n<polynomial.nat_degree p }→ adjoin_root p:= λ (n:{n: ℕ| n<polynomial.nat_degree p }), adjoin_root.mk p (polynomial.X^(n:ℕ))
 
