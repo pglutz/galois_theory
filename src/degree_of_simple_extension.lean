@@ -59,8 +59,8 @@ begin
   let degree:=polynomial.nat_degree p,
   let x:polynomial F:= polynomial.X,
   let S:= {n: ℕ| n<degree},
-  let η := λ (n:S), adjoin_root.mk p (x^(n:ℕ)),
   let ν:= λ (n:S), (x^(n:ℕ)),
+  let η := (adjoin_root.mk p)∘ν,
   have nonneg: degree=0 ∨ degree>0,
   exact nat.eq_zero_or_pos degree,
   cases nonneg with zero_deg pos_deg,
@@ -77,13 +77,17 @@ begin
         symmetry,
         let algebra_1 :=algebra_map F (adjoin_root p),
         let algebra_2 :=algebra_map F (polynomial F),
-        have adjoin_root_is_module_map:(adjoin_root.mk p).to_fun=(module_quotient_map F p).to_fun,
-        simpa,
-        have eq_1:(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l) = (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l),
-        simpa[adjoin_root_is_module_map],
-        have eq_2: (finsupp.total ↥S (adjoin_root p) F ((adjoin_root.mk p) ∘ ν)) l = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l,
-        simpa[adjoin_root_is_module_map],
-        have eq_3: (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l) = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l,
+        have adjoin_root_is_module_map:(adjoin_root.mk p).to_fun=(module_quotient_map F p).to_fun:=by simpa,
+
+        have eq_1:(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l) = (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l):=
+        by simpa[adjoin_root_is_module_map],
+
+        have eq_2: (finsupp.total ↥S (adjoin_root p) F ((adjoin_root.mk p) ∘ ν)) l = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l:=
+        by simpa[adjoin_root_is_module_map],
+
+        have eq_3: (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l) = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l:=sorry,
+        --dsimp[finsupp.total],
+        --simp[finsupp.lmap_domain_total],
         --exact finsupp.lmap_domain_total F,
         --simp_rw[finsupp.lmap_domain_total],
         sorry,
