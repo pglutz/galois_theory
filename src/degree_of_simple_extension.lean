@@ -17,7 +17,47 @@ noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 open vector_space polynomial finite_dimensional
 
-variables (F : Type*) [field F] {E : Type*} [field E] [algebra F E] (p : polynomial F) (h : p ≠ 0)
+variables {F : Type*} [field F] (p : polynomial F)
+
+def module_map : polynomial.degree_lt F (p.nat_degree) →ₗ[F] adjoin_root p := {
+  to_fun := λ q, adjoin_root.mk p q,
+  map_add' := λ _ _, ring_hom.map_add _ _ _,
+  map_smul' := λ _ _, by simpa [algebra.smul_def, ring_hom.map_mul],
+}
+
+lemma module_map_injective : function.injective (module_map p) :=
+begin
+  rw is_add_group_hom.injective_iff,
+  intros q hq,
+  change ideal.quotient.mk _ _ = 0 at hq,
+  rw [ideal.quotient.eq_zero_iff_mem, ideal.mem_span_singleton] at hq,
+  cases hq with r hr,
+  cases q with q hq,
+  rw submodule.coe_mk at hr,
+  rw [submodule.mk_eq_zero, hr],
+  rw [mem_degree_lt, hr, degree_mul] at hq,
+  clear hr q,
+  by_cases hp : (p = 0),
+  { rw [hp, zero_mul] },
+  by_cases hr : (r = 0),
+  { rw [hr, mul_zero] },
+  rw [degree_eq_nat_degree hp, degree_eq_nat_degree hr, ←with_bot.coe_add, with_bot.coe_lt_coe] at hq,
+  exfalso,
+  nlinarith,
+end
+
+lemma module_map_surjective : function.surjective (module_map p) :=
+begin
+  intro q,
+  --lift q up to polynomial F and take it mod p???
+end
+
+lemma module_map_bijective : function.bijective (module_map p) :=
+⟨module_map_injective p, module_map_surjective p⟩
+
+def module_isomorphism : polynomial.degree_lt F (p.nat_degree) ≃ₗ[F] adjoin_root p :=
+{ .. (module_map p), .. equiv.of_bijective _ (module_map_bijective p) }
+
 
 def module_quotient_map : polynomial F →ₐ[F] adjoin_root p :=
 { to_fun := (adjoin_root.mk p).to_fun,
@@ -29,7 +69,7 @@ def module_quotient_map : polynomial F →ₐ[F] adjoin_root p :=
 
 def canonical_basis: {n: ℕ| n<polynomial.nat_degree p }→ adjoin_root p:= λ (n:{n: ℕ| n<polynomial.nat_degree p }), adjoin_root.mk p (polynomial.X^(n:ℕ))
 
-lemma canonical_basis_is_basis : is_basis F (canonical_basis F p) :=
+lemma canonical_basis_is_basis : is_basis F (canonical_basis p) :=
 begin
   split,
   { apply linear_independent_iff.mpr,
