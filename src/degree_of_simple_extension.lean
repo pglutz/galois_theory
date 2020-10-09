@@ -155,7 +155,8 @@ begin
     split,
     { apply linear_independent_iff.2,
       intros l eq_zero,
-      have decomp: (finsupp.total S (adjoin_root p) F η) l=(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l),
+      have decomp: (finsupp.total S (adjoin_root p) F η) l =
+        (adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l),
       { rw comp,
         have is_fin':finset ↥S := finset.univ,
         symmetry,
