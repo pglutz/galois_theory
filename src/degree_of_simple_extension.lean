@@ -79,9 +79,9 @@ begin
     rw finsupp.lsum_apply at hf,
     dsimp [finsupp.sum] at hf,
     simp only [linear_map.id_coe, id.def] at hf,
-    change f.support.sum (λ a, (f a) • (module_quotient_map F p (X ^ ↑a))) = 0 at hf,
+    change f.support.sum (λ a, (f a) • (module_quotient_map p (X ^ ↑a))) = 0 at hf,
     simp only [←alg_hom.map_smul] at hf,
-    haveI : is_add_monoid_hom (module_quotient_map F p) := sorry,
+    haveI : is_add_monoid_hom (module_quotient_map p) := sorry,
     rw finset.sum_hom at hf,
     sorry,
      },
@@ -94,7 +94,7 @@ end
 
 
 
-lemma adjunction_basis : is_basis F (canonical_basis F p):=
+lemma adjunction_basis : is_basis F (canonical_basis p):=
 begin
   let degree:=polynomial.nat_degree p,
   let x:polynomial F:= polynomial.X,
@@ -117,15 +117,15 @@ begin
         symmetry,
         let algebra_1 :=algebra_map F (adjoin_root p),
         let algebra_2 :=algebra_map F (polynomial F),
-        have adjoin_root_is_module_map:(adjoin_root.mk p).to_fun=(module_quotient_map F p).to_fun:=by simpa,
+        have adjoin_root_is_module_map:(adjoin_root.mk p).to_fun=(module_quotient_map p).to_fun:=by simpa,
 
-        have eq_1:(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l) = (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l):=
+        have eq_1:(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l) = (module_quotient_map p)((finsupp.total ↥S (polynomial F) F ν) l):=
         by simpa[adjoin_root_is_module_map],
 
-        have eq_2: (finsupp.total ↥S (adjoin_root p) F ((adjoin_root.mk p) ∘ ν)) l = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l:=
+        have eq_2: (finsupp.total ↥S (adjoin_root p) F ((adjoin_root.mk p) ∘ ν)) l = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map p) ∘ ν)) l:=
         by simpa[adjoin_root_is_module_map],
 
-        have eq_3: (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l) = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l:=sorry,
+        have eq_3: (module_quotient_map p)((finsupp.total ↥S (polynomial F) F ν) l) = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map p) ∘ ν)) l:=sorry,
         --dsimp[finsupp.total],
         --simp[finsupp.lmap_domain_total],
         --exact finsupp.lmap_domain_total F,
@@ -210,12 +210,12 @@ end
 
 lemma adjoin_root_finite_dimensional (p : polynomial F) (h : p ≠ 0) :
   finite_dimensional F (adjoin_root p) :=
-linear_equiv.finite_dimensional (adjoin_root_equiv_fin_fun_degree F p h)
+linear_equiv.finite_dimensional (adjoin_root_equiv_fin_fun_degree p h)
 
 lemma adjoin_root_findim_eq_degree (p : polynomial F) (h : p ≠ 0) :
   findim F (adjoin_root p) = nat_degree p :=
-by {rw [← linear_equiv.findim_eq (adjoin_root_equiv_fin_fun_degree F p h), findim_fin_fun]}
+by {rw [← linear_equiv.findim_eq (adjoin_root_equiv_fin_fun_degree p h), findim_fin_fun]}
 
 lemma adjoin_root_dim_eq_degree (p : polynomial F) (h : p ≠ 0) :
   dim F (adjoin_root p) = nat_degree p :=
-by rw [← linear_equiv.dim_eq (adjoin_root_equiv_fin_fun_degree F p h), dim_fin_fun]
+by rw [← linear_equiv.dim_eq (adjoin_root_equiv_fin_fun_degree p h), dim_fin_fun]
