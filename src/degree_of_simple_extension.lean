@@ -32,8 +32,75 @@ def module_quotient_map : polynomial F →ₗ[F] adjoin_root p :=
   map_smul':=smul3 F p }
 
 def canonical_basis: {n: ℕ| n<polynomial.nat_degree p }→ adjoin_root p:= λ (n:{n: ℕ| n<polynomial.nat_degree p }), adjoin_root.mk p (polynomial.X^(n:ℕ))
-  
+
+
+
  
+
+
+
+
+lemma adjunction_basis : is_basis F (canonical_basis F p):=
+begin
+  let degree:=polynomial.nat_degree p,
+  let x:polynomial F:= polynomial.X,
+  let S:= {n: ℕ| n<degree},
+  let η := λ (n:S), adjoin_root.mk p (x^(n:ℕ)),
+  let ν:= λ (n:S), (x^(n:ℕ)),
+  have nonneg: degree=0 ∨ degree>0,
+  exact nat.eq_zero_or_pos degree,
+  cases nonneg with zero_deg pos_deg,
+  {sorry},
+  
+  have comp: η = (adjoin_root.mk p) ∘ ν := rfl,
+  { unfold is_basis,
+    split,
+    { apply linear_independent_iff.2,
+      intros l eq_zero,
+      have decomp: (finsupp.total S (adjoin_root p) F η) l=(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l),
+      { rw comp,
+        have is_fin':finset ↥S := finset.univ,
+        symmetry,
+        let algebra_1 :=algebra_map F (adjoin_root p),
+        let algebra_2 :=algebra_map F (polynomial F),
+        have adjoin_root_is_module_map:(adjoin_root.mk p).to_fun=(module_quotient_map F p).to_fun,
+        simpa,
+        have eq_1:(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l) = (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l),
+        simpa[adjoin_root_is_module_map],
+        have eq_2: (finsupp.total ↥S (adjoin_root p) F ((adjoin_root.mk p) ∘ ν)) l = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l,
+        simpa[adjoin_root_is_module_map],
+        have eq_3: (module_quotient_map F p)((finsupp.total ↥S (polynomial F) F ν) l) = (finsupp.total ↥S (adjoin_root p) F ((module_quotient_map F p) ∘ ν)) l,
+        --exact finsupp.lmap_domain_total F,
+        --simp_rw[finsupp.lmap_domain_total],
+        sorry,
+        
+        
+
+      },
+      sorry,
+    },
+    { sorry, },
+  },
+
+end
+
+-- I have written an outline of a different way of proving the theorems above, which
+-- does not involve working with bases. The basic idea is to show that (adjoin_root p)
+-- is isomorphic to F^(degree p) (which is expressed in mathlib as (fin (nat_degree p) → F)).
+-- Also, I think this can be proved for all nonzero polynomials, not just those which happen
+-- to be the minimal polynomial for something. Of course, with an arbitrary polynomial p,
+-- F[x]/p is not a field, but that doesn't matter if you just care about the vector space
+-- structure.
+--
+-- Here's my proposed strategy for proving the isomorphism:
+-- 1) First construct the map from (fin (nat_degree p) → F) to adjoin_root p
+--    Hopefully this should be easy because there's a map from (fin (nat_degree p) → F)
+--    to polynomial F and so it should give a map on the quotient.
+-- 2) Show that this map is linear. Maybe it's better to first show that the map to
+--    polynomial F is linear and automatically get a linear map by composing with the
+--    quotient.
+-- 3) Show that this map is a bijection.begin
+-- 4) Use the theorem linear_equiv.of_bijective to finish.
 
 lemma adjunction_degree_finite : finite_dimensional F (adjoin_root p) :=
 begin
@@ -52,7 +119,7 @@ begin
     split,
     { apply linear_independent_iff.2,
       intros l eq_zero,
-      have decomp: (finsupp.total ↥S (adjoin_root p) F η) l=(adjoin_root.mk minimal) ((finsupp.total ↥S (polynomial F) F ν) l),
+      have decomp: (finsupp.total ↥S (adjoin_root p) F η) l=(adjoin_root.mk p) ((finsupp.total ↥S (polynomial F) F ν) l),
       { rw comp,
         have is_fin':finset ↥S := finset.univ,
         symmetry,
@@ -76,24 +143,6 @@ begin
     sorry
 
 end
-
--- I have written an outline of a different way of proving the theorems above, which
--- does not involve working with bases. The basic idea is to show that (adjoin_root p)
--- is isomorphic to F^(degree p) (which is expressed in mathlib as (fin (nat_degree p) → F)).
--- Also, I think this can be proved for all nonzero polynomials, not just those which happen
--- to be the minimal polynomial for something. Of course, with an arbitrary polynomial p,
--- F[x]/p is not a field, but that doesn't matter if you just care about the vector space
--- structure.
---
--- Here's my proposed strategy for proving the isomorphism:
--- 1) First construct the map from (fin (nat_degree p) → F) to adjoin_root p
---    Hopefully this should be easy because there's a map from (fin (nat_degree p) → F)
---    to polynomial F and so it should give a map on the quotient.
--- 2) Show that this map is linear. Maybe it's better to first show that the map to
---    polynomial F is linear and automatically get a linear map by composing with the
---    quotient.
--- 3) Show that this map is a bijection.begin
--- 4) Use the theorem linear_equiv.of_bijective to finish.
 
 lemma adjoin_root_equiv_fin_fun_degree (p : polynomial F) (h : p ≠ 0) :
   (fin (nat_degree p) → F) ≃ₗ[F] adjoin_root p :=
