@@ -29,7 +29,7 @@ def module_quotient_map : polynomial F →ₐ[F] adjoin_root p :=
 
 def canonical_basis: {n: ℕ| n<polynomial.nat_degree p }→ adjoin_root p:= λ (n:{n: ℕ| n<polynomial.nat_degree p }), adjoin_root.mk p (polynomial.X^(n:ℕ))
 
-lemma canonical_basis_is_basis : is_basis F (canonical_basis p) :=
+lemma canonical_basis_is_basis : is_basis F (canonical_basis F p) :=
 begin
   split,
   { apply linear_independent_iff.mpr,
@@ -39,9 +39,9 @@ begin
     rw finsupp.lsum_apply at hf,
     dsimp [finsupp.sum] at hf,
     simp only [linear_map.id_coe, id.def] at hf,
-    change f.support.sum (λ a, (f a) • (module_quotient_map p (X ^ ↑a))) = 0 at hf,
+    change f.support.sum (λ a, (f a) • (module_quotient_map F p (X ^ ↑a))) = 0 at hf,
     simp only [←alg_hom.map_smul] at hf,
-    haveI : is_add_monoid_hom (module_quotient_map p) := sorry,
+    haveI : is_add_monoid_hom (module_quotient_map F p) := sorry,
     rw finset.sum_hom at hf,
     sorry,
      },
