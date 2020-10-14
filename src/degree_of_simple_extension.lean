@@ -130,7 +130,7 @@ begin
         --simp[finsupp.lmap_domain_total],
         --exact finsupp.lmap_domain_total F,
         --simp_rw[finsupp.lmap_domain_total],
-        sorry,
+        simp*,
         
         
 
