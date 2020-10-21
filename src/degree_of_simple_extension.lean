@@ -46,10 +46,54 @@ begin
   nlinarith,
 end
 
-lemma module_map_surjective : function.surjective (module_map p) :=
+lemma module_map_surjective [polynomial.degree p>0]: function.surjective (module_map p) :=
 begin
   intro q,
-  --lift q up to polynomial F and take it mod p???
+  have s: function.surjective (adjoin_root.mk p):=ideal.quotient.mk_surjective,
+  have t: ∃g: (polynomial F), (adjoin_root.mk p) g = q:= s q,
+  cases t with preimage salem,
+  use (preimage % p),
+  have u:(preimage % p).degree<p.degree,
+  rw polynomial.mod_def,
+  have w:=ne_zero_of_degree_gt _inst_2,
+
+  have alpha: p * C ((p.leading_coeff)⁻¹)=normalize p,
+  {dsimp,
+  rw polynomial.coe_norm_unit_of_ne_zero w},
+  rw alpha,
+  have beta:p.degree=(normalize p).degree,
+  rw [polynomial.degree_normalize],
+  rw beta,
+  apply polynomial.degree_mod_by_monic_lt,
+  exact monic_normalize w,
+  exact monic.ne_zero (polynomial.monic_normalize w),
+  have gamma:p.degree=p.nat_degree,
+  exact polynomial.degree_eq_nat_degree (ne_zero_of_degree_gt _inst_2),
+  rw gamma at u,
+  exact mem_degree_lt.mpr u,
+  
+  --exact monic.ne_zero gamma,
+
+  --rw ← polynomial.degree_normalize p,
+
+
+  --have v:(p * C (p.leading_coeff)⁻¹).monic,
+  --exact polynomial.monic_mul_leading_coeff_inv w,
+  --have z:p.degree=(p * C (p.leading_coeff)⁻¹).degree,
+  --simp,
+  --library_search,
+  --let y:=polynomial.coe_norm_unit_of_ne_zero _ _, 
+
+  
+  --apply polynomial.degree_mod_by_monic_lt,
+
+  
+  --apply polynomial.degree_div_lt,
+  --#check polynomial.degree_div_lt,
+
+  
+
+  
 end
 
 lemma module_map_bijective : function.bijective (module_map p) :=
