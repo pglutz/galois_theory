@@ -110,16 +110,16 @@ begin
   --apply polynomial.degree_div_lt,
   --#check polynomial.degree_div_lt,
 
-  
+  sorry,
 
   
 end
 
-lemma module_map_bijective : function.bijective (module_map p) :=
-⟨module_map_injective p, module_map_surjective p⟩
+lemma module_map_bijective (h : p ≠ 0) : function.bijective (module_map p) :=
+⟨module_map_injective p, module_map_surjective' p h⟩
 
-def module_isomorphism : polynomial.degree_lt F (p.nat_degree) ≃ₗ[F] adjoin_root p :=
-{ .. (module_map p), .. equiv.of_bijective _ (module_map_bijective p) }
+def module_isomorphism (h : p ≠ 0) : polynomial.degree_lt F (p.nat_degree) ≃ₗ[F] adjoin_root p :=
+{ .. (module_map p), .. equiv.of_bijective _ (module_map_bijective p h) }
 
 
 def module_quotient_map : polynomial F →ₐ[F] adjoin_root p :=
@@ -148,7 +148,7 @@ begin
     rw finset.sum_hom at hf,
     sorry,
      },
-  {},
+  { sorry, },
 end
 
 
