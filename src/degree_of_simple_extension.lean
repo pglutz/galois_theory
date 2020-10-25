@@ -17,6 +17,13 @@ noncomputable theory
 local attribute [instance, priority 100] classical.prop_decidable
 open vector_space polynomial finite_dimensional
 
+lemma polynomial.degree_mod_lt {R : Type*} [field R] (p q : polynomial R)
+  (h : p ≠ 0) : (q % p).degree < p.degree :=
+begin
+  exact euclidean_domain.mod_lt q h,
+end
+
+
 variables {F : Type*} [field F] (p : polynomial F)
 
 def module_map : polynomial.degree_lt F (p.nat_degree) →ₗ[F] adjoin_root p := {
@@ -46,32 +53,44 @@ begin
   nlinarith,
 end
 
+lemma module_map_surjective' (h : p ≠ 0) : function.surjective (module_map p) :=
+begin
+  intro q,
+  obtain ⟨q', hq'⟩ : ∃ q', adjoin_root.mk p q' = q := ideal.quotient.mk_surjective q,
+  use (q' % p),
+  { rw [mem_degree_lt, ← degree_eq_nat_degree h],
+    exact euclidean_domain.mod_lt q' h, },
+  { change adjoin_root.mk p (q' % p) = q,
+    symmetry,
+    rw [← hq', adjoin_root.mk, ideal.quotient.eq, ideal.mem_span_singleton'],
+    exact ⟨q' / p, by rw [eq_sub_iff_add_eq, mul_comm, euclidean_domain.div_add_mod]⟩, },
+end
+
 lemma module_map_surjective [polynomial.degree p>0]: function.surjective (module_map p) :=
 begin
   intro q,
-  have s: function.surjective (adjoin_root.mk p):=ideal.quotient.mk_surjective,
-  have t: ∃g: (polynomial F), (adjoin_root.mk p) g = q:= s q,
+  have s : function.surjective (adjoin_root.mk p) := ideal.quotient.mk_surjective,
+  have t : ∃ g : polynomial F, (adjoin_root.mk p) g = q := s q,
   cases t with preimage salem,
   use (preimage % p),
   have u:(preimage % p).degree<p.degree,
-  rw polynomial.mod_def,
-  have w:=ne_zero_of_degree_gt _inst_2,
-
-  have alpha: p * C ((p.leading_coeff)⁻¹)=normalize p,
-  {dsimp,
-  rw polynomial.coe_norm_unit_of_ne_zero w},
-  rw alpha,
-  have beta:p.degree=(normalize p).degree,
-  rw [polynomial.degree_normalize],
-  rw beta,
-  apply polynomial.degree_mod_by_monic_lt,
-  exact monic_normalize w,
-  exact monic.ne_zero (polynomial.monic_normalize w),
+  { rw polynomial.mod_def,
+    have w:=ne_zero_of_degree_gt _inst_2,
+    { have alpha: p * C ((p.leading_coeff)⁻¹)=normalize p,
+      { dsimp,
+        rw polynomial.coe_norm_unit_of_ne_zero w},
+        rw alpha,
+        have beta:p.degree=(normalize p).degree,
+          rw [polynomial.degree_normalize],
+          rw beta,
+          apply polynomial.degree_mod_by_monic_lt,
+          exact monic_normalize w,
+        exact monic.ne_zero (polynomial.monic_normalize w), }, },
   have gamma:p.degree=p.nat_degree,
-  exact polynomial.degree_eq_nat_degree (ne_zero_of_degree_gt _inst_2),
+    { exact polynomial.degree_eq_nat_degree (ne_zero_of_degree_gt _inst_2), },
   rw gamma at u,
   exact mem_degree_lt.mpr u,
-  
+
   --exact monic.ne_zero gamma,
 
   --rw ← polynomial.degree_normalize p,
